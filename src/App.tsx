@@ -22,6 +22,7 @@ import { useLeague } from "./data/useLeague";
 import { passwordFlow } from "./data/supabase";
 import { defaultRules, type Match } from "./domain/types";
 import { pairRanking, ranking } from "./domain/rankings";
+import { latestValidMatch } from "./domain/teams";
 import { Auth } from "./components/Auth";
 import {
   Avatar,
@@ -817,9 +818,7 @@ export default function App() {
         <MatchForm
           players={data.players}
           season={active}
-          last={data.matches.find(
-            (m) => m.status === "valid" && m.season_id === active.id,
-          )}
+          last={latestValidMatch(data.matches, active.id)}
           edit={edit}
           onClose={() => setMatchForm(false)}
           onSave={async (input, existing, why) => {

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pencil, Search, XCircle } from "lucide-react";
 import type { Match, Player, Season } from "../domain/types";
 import { date, Empty } from "./ui";
+import { teamNames } from "../domain/teams";
 export function Result({
   match,
   players,
@@ -20,13 +21,14 @@ export function Result({
         <span>
           {match.status === "void"
             ? "ANULADA"
-            : `FINAL · ${match.winner === "blue" ? "AZUL" : "ROJO"} GANA`}
+            : `FINAL · GANA ${teamNames[match.winner].toUpperCase()}`}
         </span>
       </div>
       <div className="match-teams">
         {(["blue", "red"] as const).map((team, i) => (
           <div className={`result-team ${team}`} key={team}>
             <div>
+              <span className="result-club">{teamNames[team]}</span>
               {match.participants
                 .filter((p) => p.team === team)
                 .sort((a) => (a.position === "defender" ? -1 : 1))

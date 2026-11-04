@@ -85,10 +85,10 @@ test("registra desde móvil, confirma y reconstruye los rankings", async ({
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: "Repetir últimos equipos" }).click();
   await dialog.getByRole("button", { name: "A 2 goles", exact: true }).click();
-  await expect(dialog.getByLabel("Goles equipo azul")).toHaveValue("2");
-  await dialog.getByLabel("Goles equipo rojo").fill("1");
+  await expect(dialog.getByLabel("Goles Barça")).toHaveValue("2");
+  await dialog.getByLabel("Goles Madrid").fill("1");
   await dialog.getByRole("button", { name: "Revisar resultado" }).click();
-  await expect(dialog.getByText(/Gana el equipo/)).toBeVisible();
+  await expect(dialog.getByText(/^Gana /)).toBeVisible();
   await dialog.getByRole("button", { name: "Confirmar y guardar" }).click();
   await expect(dialog).not.toBeVisible();
   await expect(page.getByRole("status")).toContainText("demostración");
@@ -118,13 +118,13 @@ test("permite tres goles y un marcador personalizado, y bloquea empates", async 
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("button", { name: "Repetir últimos equipos" }).click();
   await dialog.getByRole("button", { name: "A 3 goles", exact: true }).click();
-  await expect(dialog.getByLabel("Goles equipo azul")).toHaveValue("3");
-  await dialog.getByLabel("Goles equipo rojo").fill("3");
+  await expect(dialog.getByLabel("Goles Barça")).toHaveValue("3");
+  await dialog.getByLabel("Goles Madrid").fill("3");
   await dialog.getByRole("button", { name: "Revisar resultado" }).click();
   await expect(dialog.getByRole("alert")).toContainText("sin empate");
-  await dialog.getByLabel("Goles equipo rojo").fill("7");
+  await dialog.getByLabel("Goles Madrid").fill("7");
   await dialog.getByRole("button", { name: "Revisar resultado" }).click();
-  await expect(dialog.getByText(/Gana el equipo/)).toContainText("7–3");
+  await expect(dialog.getByText(/^Gana /)).toContainText("7–3");
   await dialog.getByRole("button", { name: "Confirmar y guardar" }).click();
   await expect(dialog).not.toBeVisible();
 });
@@ -197,3 +197,86 @@ test("muestra la ayuda de instalación antes y después de entrar, con la marca 
   expect(manifest.name).toBe("Liga FutABLE");
   expect(manifest.short_name).toBe("FutABLE");
 });
+
+for (const winner of ["Barça", "Madrid"] as const) {
+  test(
+    "rey de la pista mantiene a " + winner + " y deja elegir nuevos rivales",
+    async ({ page }) => {
+      const open = () =>
+        page
+          .getByRole("button", { name: "Nueva partida", exact: true })
+          .filter({ visible: true })
+          .first()
+          .click();
+      await open();
+      const dialog = page.getByRole("dialog");
+      await dialog
+        .getByRole("button", { name: "Repetir últimos equipos" })
+        .click();
+      const names = await Promise.all(
+        ["defensa", "delantero"].map((position) =>
+          dialog
+            .getByRole("button", { name: winner + " " + position, exact: true })
+            .innerText(),
+        ),
+      );
+      await dialog
+        .getByLabel("Goles Barça")
+        .fill(winner === "Barça" ? "3" : "1");
+      await dialog
+        .getByLabel("Goles Madrid")
+        .fill(winner === "Madrid" ? "3" : "1");
+      await dialog.getByRole("button", { name: "Revisar resultado" }).click();
+      await expect(dialog.getByText(/^Gana /)).toContainText(winner);
+      await dialog.getByRole("button", { name: "Confirmar y guardar" }).click();
+      await expect(dialog).not.toBeVisible();
+      await open();
+      await expect(dialog.locator(".king-banner")).toContainText(
+        winner + " continúa",
+      );
+      const rival = winner === "Barça" ? "Madrid" : "Barça";
+      for (const [i, position] of ["defensa", "delantero"].entries()) {
+        await expect(
+          dialog.getByRole("button", {
+            name: winner + " " + position,
+            exact: true,
+          }),
+        ).toHaveText(names[i], { useInnerText: true });
+        await expect(
+          dialog.getByRole("button", {
+            name: rival + " " + position,
+            exact: true,
+          }),
+        ).toContainText("Elegir jugador");
+      }
+      await expect(
+        dialog.getByRole("button", { name: rival + " defensa", exact: true }),
+      ).toHaveClass(/selected/);
+      await dialog
+        .locator(".player-options button:not(:disabled)")
+        .first()
+        .click();
+      await expect(
+        dialog.getByRole("button", { name: rival + " delantero", exact: true }),
+      ).toHaveClass(/selected/);
+      await dialog
+        .locator(".player-options button:not(:disabled)")
+        .first()
+        .click();
+      for (const [i, position] of ["defensa", "delantero"].entries())
+        await expect(
+          dialog.getByRole("button", {
+            name: winner + " " + position,
+            exact: true,
+          }),
+        ).toHaveText(names[i], { useInnerText: true });
+      await dialog
+        .getByRole("button", { name: "Empezar de cero", exact: true })
+        .click();
+      await expect(dialog.locator(".king-banner")).toHaveCount(0);
+      await expect(
+        dialog.locator(".player-slot").filter({ hasText: "Elegir jugador" }),
+      ).toHaveCount(4);
+    },
+  );
+}

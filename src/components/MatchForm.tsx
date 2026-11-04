@@ -6,6 +6,7 @@ import {
   Search,
   Shield,
   Swords,
+  Trophy,
 } from "lucide-react";
 import type {
   Match,
@@ -15,13 +16,8 @@ import type {
   Season,
 } from "../domain/types";
 import { validateMatch } from "../domain/validation";
+import { lineupSlots as slots, matchLineup, teamNames } from "../domain/teams";
 import { Avatar, Modal } from "./ui";
-const slots = [
-  { team: "blue", position: "defender" },
-  { team: "blue", position: "forward" },
-  { team: "red", position: "defender" },
-  { team: "red", position: "forward" },
-] as const;
 export function MatchForm({
   players,
   season,
@@ -37,15 +33,17 @@ export function MatchForm({
   onClose: () => void;
   onSave: (m: MatchInput, edit?: Match, reason?: string) => Promise<void>;
 }) {
-  const initial = edit?.participants;
-  const [selected, setSelected] = useState<string[]>(
-    slots.map(
-      (s) =>
-        initial?.find((p) => p.team === s.team && p.position === s.position)
-          ?.player_id || "",
-    ),
+  const previous = useRef(last).current;
+  const [selected, setSelected] = useState<string[]>(() =>
+    matchLineup(edit || previous, season, players, !edit),
   );
-  const [active, setActive] = useState(0),
+  const [carried, setCarried] = useState(!edit && selected.some(Boolean));
+  const [active, setActive] = useState(() =>
+      Math.max(
+        0,
+        selected.findIndex((id) => !id),
+      ),
+    ),
     [query, setQuery] = useState(""),
     [scores, setScores] = useState([
       edit?.blue_score ?? season.target,
@@ -115,30 +113,62 @@ export function MatchForm({
       <p className="muted">
         Cuatro jugadores. Dos equipos. Una nueva historia.
       </p>
-      {last && !edit && (
-        <button
-          className="text-button"
-          onClick={() => {
-            setSelected(
-              slots.map(
-                (s) =>
-                  last.participants.find(
-                    (p) => p.team === s.team && p.position === s.position,
-                  )?.player_id || "",
-              ),
-            );
-            mutate();
-          }}
-        >
-          <Repeat2 size={16} /> Repetir últimos equipos
-        </button>
+      {carried && previous && (
+        <div className="king-banner">
+          <Trophy size={20} />
+          <div>
+            <strong>
+              Rey de la pista · {teamNames[previous.winner]} continúa
+            </strong>
+            <p>
+              Ganadores precargados en sus puestos. Elige a los rivales o cambia
+              cualquier jugador.
+            </p>
+          </div>
+        </div>
+      )}
+      {!edit && (
+        <div className="lineup-actions">
+          {previous && (
+            <button
+              className="text-button"
+              onClick={() => {
+                const next = matchLineup(previous, season, players);
+                setSelected(next);
+                setActive(
+                  Math.max(
+                    0,
+                    next.findIndex((id) => !id),
+                  ),
+                );
+                setCarried(false);
+                setQuery("");
+                mutate();
+              }}
+            >
+              <Repeat2 size={16} /> Repetir últimos equipos
+            </button>
+          )}
+          <button
+            className="text-button"
+            onClick={() => {
+              setSelected(slots.map(() => ""));
+              setActive(0);
+              setCarried(false);
+              setQuery("");
+              mutate();
+            }}
+          >
+            Empezar de cero
+          </button>
+        </div>
       )}
       <div className="team-pickers">
-        {["blue", "red"].map((team, t) => (
+        {(["blue", "red"] as const).map((team) => (
           <div key={team} className={`team-picker ${team}`}>
             <h3>
               <i />
-              Equipo {t === 0 ? "azul" : "rojo"}
+              {teamNames[team]}
             </h3>
             {slots.map(
               (s, i) =>
@@ -147,7 +177,7 @@ export function MatchForm({
                     key={i}
                     className={`player-slot ${active === i ? "selected" : ""}`}
                     onClick={() => setActive(i)}
-                    aria-label={`${team === "blue" ? "Azul" : "Rojo"} ${s.position === "defender" ? "defensa" : "delantero"}`}
+                    aria-label={`${teamNames[team]} ${s.position === "defender" ? "defensa" : "delantero"}`}
                   >
                     {selected[i] ? (
                       <Avatar
@@ -192,8 +222,11 @@ export function MatchForm({
               key={p.id}
               disabled={selected.includes(p.id) && selected[active] !== p.id}
               onClick={() => {
-                setSelected((s) => s.map((v, i) => (i === active ? p.id : v)));
-                setActive((a) => Math.min(a + 1, 3));
+                const next = selected.map((v, i) => (i === active ? p.id : v));
+                setSelected(next);
+                const after = next.findIndex((id, i) => i > active && !id);
+                const first = next.findIndex((id) => !id);
+                setActive(after >= 0 ? after : first >= 0 ? first : active);
                 setQuery("");
                 mutate();
               }}
@@ -233,10 +266,10 @@ export function MatchForm({
       </fieldset>
       <div className="score-entry">
         <label>
-          Equipo azul
+          Barça
           <input
             type="number"
-            aria-label="Goles equipo azul"
+            aria-label="Goles Barça"
             min="0"
             max={99}
             value={scores[0]}
@@ -248,10 +281,10 @@ export function MatchForm({
         </label>
         <span>:</span>
         <label>
-          Equipo rojo
+          Madrid
           <input
             type="number"
-            aria-label="Goles equipo rojo"
+            aria-label="Goles Madrid"
             min="0"
             max={99}
             value={scores[1]}
@@ -282,9 +315,9 @@ export function MatchForm({
         <div className="confirmation">
           <Check size={20} />
           <span>
-            Gana el equipo{" "}
-            <strong>{scores[0] > scores[1] ? "azul" : "rojo"}</strong> por{" "}
-            {Math.max(...scores)}–{Math.min(...scores)}. ¿Todo correcto?
+            Gana{" "}
+            <strong>{teamNames[scores[0] > scores[1] ? "blue" : "red"]}</strong>{" "}
+            por {Math.max(...scores)}–{Math.min(...scores)}. ¿Todo correcto?
           </span>
         </div>
       )}

@@ -5,6 +5,8 @@ Activada el 31 de octubre de 2026 con Supabase PostgreSQL, Auth y Realtime.
 - Proyecto: `foogrwxbycncnifbwlpe` (FutABLE, organización gratuita del propietario).
 - Liga real: `e51ccd56-6708-449a-8d2a-48eb4e4c0bd4`.
 - Temporada inicial: **Temporada 1**, activa, con goles variables (habitualmente 2 o 3).
+- Equipos visibles: **Barça** y **Madrid**. Se conservan los identificadores internos para mantener el historial.
+- Rey de la pista: al abrir una nueva partida se precargan los ganadores de la última partida válida de la temporada activa, en su mismo equipo y posición. Los puestos rivales quedan libres; pueden cambiarse todos los jugadores o empezar de cero. Las partidas anuladas y los jugadores inactivos no se arrastran.
 - Migración 004 aplicada: cada cuenta puede editar su propia ficha (nombre y foto), sin cambiar su ID, rol ni partidas. Fotos JPEG optimizadas de hasta 48.000 caracteres, accesibles mediante los permisos existentes de la liga; no se usa un bucket público. La auditoría guarda si hay foto, nunca copias de la imagen.
 - Perfiles verificados: 5 pruebas adicionales de permisos/identidad en PostgreSQL y pruebas de selección, conversión, guardado y retirada de foto en móvil/escritorio. RPC online comprobada en transacción revertida, sin editar cuentas reales.
 - Migración 003 aplicada: el objetivo de temporada solo sugiere el marcador inicial. Se permiten marcadores enteros de 0 a 99, con ganador y sin empate. Cada victoria pesa igual en los rankings.

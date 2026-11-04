@@ -1,4 +1,79 @@
 /* FutABLE club edition — ABLE palette, quieter surfaces, generous touch controls. */
+.king-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 15px;
+  margin: 18px 0 12px;
+  background: #f2f7e9;
+  border: 1px solid #dbe7c3;
+  border-radius: 14px;
+  color: #536b32;
+}
+.king-banner > svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.king-banner strong {
+  font-size: 12px;
+  display: block;
+}
+.king-banner p {
+  font-size: 11px !important;
+  line-height: 1.6;
+  margin: 5px 0 0 !important;
+  color: #687759;
+}
+.lineup-actions {
+  display: flex;
+  gap: 10px 18px;
+  flex-wrap: wrap;
+  margin: 14px 0 0;
+}
+.lineup-actions .text-button {
+  font-size: 11px;
+  min-height: 32px;
+}
+.team-picker.blue h3 i {
+  background: linear-gradient(90deg, #315fa6 50%, #a43c58 50%);
+  width: 10px;
+  height: 10px;
+}
+.team-picker.red h3 {
+  color: #76632d;
+}
+.team-picker.red h3 i {
+  background: #c4ad68;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #bba563;
+}
+.result-team.red {
+  border-left-color: #c5b06f;
+}
+.result-team.red > strong.winning-score {
+  color: #8c7334;
+}
+.result-team > div > .result-club {
+  display: block;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  color: #51617d;
+}
+.result-team.red > div > .result-club {
+  color: #8c7334;
+}
+.score-entry label:last-child input {
+  color: #76632d;
+  border-color: #e1d8b9;
+}
+.score-entry label:last-child {
+  color: #8c7334;
+}
 :root {
   --bg: #f5f6f8;
   --panel: #fff;
