@@ -6,7 +6,7 @@ Código común de la liga de futbolín de ABLE Human Motion.
 - **Repositorio de colaboración:** https://github.com/vosuna01/futable
 - **Cómo contribuir:** [CONTRIBUTING.md](CONTRIBUTING.md)
 
-Trabajamos sobre la misma app: cada mejora se propone en una rama y se revisa mediante una pull request antes de incorporarla a `main`. Los cambios en GitHub no se publican automáticamente en la web. La configuración actual de publicación sigue en Sites.
+Trabajamos sobre la misma app con edición libre: los colaboradores pueden guardar cambios directamente en `main`. No se exigen ramas ni pull requests. Los cambios en GitHub no se publican automáticamente en la web. La configuración actual de publicación sigue en Sites.
 
 Para solicitar acceso, envía a Víctor tu usuario o el correo asociado a GitHub. El propietario te invita desde **Settings → Collaborators → Add people**, y debes aceptar la invitación. El enlace de un repositorio privado puede mostrar un 404 hasta que tengas acceso.
 
