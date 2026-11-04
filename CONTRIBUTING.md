@@ -22,23 +22,24 @@ pnpm dev
 
 Para cambios visuales, entra en **Explorar demostración**. Las partidas y perfiles de demostración son temporales. Los ajustes públicos incluidos conectan con la liga real: para pruebas de escrituras usa tu propio proyecto de Supabase mediante `.env.local`. No repitas las migraciones ni el bootstrap sobre producción; consulta `docs/ACTIVACION.md`.
 
-## Proponer una mejora
+## Editar libremente
+
+Los colaboradores pueden editar y guardar directamente en `main`. No hacen falta ramas ni pull requests. Puedes editar desde GitHub con el lápiz o conectar este repositorio a tu editor o asistente de IA.
+
+Si trabajas en local:
 
 ```sh
 git switch main
 git pull --ff-only
-git switch -c mejora/nombre-breve
 # Edita y comprueba el resultado.
 pnpm test
 pnpm build
 git add .
 git commit -m "Describe el cambio"
-git push -u origin mejora/nombre-breve
+git push origin main
 ```
 
-Abre una **pull request** hacia `main`. Explica qué cambia, incluye capturas si afecta al diseño y cuenta cómo lo has comprobado. Cada compañero trabaja en su rama y todos incorporamos los cambios al mismo proyecto. Antes de integrar, revisad las comprobaciones y pedid revisión a otro compañero. Este acuerdo de revisión no equivale a una protección obligatoria de rama configurada en GitHub.
-
-Las comprobaciones automáticas ejecutan pruebas, compilación y los recorridos principales en móvil y escritorio. No se conectan con una cuenta de jugador ni publican el sitio.
+Antes de empezar, descarga los últimos cambios. Si alguien publica mientras estás trabajando, integra sus cambios antes de subir los tuyos; conserva las mejoras de ambos y evita forzar la subida. Las comprobaciones automáticas siguen ejecutándose después de cada cambio en `main` y sirven como aviso. No imponen revisión previa ni publican el sitio.
 
 ## Publicación
 
