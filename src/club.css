@@ -1,0 +1,590 @@
+/* Liga Córdoba: company identity meets the office foosball club. */
+.brand-mark {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+}
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 3px 5px #0000000a);
+}
+.brand > span:last-child {
+  font-size: 9px;
+  letter-spacing: 3.6px;
+}
+.brand strong {
+  font-size: 17px;
+  letter-spacing: 1.5px;
+}
+.brand > span:last-child > small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 5.5px;
+  letter-spacing: 1.1px;
+  margin-top: 5px;
+  color: #b5abc9;
+}
+.hero-card {
+  min-height: 385px;
+  border-radius: 17px;
+  background:
+    radial-gradient(ellipse at 86% 35%, #1da0993b, transparent 55%),
+    radial-gradient(ellipse at 60% 110%, #b0ca6215, transparent 65%), #21193c;
+}
+.hero-card:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(#b5add51a 0.6px, transparent 0.6px);
+  background-size: 14px 14px;
+  mask-image: linear-gradient(90deg, transparent 30%, black);
+  pointer-events: none;
+}
+.hero-copy {
+  padding: 33px 32px;
+  width: 54%;
+  pointer-events: none;
+}
+.hero-copy h2 {
+  font-size: clamp(26px, 2.45vw, 37px);
+  line-height: 1.11;
+  letter-spacing: -1.3px;
+  margin-top: 32px;
+  max-width: 340px;
+}
+.hero-copy h2 em {
+  display: inline-block;
+  margin-top: 5px;
+}
+.hero-copy p {
+  font-size: 11px;
+  line-height: 1.9;
+  color: #c9c3d9;
+  margin-top: 18px;
+  max-width: 240px;
+}
+.hero-copy .hero-link {
+  margin-top: 26px;
+  border: 1px solid #b0ca6250;
+  border-radius: 8px;
+  padding: 10px 13px;
+  width: max-content;
+  pointer-events: auto;
+  color: #d4e8a0;
+  background: #b0ca6208;
+}
+.hero-copy .hero-link:hover {
+  background: #b0ca6219;
+}
+.live-pill {
+  font-size: 7px;
+  letter-spacing: 1.2px;
+}
+.hero-club-tag {
+  position: absolute;
+  bottom: 24px;
+  left: 32px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #a9a1bf;
+}
+.hero-club-tag img {
+  border-radius: 8px;
+  opacity: 0.9;
+}
+.hero-club-tag span {
+  font-family: var(--font-mono);
+  font-size: 6px;
+  line-height: 1.8;
+  letter-spacing: 1px;
+}
+.hero-club-tag strong {
+  color: #cfc8df;
+  font-weight: 400;
+}
+.foosball-visual {
+  margin: 0;
+  position: relative;
+  isolation: isolate;
+  pointer-events: none;
+}
+.foosball-home {
+  position: absolute;
+  right: -30px;
+  bottom: 28px;
+  width: 62%;
+  height: 81%;
+  z-index: 1;
+}
+.foosball-table {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  z-index: 2;
+  filter: drop-shadow(0 20px 20px #100b2840);
+}
+.table-halo {
+  position: absolute;
+  inset: 12% 14% 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse,
+    #1da09926,
+    #b0ca620a 50%,
+    transparent 70%
+  );
+  filter: blur(18px);
+}
+.visual-orbit {
+  position: absolute;
+  border: 1px solid #b0ca6218;
+  border-radius: 50%;
+  transform: rotate(-26deg);
+  z-index: 0;
+}
+.orbit-one {
+  width: 90%;
+  height: 75%;
+  left: 1%;
+  top: 13%;
+}
+.orbit-two {
+  width: 110%;
+  height: 94%;
+  left: -9%;
+  top: 4%;
+  border-color: #ffffff09;
+}
+.foosball-visual figcaption {
+  position: absolute;
+  left: 15%;
+  right: 4%;
+  bottom: -8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #a9a6bf;
+  font-family: var(--font-mono);
+  font-size: 6px;
+  letter-spacing: 1.1px;
+  z-index: 3;
+}
+.foosball-visual figcaption > span:last-child {
+  margin-left: auto;
+  color: #a8c89b;
+  font-size: 6px;
+  letter-spacing: 0.6px;
+}
+.table-caption-dot {
+  height: 4px;
+  width: 4px;
+  border-radius: 50%;
+  background: #b0ca62;
+}
+.leader-card {
+  border-radius: 17px;
+  padding-top: 27px;
+}
+.leader-avatar {
+  margin-top: 30px;
+}
+.leader-card h2 {
+  margin-top: 26px;
+}
+.leader-stats {
+  margin-top: 25px;
+  margin-bottom: 24px;
+}
+.auth-story {
+  padding: 35px 50px 26px;
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse at 85% 65%, #1da09926, transparent 65%), #21193c;
+  isolation: isolate;
+}
+.auth-story > div {
+  padding: 37px 0 8px;
+  margin: auto 0;
+  position: relative;
+}
+.auth-story h1 {
+  font-size: clamp(37px, 3.6vw, 59px);
+  margin: 20px 0 0;
+  line-height: 1.04;
+}
+.auth-story p {
+  font-size: 12px;
+  margin-top: 20px;
+  max-width: 360px;
+}
+.auth-story .brand-mark {
+  width: 54px;
+  height: 54px;
+}
+.auth-story .brand > span:last-child {
+  font-size: 9px;
+}
+.auth-story .brand strong {
+  font-size: 17px;
+}
+.auth-story .eyebrow {
+  font-size: 8px;
+}
+.foosball-auth {
+  height: 330px;
+  margin: 7px -25px 9px;
+}
+.foosball-auth .foosball-table {
+  object-position: center 42%;
+}
+.foosball-auth figcaption {
+  left: 14%;
+  right: 10%;
+  bottom: 0;
+  font-size: 6px;
+}
+.auth-story .story-footer {
+  color: #a79dbd;
+  font-size: 7px;
+  letter-spacing: 1.5px;
+}
+@media (min-width: 1500px) {
+  .hero-card {
+    min-height: 410px;
+  }
+  .foosball-home {
+    right: -5px;
+    width: 61%;
+    bottom: 26px;
+    height: 86%;
+  }
+  .hero-copy {
+    padding: 36px;
+  }
+  .hero-club-tag {
+    left: 36px;
+  }
+  .auth-story {
+    padding-left: 65px;
+    padding-right: 65px;
+  }
+  .foosball-auth {
+    height: 330px;
+  }
+}
+@media (max-width: 1200px) {
+  .hero-card {
+    min-height: 365px;
+  }
+  .hero-copy {
+    padding: 28px 25px;
+    width: 55%;
+  }
+  .hero-copy h2 {
+    font-size: 29px;
+    letter-spacing: -1.1px;
+  }
+  .hero-copy p {
+    font-size: 10px;
+    max-width: 200px;
+  }
+  .foosball-home {
+    right: -26px;
+    width: 67%;
+    height: 72%;
+    bottom: 37px;
+  }
+  .hero-club-tag {
+    left: 25px;
+    bottom: 19px;
+  }
+  .foosball-visual figcaption {
+    font-size: 5px;
+    letter-spacing: 0.8px;
+    left: 19%;
+    right: 9%;
+  }
+  .foosball-visual figcaption > span:last-child {
+    display: none;
+  }
+  .auth-story {
+    padding: 30px;
+  }
+  .foosball-auth {
+    height: 245px;
+    margin-left: -20px;
+    margin-right: -20px;
+  }
+  .brand-mark {
+    width: 48px;
+    height: 48px;
+  }
+  .brand strong {
+    font-size: 15px;
+  }
+}
+@media (max-width: 920px) and (min-width: 701px) {
+  .hero-card {
+    min-height: 385px;
+  }
+  .hero-copy {
+    width: 83%;
+  }
+  .hero-copy h2 {
+    font-size: 27px;
+    max-width: 220px;
+  }
+  .hero-copy p {
+    font-size: 10px;
+    max-width: 180px;
+  }
+  .foosball-home {
+    width: 72%;
+    height: 57%;
+    right: -28px;
+    bottom: 34px;
+    opacity: 0.75;
+  }
+  .hero-copy .hero-link {
+    margin-top: 23px;
+    position: relative;
+    z-index: 4;
+  }
+  .hero-club-tag {
+    bottom: 18px;
+  }
+  .foosball-visual figcaption {
+    display: none;
+  }
+  .foosball-auth {
+    height: 205px;
+    margin-top: 15px;
+  }
+  .auth-story h1 {
+    font-size: 36px;
+  }
+  .auth-story p {
+    font-size: 11px;
+  }
+}
+@media (max-width: 700px) {
+  .mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 9px;
+    letter-spacing: 0.7px;
+  }
+  .mobile-brand .brand-mark {
+    width: 31px;
+    height: 31px;
+  }
+  .auth-story {
+    padding: 23px 25px 20px;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .auth-story .brand-mark {
+    width: 44px;
+    height: 44px;
+  }
+  .auth-story .brand > span:last-child {
+    font-size: 8px;
+  }
+  .auth-story .brand strong {
+    font-size: 14px;
+  }
+  .auth-story .brand > span:last-child > small {
+    font-size: 5px;
+    letter-spacing: 1px;
+    margin-top: 3px;
+  }
+  .auth-story > div {
+    padding-top: 29px;
+    margin: 0;
+  }
+  .auth-story h1 {
+    font-size: 38px;
+    line-height: 1.06;
+    letter-spacing: -1.6px;
+    max-width: 320px;
+  }
+  .auth-story h1 br:first-child {
+    display: inline;
+  }
+  .auth-story p {
+    font-size: 10px;
+    margin-top: 17px;
+    max-width: 215px;
+  }
+  .auth-story p br {
+    display: none;
+  }
+  .auth-story .eyebrow {
+    font-size: 7px;
+    letter-spacing: 1.2px;
+  }
+  .foosball-auth {
+    display: block;
+    position: relative;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    height: 190px;
+    margin: 0 0 -10px;
+    opacity: 1;
+  }
+  .foosball-auth .visual-orbit,
+  .foosball-auth figcaption {
+    display: none;
+  }
+  .auth-story .story-footer {
+    display: block;
+    font-size: 5px;
+    letter-spacing: 1px;
+    margin-top: 16px;
+    max-width: none;
+  }
+  .auth-story > div {
+    padding-bottom: 0;
+  }
+  .auth-story p {
+    position: relative;
+    z-index: 3;
+  }
+  .auth-story h1,
+  .auth-story .eyebrow {
+    position: relative;
+    z-index: 3;
+  }
+  .hero-card {
+    min-height: 450px;
+    border-radius: 15px;
+    overflow: hidden;
+  }
+  .hero-copy {
+    width: 100%;
+    padding: 25px 23px;
+    position: relative;
+    z-index: 3;
+  }
+  .hero-copy h2 {
+    font-size: 33px;
+    letter-spacing: -1.25px;
+    max-width: 295px;
+    line-height: 1.07;
+    margin-top: 25px;
+  }
+  .hero-copy p {
+    font-size: 10px;
+    line-height: 1.8;
+    margin-top: 15px;
+    max-width: 260px;
+  }
+  .hero-copy p br {
+    display: none;
+  }
+  .hero-copy .hero-link {
+    margin-top: 18px;
+    font-size: 10px;
+    padding: 8px 11px;
+  }
+  .hero-club-tag {
+    left: 23px;
+    bottom: 20px;
+    z-index: 3;
+    max-width: 90px;
+    gap: 6px;
+  }
+  .hero-club-tag img {
+    width: 26px;
+    height: 26px;
+  }
+  .hero-club-tag span {
+    font-size: 4px;
+    letter-spacing: 0.5px;
+  }
+  .foosball-home {
+    width: 100%;
+    height: 230px;
+    right: 0;
+    bottom: 15px;
+    opacity: 1;
+  }
+  .foosball-home figcaption {
+    display: none;
+  }
+  .foosball-home .table-halo {
+    inset: 5% 8%;
+    background: radial-gradient(ellipse, #1da09926, transparent 70%);
+  }
+  .foosball-home .visual-orbit {
+    opacity: 0.7;
+  }
+  .live-pill {
+    font-size: 6px;
+    letter-spacing: 1px;
+  }
+  .home-heading .eyebrow {
+    font-size: 6px;
+    letter-spacing: 1px;
+  }
+  .home-heading h1 {
+    font-size: 29px;
+  }
+  .hero-grid {
+    gap: 15px;
+  }
+  .sidebar .brand-mark {
+    width: 50px;
+    height: 50px;
+  }
+  .sidebar .brand strong {
+    font-size: 16px;
+  }
+  .sidebar .brand > span:last-child > small {
+    font-size: 5.5px;
+  }
+}
+@media (max-width: 360px) {
+  .mobile-brand {
+    gap: 5px;
+    font-size: 8px;
+  }
+  .mobile-brand .brand-mark {
+    width: 27px;
+    height: 27px;
+  }
+  .topbar-left {
+    gap: 4px;
+  }
+  .topbar-right {
+    gap: 2px;
+  }
+  .hero-copy h2 {
+    font-size: 30px;
+  }
+  .hero-card {
+    min-height: 444px;
+  }
+  .foosball-home {
+    right: 0;
+    height: 210px;
+    bottom: 20px;
+  }
+  .auth-story h1 {
+    font-size: 34px;
+  }
+  .foosball-auth {
+    width: 100%;
+    right: auto;
+    bottom: auto;
+    height: 175px;
+  }
+}

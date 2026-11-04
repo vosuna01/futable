@@ -1,0 +1,12 @@
+{
+  "verifiedAt": "2026-10-31T13:42:54.098Z",
+  "auth": true,
+  "onboarding": true,
+  "rls": true,
+  "concurrency": true,
+  "realtime": true,
+  "recovery": true,
+  "correction": true,
+  "void": true,
+  "isolatedLeague": "615e2eaa-ba8d-425a-987d-8dda7f875d1f"
+}

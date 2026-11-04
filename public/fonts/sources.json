@@ -1,0 +1,29 @@
+{
+  "stylesheet": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400..600&family=Mulish:wght@300..800&display=swap",
+  "files": [
+    {
+      "family": "JetBrains Mono",
+      "subset": "latin-ext",
+      "url": "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx7cwhsk.woff2",
+      "bytes": 11624
+    },
+    {
+      "family": "JetBrains Mono",
+      "subset": "latin",
+      "url": "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwg.woff2",
+      "bytes": 31432
+    },
+    {
+      "family": "Mulish",
+      "subset": "latin-ext",
+      "url": "https://fonts.gstatic.com/s/mulish/v18/1Ptvg83HX_SGhgqk0QotcqA.woff2",
+      "bytes": 26820
+    },
+    {
+      "family": "Mulish",
+      "subset": "latin",
+      "url": "https://fonts.gstatic.com/s/mulish/v18/1Ptvg83HX_SGhgqk3wot.woff2",
+      "bytes": 29968
+    }
+  ]
+}

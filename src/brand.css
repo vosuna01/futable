@@ -1,0 +1,805 @@
+/* ABLE visual reference: colors and typography only. */
+.rank-number.medal-0 {
+  color: var(--brand-primary-ink);
+}
+:root {
+  --brand-primary: #1da099;
+  --brand-primary-ink: #127b76;
+  --brand-green: #b0ca62;
+  --brand-dark: #21193c;
+  --brand-body: #374151;
+  --font-mono: "JetBrains Mono", Consolas, monospace;
+  color: var(--brand-body);
+  background: #fff;
+}
+h1,
+h2,
+h3,
+.brand strong {
+  color: var(--brand-dark);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.eyebrow,
+.chip,
+.sidebar-caption,
+.season-info,
+.live-pill,
+.leader-label,
+.card-kicker,
+.ranking-table th,
+.provisional-label > span,
+.stats-strip > div > span,
+.match-meta,
+.result-team small,
+.player-slot small,
+.player-card > div small,
+.content-footer,
+.story-footer,
+.pitch-caption,
+.next-match-card > span,
+.divider > span {
+  font-family: var(--font-mono);
+}
+.stats-strip strong,
+.leader-stats strong,
+.adjusted,
+.inline-raw,
+.rank-number,
+.streak,
+.result-team > strong,
+.specialist > strong,
+.position-card > strong,
+.score-entry input,
+.player-card > div strong,
+.help-formula {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.06em;
+}
+.primary {
+  background: var(--brand-primary);
+  color: var(--brand-dark);
+  font-weight: 800;
+  box-shadow: 0 4px 14px #1da09918;
+}
+.primary:hover {
+  background: #21aaa2;
+}
+.secondary {
+  color: var(--brand-dark);
+  background: #f8fafc;
+  border-color: var(--line);
+}
+.secondary:hover {
+  background: #edf5f4;
+}
+.text-button,
+.hero-link,
+.gold,
+.gold-chip {
+  color: var(--brand-primary-ink);
+}
+.icon-button {
+  color: #6b7280;
+}
+.icon-button:hover {
+  background: #21193c08;
+  color: var(--brand-dark);
+}
+.panel {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  box-shadow: 0 3px 12px #21193c03;
+}
+.chip {
+  color: #6b7280;
+  border-color: #e2e8f0;
+}
+.gold-chip {
+  background: #1da0990c;
+  color: var(--brand-primary-ink);
+  border-color: #1da09935;
+}
+.green {
+  background: #b0ca6226;
+  border-color: #b0ca6280;
+  color: #52702b;
+}
+.brand-mark {
+  color: var(--brand-primary);
+}
+.avatar,
+.avatar-1,
+.avatar-2,
+.avatar-3,
+.avatar-4,
+.avatar-5 {
+  color: var(--brand-dark);
+  background: #1da09914;
+  border-color: #1da09925;
+}
+.avatar-1,
+.avatar-4 {
+  background: #b0ca6229;
+  border-color: #b0ca6255;
+}
+.avatar-2,
+.avatar-5 {
+  background: #21193c0a;
+  border-color: #21193c16;
+}
+.avatar.large {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 5px #1da0990b;
+}
+.sidebar {
+  background: var(--brand-dark);
+  border-right-color: #21193c;
+}
+.sidebar .brand > span:last-child {
+  color: #c2bbd7;
+}
+.sidebar .brand strong {
+  color: #fff;
+}
+.sidebar-caption {
+  color: #aaa1bf;
+}
+.sidebar nav > button {
+  color: #cec8de;
+}
+.sidebar nav > button:hover {
+  background: #ffffff0a;
+  color: #fff;
+}
+.sidebar nav > button.active {
+  color: var(--brand-green);
+  border-color: #b0ca6229;
+  background: #b0ca6210;
+}
+.sidebar nav i {
+  background: var(--brand-green);
+}
+.nav-separator,
+.account {
+  border-color: #ffffff17;
+  background: transparent;
+}
+.league-seal {
+  color: #b2a9c8;
+}
+.league-seal > svg {
+  color: var(--brand-green);
+}
+.league-seal strong {
+  color: #dfd9ec;
+}
+.sidebar-bottom > .text-button {
+  color: #b2a9c8;
+}
+.account strong {
+  color: #fff;
+}
+.account small,
+.account > svg {
+  color: #b2a9c8;
+}
+.account .avatar {
+  background: #b0ca6226;
+  color: #ddebbe;
+  border-color: #b0ca6233;
+}
+.topbar {
+  background: #ffffffed;
+  border-color: #e2e8f0;
+}
+.topbar-crumb {
+  color: #6b7280;
+}
+.topbar-crumb strong,
+.mobile-brand {
+  color: var(--brand-dark);
+}
+.connection {
+  color: #52702b;
+}
+.connection i,
+.season-dot {
+  background: var(--brand-primary);
+  box-shadow: 0 0 0 3px #1da0990a;
+}
+.season-selector select {
+  color: var(--brand-dark);
+  font-weight: 700;
+}
+select option,
+.season-selector select option {
+  background: #fff;
+  color: var(--brand-dark);
+}
+.demo-banner {
+  background: #b0ca6214;
+  border-color: #b0ca6255;
+  color: #52702b;
+}
+.demo-banner button {
+  color: var(--brand-primary-ink);
+}
+.demo-banner i {
+  background: var(--brand-primary);
+}
+.home-heading h1 span {
+  color: var(--brand-primary-ink);
+}
+.home-heading p,
+.page-intro p {
+  color: #6b7280;
+}
+.hero-card {
+  background:
+    radial-gradient(ellipse at 80% 35%, #1da09933, transparent 70%), #21193c;
+  border-color: #21193c;
+}
+.hero-copy h2 {
+  color: #fff;
+}
+.hero-copy em {
+  color: var(--brand-green);
+}
+.hero-copy p {
+  color: #cbc4dd;
+}
+.live-pill {
+  color: #dbefc2;
+}
+.live-pill i {
+  background: var(--brand-green);
+}
+.hero-link {
+  color: var(--brand-green);
+}
+.hero-number {
+  color: #d1c9e83d;
+}
+.pitch-art {
+  background: repeating-linear-gradient(
+    90deg,
+    #1da09933 0,
+    #1da09933 43px,
+    #b0ca6216 43px,
+    #b0ca6216 86px
+  );
+  border-color: #1da09942;
+  box-shadow:
+    0 15px 0 #100b2588,
+    0 20px 60px #0003;
+}
+.pitch-art:after {
+  background: linear-gradient(90deg, #21193cee, transparent 32%);
+}
+.pitch-lines,
+.pitch-circle,
+.pitch-half,
+.pitch-area {
+  border-color: #b0ca6266;
+}
+.pitch-caption {
+  color: #e7e1f573;
+}
+.leader-card {
+  background: linear-gradient(145deg, #1da0990a, #f8fafc 65%);
+  border-color: #1da09935;
+}
+.card-kicker,
+.card-kicker .eyebrow {
+  color: var(--brand-primary-ink);
+}
+.leader-avatar .avatar {
+  background: #b0ca6233;
+  border-color: #b0ca62;
+  box-shadow: 0 0 0 5px #b0ca621b;
+  color: var(--brand-dark);
+}
+.leader-avatar > span:last-child {
+  background: var(--brand-green);
+  color: var(--brand-dark);
+  font-family: var(--font-mono);
+}
+.leader-label {
+  color: #52702b;
+}
+.leader-stats strong {
+  color: var(--brand-primary-ink);
+}
+.leader-stats > div:nth-child(2) strong {
+  color: var(--brand-dark);
+}
+.leader-stats > div + div,
+.leader-profile {
+  border-color: var(--line);
+}
+.leader-stats strong span,
+.leader-stats small,
+.leader-profile {
+  color: #6b7280;
+}
+.stats-strip {
+  background: #f8fafc;
+  border-color: var(--line);
+}
+.stats-strip strong {
+  color: var(--brand-dark);
+}
+.stats-strip > div + div {
+  border-color: var(--line);
+}
+.stats-strip > div > span,
+.stats-strip small {
+  color: #6b7280;
+}
+.ranking-table th {
+  background: #f1f5f9;
+  color: #6b7280;
+}
+.ranking-table td {
+  border-color: #e2e8f0;
+}
+.ranking-table .leader-row {
+  background: linear-gradient(90deg, #1da0990c, #1da09902);
+}
+.ranking-table .leader-row td:first-child {
+  box-shadow: inset 2px 0 var(--brand-primary);
+}
+.player-name {
+  color: var(--brand-dark);
+  font-weight: 700;
+}
+.player-name:hover {
+  color: var(--brand-primary-ink);
+}
+.player-name small,
+.leader-row .adjusted,
+.medal-0 {
+  color: var(--brand-primary-ink);
+}
+.rank-number,
+.medal-1,
+.medal-2 {
+  color: #6b7280;
+}
+.adjusted {
+  color: var(--brand-dark);
+}
+.mini-bar {
+  background: #e2e8f0;
+}
+.mini-bar i {
+  background: #b0ca62;
+}
+.leader-row .mini-bar i {
+  background: var(--brand-primary);
+}
+.ranking-caption {
+  color: #6b7280;
+}
+.match-meta > span:last-child {
+  color: var(--brand-primary-ink);
+}
+.result-team span {
+  color: var(--brand-dark);
+}
+.result-team small {
+  color: #6b7280;
+  border-color: #e2e8f0;
+}
+.result-team > strong {
+  color: #6b7280;
+}
+.result-team > strong.winning-score {
+  color: #2563a6;
+}
+.result-team.red > strong.winning-score {
+  color: #b83e45;
+}
+.latest-result .leader-profile {
+  background: #f1f5f9;
+}
+.next-match-card {
+  border-color: #1da09955;
+  background: #1da09904;
+}
+.next-match-card > span {
+  color: var(--brand-primary-ink);
+}
+.next-match-card > strong {
+  color: var(--brand-dark);
+}
+.next-match-card > button {
+  color: var(--brand-primary-ink);
+  border-color: #1da09935;
+}
+.specialist-icon,
+.specialist:nth-child(2) .specialist-icon {
+  background: #1da0990c;
+  color: var(--brand-primary-ink);
+}
+.specialist:nth-child(3) .specialist-icon {
+  background: #b0ca6233;
+  color: #52702b;
+}
+.specialist > strong {
+  color: var(--brand-primary-ink);
+}
+.specialist p,
+.content-footer {
+  color: #6b7280;
+}
+.content-footer {
+  border-color: var(--line);
+}
+.bottom-nav {
+  background: #ffffffed;
+  border-color: var(--line);
+}
+.bottom-nav > button {
+  color: #6b7280;
+}
+.bottom-nav > button.active {
+  color: var(--brand-primary-ink);
+}
+.bottom-nav > .mobile-add {
+  background: var(--brand-primary);
+  color: var(--brand-dark);
+  box-shadow:
+    0 0 0 7px #fff,
+    0 7px 20px #21193c12;
+}
+.tabs {
+  border-color: var(--line);
+}
+.tabs button {
+  color: #6b7280;
+  font-weight: 700;
+}
+.tabs button[aria-selected="true"] {
+  color: var(--brand-primary-ink);
+  border-color: var(--brand-primary);
+}
+.search,
+.sort select,
+.date-filter input {
+  background: #fff;
+  border-color: var(--line);
+  color: #6b7280;
+}
+.search input,
+.search select,
+.sort select,
+.date-filter input {
+  color: var(--brand-dark);
+}
+.search input::placeholder {
+  color: #6b7280;
+}
+.provisional-label {
+  background: #f1f5f9;
+  border-color: var(--line);
+}
+.provisional-label > span {
+  color: var(--brand-dark);
+}
+.provisional-label small,
+.inline-raw,
+.streak {
+  color: #6b7280;
+}
+.streak.hot {
+  color: var(--brand-primary-ink);
+}
+.info-note {
+  background: #1da09908;
+  border-color: #1da09925;
+  color: #374151;
+}
+.info-note > svg {
+  color: var(--brand-primary-ink);
+}
+.award > svg,
+.position-card > svg,
+.position-card:nth-child(2) > svg {
+  color: var(--brand-primary-ink);
+}
+.award p {
+  color: #374151;
+}
+.pair-row,
+.metric-row,
+.match-footer,
+.admin-row,
+.audit-row,
+.player-card > div {
+  border-color: var(--line);
+}
+.player-card > div strong:first-child {
+  color: var(--brand-primary-ink);
+}
+.player-card:hover {
+  border-color: var(--brand-primary);
+}
+.position-card > strong {
+  color: var(--brand-primary-ink);
+}
+.position-card > p,
+.profile-heading p {
+  color: #374151;
+}
+.audit-row pre {
+  background: #f1f5f9;
+  color: var(--brand-dark);
+}
+.overlay {
+  background: #21193c88;
+}
+.modal {
+  background: #fff;
+  border-color: #e2e8f0;
+  box-shadow: 0 30px 100px #21193c26;
+}
+.modal h2,
+.modal h3 {
+  color: var(--brand-dark);
+}
+.modal p,
+.modal > .muted {
+  color: #6b7280;
+}
+.team-picker {
+  background: #4da5ff06;
+  border-color: #4da5ff35;
+}
+.team-picker.red {
+  background: #ff666606;
+  border-color: #ff666635;
+}
+.team-picker h3 {
+  color: #2563a6;
+}
+.team-picker.red h3 {
+  color: #b83e45;
+}
+.player-slot {
+  color: #6b7280;
+}
+.player-slot.selected {
+  background: #fff;
+  border-color: #1da09970;
+}
+.player-slot small {
+  color: #6b7280;
+}
+.player-options > button {
+  color: var(--brand-dark);
+}
+.player-options > button:hover {
+  background: #1da0990a;
+}
+.score-entry input {
+  background: #fff;
+  color: #2563a6;
+  border-color: #4da5ff55;
+}
+.score-entry label:last-child input {
+  background: #fff;
+  color: #b83e45;
+  border-color: #ff666655;
+}
+.score-entry label {
+  color: #6b7280;
+}
+.score-entry label:first-child {
+  color: #2563a6;
+}
+.score-entry label:last-child {
+  color: #b83e45;
+}
+.rule-note {
+  color: #6b7280 !important;
+}
+.confirmation {
+  background: #b0ca621f;
+  border-color: #b0ca6280;
+  color: #405a22 !important;
+}
+.error,
+.modal .error {
+  background: #fff1f2;
+  border-color: #e8b4bc;
+  color: #a1263a !important;
+}
+.field {
+  color: #374151;
+  font-weight: 700;
+}
+.field input,
+.field select {
+  background: #fff;
+  border-color: #cbd5e1;
+  color: var(--brand-dark);
+  font-weight: 500;
+}
+.checkbox {
+  color: #374151;
+}
+.checkbox input {
+  accent-color: var(--brand-primary);
+}
+.toast {
+  background: #f4f8eb;
+  border-color: #b0ca62;
+  color: var(--brand-dark);
+  box-shadow: 0 15px 50px #21193c15;
+}
+.empty,
+.empty p {
+  color: #6b7280;
+}
+.empty > svg {
+  color: var(--brand-primary);
+}
+.empty h3 {
+  color: var(--brand-dark);
+}
+.auth-story {
+  background:
+    radial-gradient(ellipse at 100% 80%, #1da09930, transparent 65%),
+    var(--brand-dark);
+  border-color: #21193c;
+}
+.auth-story .brand > span:last-child {
+  color: #c2bbd7;
+}
+.auth-story .brand strong,
+.auth-story h1 {
+  color: #fff;
+}
+.auth-story .eyebrow {
+  color: var(--brand-green);
+}
+.auth-story h1 em {
+  color: var(--brand-green);
+}
+.auth-story p {
+  color: #cec8de;
+}
+.story-footer {
+  color: #b2a9c8;
+}
+.auth-pitch {
+  border-color: #b0ca6266;
+  background: repeating-linear-gradient(
+    90deg,
+    #1da09916 0,
+    #1da09916 43px,
+    transparent 43px,
+    transparent 86px
+  );
+  box-shadow: 0 9px 0 #140f28;
+}
+.auth-pitch:before,
+.auth-pitch:after,
+.auth-pitch > div,
+.auth-pitch > div:before,
+.auth-pitch > div:after {
+  border-color: #b0ca6266;
+}
+.auth-pitch > span,
+.auth-pitch > small {
+  color: #d1e2a2;
+}
+.auth-switch {
+  background: #f1f5f9;
+  border-color: var(--line);
+}
+.auth-switch button {
+  color: #6b7280;
+}
+.auth-switch button[aria-pressed="true"] {
+  color: var(--brand-primary-ink);
+  background: #fff;
+  box-shadow: 0 1px 4px #21193c09;
+}
+.setup-notice {
+  background: #1da09908;
+  border-color: #1da09925;
+}
+.setup-notice > svg {
+  color: var(--brand-primary-ink);
+}
+.setup-notice strong {
+  color: var(--brand-dark);
+}
+.setup-notice p,
+.auth-card > footer,
+.auth-links .text-button {
+  color: #6b7280;
+}
+.divider:before {
+  background: #e2e8f0;
+}
+.divider > span {
+  background: #fff;
+  color: #6b7280;
+}
+.auth-card > footer {
+  border-color: var(--line);
+}
+@media (max-width: 700px) {
+  .stats-strip > div:nth-child(2n),
+  .stats-strip > div:nth-child(n + 3) {
+    border-color: var(--line);
+  }
+  .sidebar-backdrop {
+    background: #21193c66;
+  }
+}
+
+.goal-presets {
+  border: 0;
+  padding: 0;
+  margin: 20px 0 0;
+  min-width: 0;
+}
+.goal-presets legend {
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.profile-trigger {
+  padding: 3px;
+  border: 1px solid #dbe6e8;
+  border-radius: 50%;
+  background: #fff;
+  display: inline-flex;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.profile-trigger:focus-visible {
+  outline: 3px solid #a1bc52;
+  outline-offset: 3px;
+}
+.my-profile .field {
+  margin-top: 20px;
+}
+.my-profile input[type="file"] {
+  width: 100%;
+  font-size: 13px;
+  padding: 12px;
+}
+.profile-photo-preview {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0;
+}
+.profile-photo-preview .avatar {
+  width: 104px;
+  height: 104px;
+  font-size: 32px;
+}
+.my-profile .rule-note svg {
+  vertical-align: middle;
+}
+.profile-logout {
+  margin: 20px auto 0;
+}
+.account strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+  display: block;
+}
+.goal-presets button[aria-pressed="true"] {
+  background: #e8f2cf;
+  border-color: #a1bc52;
+  color: #243329;
+}

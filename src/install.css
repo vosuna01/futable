@@ -1,0 +1,189 @@
+.install-help-button {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  text-align: left;
+  padding: 17px 16px;
+  border: 1px solid #1da09935;
+  border-radius: 10px;
+  background: #1da09906;
+  color: #127b76;
+  margin-top: 23px;
+  transition: background 0.15s;
+}
+.install-help-button:hover {
+  background: #1da0990d;
+}
+.install-help-button > span {
+  flex: 1;
+  color: #21193c;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.5;
+}
+.install-help-button small {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: #6b7280;
+  margin-top: 3px;
+}
+.install-help-button > svg {
+  flex-shrink: 0;
+}
+.install-help-compact {
+  color: #127b76;
+  background: #1da09908;
+}
+.install-app-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 17px;
+  margin: 4px 0 18px;
+}
+.install-app-preview > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.install-app-preview strong {
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+  color: #21193c;
+}
+.install-app-preview span {
+  font-size: 11px;
+  color: #6b7280;
+}
+.install-platforms {
+  display: flex;
+  gap: 5px;
+  border: 1px solid #e2e8f0;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 4px;
+  margin: 22px 0;
+}
+.install-platforms button {
+  flex: 1;
+  padding: 11px 10px;
+  border-radius: 6px;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+}
+.install-platforms button[aria-selected="true"] {
+  color: #127b76;
+  background: #fff;
+  box-shadow: 0 1px 5px #21193c0a;
+}
+.install-steps > h3 {
+  font-size: 16px;
+  margin-bottom: 18px;
+}
+.install-steps ol {
+  counter-reset: install;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.install-steps li {
+  counter-increment: install;
+  position: relative;
+  padding: 0 0 22px 37px;
+  line-height: 1.7;
+}
+.install-steps li:before {
+  content: counter(install);
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #1da09912;
+  color: #127b76;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.install-steps li strong {
+  font-size: 12px;
+  color: #21193c;
+  font-weight: 750;
+  display: block;
+}
+.install-steps li strong svg {
+  display: inline;
+  vertical-align: middle;
+}
+.install-steps li span {
+  display: block;
+  color: #6b7280;
+  font-size: 11px;
+  margin-top: 5px;
+}
+.install-troubleshooting {
+  padding: 15px 17px;
+  background: #b0ca6214;
+  border: 1px solid #b0ca6244;
+  border-radius: 9px;
+  margin: 4px 0 20px;
+}
+.install-troubleshooting h3 {
+  font-size: 12px;
+  margin: 0;
+}
+.install-troubleshooting p {
+  font-size: 11px;
+  margin: 8px 0 0;
+  line-height: 1.8;
+}
+.brand strong {
+  letter-spacing: -0.6px;
+  font-size: 20px;
+}
+@media (max-width: 700px) {
+  .topbar-right {
+    gap: 5px;
+  }
+  .topbar-right .install-help-compact {
+    padding: 6px;
+  }
+  .topbar-right .connection {
+    font-size: 7px;
+  }
+  .install-app-preview strong {
+    font-size: 21px;
+  }
+  .install-help-button {
+    padding: 15px;
+  }
+  .install-platforms button {
+    font-size: 11px;
+  }
+  .auth-story .brand strong,
+  .sidebar .brand strong {
+    font-size: 19px;
+    letter-spacing: -0.6px;
+  }
+}
+@media (max-width: 360px) {
+  .connection {
+    max-width: 67px;
+    overflow: hidden;
+  }
+  .mobile-brand {
+    font-size: 8px;
+  }
+  .topbar-right {
+    gap: 2px;
+  }
+}
