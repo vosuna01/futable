@@ -43,7 +43,10 @@ import { InstallHelp } from "./components/InstallHelp";
 import { MyProfile } from "./components/MyProfile";
 import { KingCourt } from "./components/KingCourt";
 import { useKingSession } from "./data/useKingSession";
+import { LiveMatch } from "./components/LiveMatch";
+import { useLiveSession } from "./data/useLiveSession";
 import "./king.css";
+import "./live.css";
 const nav = [
   ["home", "Inicio", Home],
   ["rankings", "Clasificaciones", BarChart3],
@@ -55,6 +58,14 @@ export default function App() {
   const { data, demo, online, synced, live } = league;
   const kingUser = demo ? "demo" : league.session?.user.id || "";
   const king = useKingSession({
+    data,
+    demo,
+    user: kingUser,
+    refreshLeague: league.refresh,
+    demoMatch: league.demoMatch,
+    demoVoid: league.demoVoid,
+  });
+  const liveMatch = useLiveSession({
     data,
     demo,
     user: kingUser,
@@ -321,7 +332,9 @@ export default function App() {
                   ? "Administración"
                   : page === "king"
                     ? "Rey de la pista"
-                    : nav.find((n) => n[0] === page)?.[1]}
+                    : page === "live"
+                      ? "Partida en directo"
+                      : nav.find((n) => n[0] === page)?.[1]}
               </strong>
             </span>
             <span className="mobile-brand">
@@ -458,10 +471,36 @@ export default function App() {
               <ArrowRight size={18} />
             </button>
           )}
+          {(active || liveMatch.session) && page !== "live" && (
+            <button
+              className={`live-entry ${page === "live" ? "selected" : ""}`}
+              onClick={() => navigate("live")}
+            >
+              <Swords size={20} />
+              <span>
+                <strong>Partida en directo</strong>
+                <small>
+                  {liveMatch.session
+                    ? `Sesión abierta · ${liveMatch.session.state.queue.length} en la cola`
+                    : "Fíchate y la cola decide quién entra."}
+                </small>
+              </span>
+              <ArrowRight size={18} />
+            </button>
+          )}
           {page === "king" && (
             <KingCourt
               king={king}
               data={data}
+              user={kingUser}
+              online={online}
+            />
+          )}
+          {page === "live" && (
+            <LiveMatch
+              live={liveMatch}
+              data={data}
+              me={ownPlayer}
               user={kingUser}
               online={online}
             />

@@ -1,0 +1,585 @@
+.live-entry {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 18px 22px;
+  margin: 0 0 26px;
+  border: 1px solid #d6d2ea;
+  border-radius: 18px;
+  background: linear-gradient(115deg, #efecfa, #f3f8ff);
+  color: #2f2555;
+  text-align: left;
+  cursor: pointer;
+}
+.live-entry span {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+}
+.live-entry strong {
+  font-size: 16px;
+}
+.live-entry small {
+  font-size: 12px;
+  color: #6a638a;
+}
+.live-entry.selected {
+  border-color: #5b47a8;
+}
+.live-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.live-heading h1 {
+  display: flex;
+  align-items: center;
+  font-size: clamp(28px, 4vw, 42px);
+  margin: 10px 0;
+}
+.live-heading h1 > svg {
+  color: #5b47a8;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+/* The accent full stop hangs off the title, so it takes no flex gap. */
+.live-heading h1 > span {
+  color: #5b47a8;
+}
+.live-heading p {
+  color: #64766f;
+}
+.live-notice {
+  background: #eef9f4;
+  border: 1px solid #c6e8df;
+  color: #1d5f54;
+  border-radius: 13px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  font-size: 13px;
+}
+.live-empty,
+.live-waiting {
+  text-align: center;
+  max-width: 650px;
+  margin: 20px auto;
+  padding: 42px !important;
+}
+.live-empty > svg,
+.live-waiting > svg {
+  color: #5b47a8;
+  margin: 0 auto 18px;
+}
+.live-empty p,
+.live-waiting p {
+  max-width: 440px;
+  margin: 14px auto 24px;
+  line-height: 1.6;
+}
+.live-empty button,
+.live-waiting button {
+  margin: auto;
+}
+
+.live-teams {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.live-team {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.live-team.blue {
+  border: 2px solid #00376d;
+  background: linear-gradient(150deg, #004d98 0 52%, #a50044 52% 100%);
+}
+.live-team.blue h2 {
+  color: #ffd84d;
+}
+.live-team.blue .live-chip,
+.live-team.blue .live-goal,
+.live-team.blue .live-goal-undo {
+  background: #fff;
+  border-color: transparent;
+}
+.live-team.red {
+  border: 2px solid #e6c766;
+  background: #fffdf4;
+}
+.live-team.red .live-chip {
+  background: #fff;
+  border-color: #ecd9a4;
+}
+.live-team.red h2 {
+  color: #000;
+}
+.live-team h2 {
+  font-size: 19px;
+  margin: 0;
+  text-align: center;
+}
+/* El marcador vive dentro de la tarjeta, para verlo junto a los botones. */
+.live-score {
+  display: block;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(44px, 11vw, 62px);
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+  margin-bottom: 2px;
+}
+.live-team.red .live-score {
+  color: #000;
+}
+.live-team.blue .live-score {
+  color: #ffd84d;
+}
+.live-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 13px;
+  background: #ffffffc4;
+  border: 1px solid var(--line);
+}
+.live-chip > span {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.live-chip strong {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.live-chip small {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.live-win {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 54px;
+  border: 0;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+}
+.live-win.blue {
+  background: #fff;
+  color: #a50044;
+}
+.live-win.red {
+  background: #e3b93f;
+  color: #2b2108;
+}
+.live-win:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.live-controls {
+  display: grid;
+  gap: 13px;
+  justify-items: start;
+  margin: 20px 0;
+}
+.live-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.live-sort {
+  margin: 20px 0;
+  text-align: center;
+}
+.live-sort h2 {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+.live-sort > p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.live-sort-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+/* .panel no trae relleno: cada uso pone el suyo. */
+.live-queue {
+  margin-top: 22px;
+  padding: 20px 22px;
+}
+.live-queue-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 14px;
+}
+.live-queue-heading h2 {
+  font-size: 18px;
+}
+.live-queue-heading span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.live-queue ol {
+  list-style: none;
+  display: grid;
+  gap: 9px;
+  margin: 0 0 16px;
+  padding: 0;
+}
+.live-queue li {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.live-queue li .live-chip {
+  flex: 1;
+}
+.live-turn {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #efecfa;
+  color: #4b3f7d;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.live-picker {
+  list-style: none;
+  display: grid;
+  gap: 7px;
+  margin: 14px 0 0;
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.live-picker button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  font-size: 14px;
+  cursor: pointer;
+}
+.live-lineup {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+}
+.live-lineup label {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.live-close {
+  margin: 24px auto 0;
+  display: block;
+}
+/* ---- Banner de fichaje ---- */
+.live-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+.live-status strong {
+  font-size: 15px;
+}
+.live-status span {
+  margin-left: auto;
+  text-align: right;
+  font-size: 12px;
+  opacity: 0.85;
+}
+.live-status.in {
+  background: #e7f7ef;
+  border: 1px solid #9ad6ba;
+  color: #15604a;
+}
+.live-status.out {
+  background: #f4f1fb;
+  border: 1px solid #d6d2ea;
+  color: #4b3f7d;
+}
+
+/* ---- Pronóstico ---- */
+.live-bet {
+  border: 1px solid #0a7d5a;
+  border-radius: 18px;
+  background: linear-gradient(165deg, #0d8f66, #086c4c);
+  color: #fff;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+.live-bet-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.live-bet-head strong {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: #ffe05c;
+}
+
+.live-bet-rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.live-bet-row {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 11px 8px;
+  border-radius: 13px;
+  background: #ffffff1f;
+  border: 1px solid transparent;
+}
+.live-bet-row.favourite {
+  border-color: #ffe05c;
+}
+.live-bet-row span {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d6f0e5;
+}
+.live-bet-row b {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 26px;
+  color: #ffe05c;
+  letter-spacing: -0.04em;
+}
+.live-bet-row small {
+  font-size: 10px;
+  color: #b9e6d4;
+}
+
+/* ---- Botones de gol ---- */
+.live-goal-row {
+  display: grid;
+  grid-template-columns: 7fr 3fr;
+  gap: 8px;
+  margin-top: 9px;
+}
+.live-goal,
+.live-goal-undo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 46px;
+  border-radius: 13px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.live-goal.blue {
+  color: #a50044;
+}
+.live-goal.red {
+  border-color: #e4cf9a;
+  color: #8c6a20;
+}
+.live-goal-undo {
+  color: var(--muted);
+}
+.live-goal:disabled,
+.live-goal-undo:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---- Alineación inicial ---- */
+.live-pitch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0 14px;
+}
+.live-side {
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+  border-radius: 18px;
+}
+.live-side h3 {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  margin: 0 0 2px;
+}
+/* Madrid: blanco con ribete dorado. Los huecos van en crema, porque blanco
+   sobre blanco no se distinguía. */
+.live-side.red {
+  background: #fffdf4;
+  border: 2px solid #e6c766;
+}
+.live-side.red .live-slot {
+  background: #fff;
+  border-color: #e6c766;
+}
+.live-side.red h3 {
+  color: #9a7715;
+}
+/* Barça: blaugrana. */
+.live-side.blue {
+  background: linear-gradient(150deg, #004d98 0 52%, #a50044 52% 100%);
+  border: 2px solid #00376d;
+}
+.live-side.blue h3 {
+  color: #ffd84d;
+}
+.live-slot {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 13px;
+  border: 1px solid transparent;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+.live-slot small {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.live-slot strong {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+div.live-slot {
+  cursor: default;
+}
+.live-slot.picked {
+  border-color: #5b47a8;
+  box-shadow: 0 0 0 3px #5b47a833;
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* On a phone the detail has no room beside the headline, so it drops below. */
+@media (max-width: 560px) {
+  .live-status {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+  .live-status span {
+    margin-left: 0;
+    flex-basis: 100%;
+    text-align: left;
+  }
+}
+
+/* Dos columnas también en el móvil: mismo reparto que en PC, más apretado.
+   El nombre se queda con todo el ancho, que es lo que hay que leer. */
+@media (max-width: 560px) {
+  .live-queue {
+    padding: 16px 15px;
+  }
+  .live-teams {
+    gap: 10px;
+  }
+  .live-team {
+    padding: 13px 11px;
+    gap: 8px;
+    border-radius: 17px;
+  }
+  .live-team h2 {
+    font-size: 15px;
+    text-align: center;
+  }
+  .live-team .live-chip {
+    justify-content: center;
+    padding: 8px 7px;
+    gap: 0;
+  }
+  .live-team .live-chip .avatar {
+    display: none;
+  }
+  .live-team .live-chip > span {
+    justify-items: center;
+    text-align: center;
+  }
+  .live-team .live-chip strong {
+    font-size: 13px;
+  }
+  .live-win {
+    min-height: 46px;
+    font-size: 12px;
+    gap: 6px;
+    border-radius: 13px;
+  }
+  .live-win svg {
+    width: 16px;
+    height: 16px;
+  }
+  .live-goal-row {
+    gap: 6px;
+  }
+  .live-goal,
+  .live-goal-undo {
+    min-height: 40px;
+    font-size: 11px;
+    gap: 4px;
+    border-radius: 11px;
+  }
+}

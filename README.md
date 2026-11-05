@@ -58,6 +58,7 @@ Con Chrome instalado se puede evitar descargar Chromium: `PLAYWRIGHT_CHANNEL=chr
 - Perfiles con evolución, posiciones, mejor pareja y rachas; historial filtrable por jugador y fechas.
 - Administración de jugadores/avatares, permisos sobre cuentas registradas, temporadas/reglas, corrección, anulación, exportación JSON y auditoría. Las altas personales nunca reciben permisos de administrador.
 - Realtime más consulta al reconectar, recuperar foco y cada 30 s. La consulta, no el evento, es la fuente de verdad.
+- Partida en directo: cola de jugadores sueltos con fichaje propio o de terceros, arranque por orden de llegada, rotación automática de perdedores y reparto de puestos al entrar. Véase [la guía](docs/EN-DIRECTO.md).
 - PWA con iconos PNG, manifest, service worker y actualización voluntaria. No se precargan ni cachean respuestas de Supabase.
 
 ## Criterios estadísticos
@@ -98,6 +99,7 @@ La aplicación selecciona la primera membresía activa de la cuenta; esta versi�
 
 ## Guías
 
+- [Partida en directo](docs/EN-DIRECTO.md)
 - [Configurar Supabase](docs/SUPABASE.md)
 - [Desplegar en Vercel e instalar la PWA](docs/DESPLIEGUE.md)
 - [Roles y seguridad](docs/SEGURIDAD.md)
