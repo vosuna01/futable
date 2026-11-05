@@ -589,7 +589,7 @@ select option,
   color: #2563a6;
   border-color: #4da5ff55;
 }
-.score-entry label:last-child input {
+.score-entry label.score-red input {
   background: #fff;
   color: #b83e45;
   border-color: #ff666655;
@@ -597,10 +597,10 @@ select option,
 .score-entry label {
   color: #6b7280;
 }
-.score-entry label:first-child {
+.score-entry label.score-blue {
   color: #2563a6;
 }
-.score-entry label:last-child {
+.score-entry label.score-red {
   color: #b83e45;
 }
 .rule-note {

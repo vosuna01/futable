@@ -298,22 +298,7 @@ export function MatchForm({
             </p>
           </fieldset>
           <div className="score-entry">
-            <label>
-              Barça
-              <input
-                type="number"
-                aria-label="Goles Barça"
-                min="0"
-                max={99}
-                value={scores[0]}
-                onChange={(e) => {
-                  setScores([Number(e.target.value), scores[1]]);
-                  mutate();
-                }}
-              />
-            </label>
-            <span>:</span>
-            <label>
+            <label className="score-red">
               Madrid
               <input
                 type="number"
@@ -323,6 +308,21 @@ export function MatchForm({
                 value={scores[1]}
                 onChange={(e) => {
                   setScores([scores[0], Number(e.target.value)]);
+                  mutate();
+                }}
+              />
+            </label>
+            <span>:</span>
+            <label className="score-blue">
+              Barça
+              <input
+                type="number"
+                aria-label="Goles Barça"
+                min="0"
+                max={99}
+                value={scores[0]}
+                onChange={(e) => {
+                  setScores([Number(e.target.value), scores[1]]);
                   mutate();
                 }}
               />

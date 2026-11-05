@@ -1878,10 +1878,10 @@ select option {
   font-size: 10px;
   color: var(--muted);
 }
-.score-entry label:first-child {
+.score-entry label.score-blue {
   color: #2563a6;
 }
-.score-entry label:last-child {
+.score-entry label.score-red {
   color: #b83e45;
 }
 .score-entry input {
@@ -1895,7 +1895,7 @@ select option {
   color: #2563a6;
   font-weight: 600;
 }
-.score-entry label:last-child input {
+.score-entry label.score-red input {
   border-color: var(--line);
   color: #b83e45;
 }

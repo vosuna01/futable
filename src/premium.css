@@ -67,11 +67,11 @@
 .result-team.red > div > .result-club {
   color: #8c7334;
 }
-.score-entry label:last-child input {
+.score-entry label.score-red input {
   color: #76632d;
   border-color: #e1d8b9;
 }
-.score-entry label:last-child {
+.score-entry label.score-red {
   color: #8c7334;
 }
 :root {
