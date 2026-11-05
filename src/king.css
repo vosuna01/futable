@@ -75,6 +75,12 @@
   color: #60726c;
   margin: 0 0 18px;
 }
+.king-session-meta .live-pill {
+  background: #e2f3ed;
+  color: #246357;
+  border: 1px solid #c8e7da;
+  padding: 7px 10px;
+}
 .king-teams {
   display: grid;
   grid-template-columns: 1fr 1fr;

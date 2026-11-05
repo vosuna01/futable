@@ -441,7 +441,7 @@ export default function App() {
                   : "ARCHIVO DE TEMPORADA"}
             </span>
           </div>
-          {(active || king.session) && (
+          {(active || king.session) && page !== "king" && (
             <button
               className={`king-entry ${page === "king" ? "selected" : ""}`}
               onClick={() => navigate("king")}
