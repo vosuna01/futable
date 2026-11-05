@@ -38,6 +38,10 @@ export function MatchForm({
     matchLineup(edit || previous, season, players, !edit),
   );
   const [carried, setCarried] = useState(!edit && selected.some(Boolean));
+  const [withoutScore, setWithoutScore] = useState(
+    Boolean(edit && edit.blue_score === null),
+  );
+  const [winner, setWinner] = useState(edit?.winner || "blue");
   const [active, setActive] = useState(() =>
       Math.max(
         0,
@@ -63,8 +67,9 @@ export function MatchForm({
   const input: MatchInput = {
     operation_id: operation.current,
     season_id: season.id,
-    blue_score: scores[0],
-    red_score: scores[1],
+    blue_score: withoutScore ? null : scores[0],
+    red_score: withoutScore ? null : scores[1],
+    ...(withoutScore ? { winner } : {}),
     participants,
   };
   const mutate = () => {
@@ -237,67 +242,97 @@ export function MatchForm({
             </button>
           ))}
       </div>
-      <fieldset className="goal-presets">
-        <legend>Marcador final</legend>
-        <div className="button-row">
-          {[2, 3, 4, 5, 6].map((goals) => (
-            <button
-              type="button"
-              className="secondary"
-              key={goals}
-              aria-pressed={Math.max(...scores) === goals}
-              onClick={() => {
-                const blueWins = scores[0] >= scores[1];
-                setScores(
-                  blueWins
-                    ? [goals, Math.min(scores[1], goals - 1)]
-                    : [Math.min(scores[0], goals - 1), goals],
-                );
-                mutate();
-              }}
-            >
-              A {goals} goles
-            </button>
-          ))}
-        </div>
-        <p className="rule-note">
-          Elige los goles acordados o escribe otro marcador abajo.
-        </p>
-      </fieldset>
-      <div className="score-entry">
-        <label>
-          Barça
-          <input
-            type="number"
-            aria-label="Goles Barça"
-            min="0"
-            max={99}
-            value={scores[0]}
+      <label className="king-check">
+        <input
+          type="checkbox"
+          checked={withoutScore}
+          onChange={(e) => {
+            setWithoutScore(e.target.checked);
+            mutate();
+          }}
+        />{" "}
+        Guardar solo el ganador
+      </label>
+      {withoutScore ? (
+        <label className="field">
+          Ganador
+          <select
+            aria-label="Ganador"
+            value={winner}
             onChange={(e) => {
-              setScores([Number(e.target.value), scores[1]]);
+              setWinner(e.target.value as "blue" | "red");
               mutate();
             }}
-          />
+          >
+            <option value="blue">Barça</option>
+            <option value="red">Madrid</option>
+          </select>
         </label>
-        <span>:</span>
-        <label>
-          Madrid
-          <input
-            type="number"
-            aria-label="Goles Madrid"
-            min="0"
-            max={99}
-            value={scores[1]}
-            onChange={(e) => {
-              setScores([scores[0], Number(e.target.value)]);
-              mutate();
-            }}
-          />
-        </label>
-      </div>
-      <p className="rule-note">
-        Goles variables · Sin empate · Cada victoria cuenta igual
-      </p>
+      ) : (
+        <>
+          <fieldset className="goal-presets">
+            <legend>Marcador final</legend>
+            <div className="button-row">
+              {[2, 3, 4, 5, 6].map((goals) => (
+                <button
+                  type="button"
+                  className="secondary"
+                  key={goals}
+                  aria-pressed={Math.max(...scores) === goals}
+                  onClick={() => {
+                    const blueWins = scores[0] >= scores[1];
+                    setScores(
+                      blueWins
+                        ? [goals, Math.min(scores[1], goals - 1)]
+                        : [Math.min(scores[0], goals - 1), goals],
+                    );
+                    mutate();
+                  }}
+                >
+                  A {goals} goles
+                </button>
+              ))}
+            </div>
+            <p className="rule-note">
+              Elige los goles acordados o escribe otro marcador abajo.
+            </p>
+          </fieldset>
+          <div className="score-entry">
+            <label>
+              Barça
+              <input
+                type="number"
+                aria-label="Goles Barça"
+                min="0"
+                max={99}
+                value={scores[0]}
+                onChange={(e) => {
+                  setScores([Number(e.target.value), scores[1]]);
+                  mutate();
+                }}
+              />
+            </label>
+            <span>:</span>
+            <label>
+              Madrid
+              <input
+                type="number"
+                aria-label="Goles Madrid"
+                min="0"
+                max={99}
+                value={scores[1]}
+                onChange={(e) => {
+                  setScores([scores[0], Number(e.target.value)]);
+                  mutate();
+                }}
+              />
+            </label>
+          </div>
+          <p className="rule-note">
+            Goles variables · Sin empate · Cada victoria cuenta igual
+          </p>
+        </>
+      )}
       {edit && (
         <label className="field">
           Motivo de la corrección
@@ -316,8 +351,17 @@ export function MatchForm({
           <Check size={20} />
           <span>
             Gana{" "}
-            <strong>{teamNames[scores[0] > scores[1] ? "blue" : "red"]}</strong>{" "}
-            por {Math.max(...scores)}–{Math.min(...scores)}. ¿Todo correcto?
+            <strong>
+              {
+                teamNames[
+                  withoutScore ? winner : scores[0] > scores[1] ? "blue" : "red"
+                ]
+              }
+            </strong>{" "}
+            {withoutScore
+              ? "sin marcador"
+              : `por ${Math.max(...scores)}–${Math.min(...scores)}`}
+            . ¿Todo correcto?
           </span>
         </div>
       )}

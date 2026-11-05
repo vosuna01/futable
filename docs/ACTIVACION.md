@@ -2,6 +2,10 @@
 
 Activada el 31 de octubre de 2026 con Supabase PostgreSQL, Auth y Realtime.
 
+Actualización del 5 de noviembre de 2026: migración 005 aplicada y sesión continua de rey de la pista activada. Cola compartida de parejas, victoria con un toque, marcador opcional real (goles nulos), rotación atómica y deshacer con anulación y restauración de cola. Sin revancha automática. Consulta [la guía de uso](REY-DE-LA-PISTA.md).
+
+Verificación de esta actualización: TypeScript, 64 pruebas de dominio/PostgreSQL y 24 pruebas de navegador en móvil/escritorio. RPC online comprobada en transacción revertida: rotación, idempotencia, victoria sin marcador, deshacer, pausa sin rivales y cierre. Las 58 partidas existentes se conservaron y no quedaron sesiones ni datos de prueba nuevos.
+
 - Proyecto: `foogrwxbycncnifbwlpe` (FutABLE, organización gratuita del propietario).
 - Liga real: `e51ccd56-6708-449a-8d2a-48eb4e4c0bd4`.
 - Temporada inicial: **Temporada 1**, activa, con goles variables (habitualmente 2 o 3).

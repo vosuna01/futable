@@ -214,7 +214,12 @@ export function useLeague() {
           ...input,
           id: edit?.id || crypto.randomUUID(),
           league_id: d.league.id,
-          winner: input.blue_score > input.red_score ? "blue" : "red",
+          winner:
+            input.blue_score !== null && input.red_score !== null
+              ? input.blue_score > input.red_score
+                ? "blue"
+                : "red"
+              : input.winner!,
           played_at: edit?.played_at || now,
           created_at: edit?.created_at || now,
           created_by: "demo",
@@ -254,6 +259,43 @@ export function useLeague() {
     });
     if (error) throw new Error(error.message);
     await refresh();
+  };
+  const demoVoid = (id: string) =>
+    setData((d) =>
+      d
+        ? {
+            ...d,
+            matches: d.matches.map((m) =>
+              m.id === id
+                ? { ...m, status: "void", revision: m.revision + 1 }
+                : m,
+            ),
+          }
+        : d,
+    );
+  const demoMatch = (input: MatchInput, id: string) => {
+    const now = new Date().toISOString();
+    setData((d) =>
+      !d || d.matches.some((m) => m.operation_id === input.operation_id)
+        ? d
+        : {
+            ...d,
+            matches: [
+              {
+                ...input,
+                id,
+                league_id: d.league.id,
+                winner: input.winner!,
+                played_at: now,
+                created_at: now,
+                created_by: "demo",
+                status: "valid",
+                revision: 1,
+              },
+              ...d.matches,
+            ],
+          },
+    );
   };
   const saveProfile = async (name: string, photo: string | null) => {
     if (!navigator.onLine)
@@ -298,5 +340,7 @@ export function useLeague() {
     save,
     admin,
     saveProfile,
+    demoVoid,
+    demoMatch,
   };
 }

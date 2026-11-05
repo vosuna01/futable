@@ -41,11 +41,14 @@ export function Result({
                 ))}
             </div>
             <strong className={match.winner === team ? "winning-score" : ""}>
-              {i === 0 ? match.blue_score : match.red_score}
+              {(i === 0 ? match.blue_score : match.red_score) ?? "—"}
             </strong>
           </div>
         ))}
       </div>
+      {match.blue_score === null && (
+        <p className="rule-note">Victoria registrada sin marcador</p>
+      )}
     </div>
   );
 }

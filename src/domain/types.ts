@@ -34,8 +34,8 @@ export interface Match {
   id: string;
   league_id: string;
   season_id: string;
-  blue_score: number;
-  red_score: number;
+  blue_score: number | null;
+  red_score: number | null;
   winner: Team;
   played_at: string;
   created_at: string;
@@ -48,8 +48,9 @@ export interface Match {
 export interface MatchInput {
   operation_id: string;
   season_id: string;
-  blue_score: number;
-  red_score: number;
+  blue_score: number | null;
+  red_score: number | null;
+  winner?: Team;
   participants: Participant[];
 }
 export interface Membership {

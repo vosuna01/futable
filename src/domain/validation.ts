@@ -33,7 +33,13 @@ export function validateMatch(
       return "Cada equipo necesita una defensa y un delantero.";
   }
   const { blue_score: a, red_score: b } = input;
+  if (a === null && b === null)
+    return input.winner === "blue" || input.winner === "red"
+      ? null
+      : "Indica quién ganó.";
   if (
+    a === null ||
+    b === null ||
     !Number.isInteger(a) ||
     !Number.isInteger(b) ||
     a < 0 ||
