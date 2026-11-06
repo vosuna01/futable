@@ -181,6 +181,9 @@ export function startCourt(state: LiveState, lineup: Lineup): LiveState {
     if (!entry) throw new Error("Los cuatro deben estar fichados en la cola.");
     return state.round - entry.since;
   };
+  picked.forEach(waitOf);
+  if (state.queue.slice(0, 4).some((w) => !picked.includes(w.id)))
+    throw new Error("Deben jugar los cuatro primeros fichados en la cola.");
   const court = {
     blue: {
       defender: {

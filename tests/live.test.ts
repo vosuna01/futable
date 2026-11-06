@@ -69,6 +69,14 @@ describe("Cola de la partida en directo", () => {
 });
 
 describe("Rotación tras cada partida", () => {
+  it("no permite saltarse a uno de los cuatro primeros", () => {
+    expect(() =>
+      startCourt(signedUp(5), {
+        ...lineup,
+        red: { defender: name(3), forward: name(5) },
+      }),
+    ).toThrow(/cuatro primeros/);
+  });
   it("los ganadores no se mueven y los perdedores van al final", () => {
     const next = rotate(opened(6), "blue", 0);
     expect(next.round).toBe(1);

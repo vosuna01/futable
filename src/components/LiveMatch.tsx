@@ -277,6 +277,9 @@ export function LiveMatch({
                       </div>
                     ))}
                   </div>
+                  <p className="rule-note">
+                    Pronóstico de broma. No se apuesta dinero.
+                  </p>
                 </div>
               )}
 
@@ -431,7 +434,8 @@ export function LiveMatch({
       {adding && (
         <Modal title="Apuntar a alguien" onClose={() => setAdding(false)}>
           <p className="rule-note">
-            Entra al final de la cola, por si alguien no lleva el móvil encima.
+            Apunta a quien no lleve el móvil. Quien aún no ha jugado tiene
+            prioridad.
           </p>
           <ul className="live-picker">
             {eligible.map((p) => (

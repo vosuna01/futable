@@ -145,6 +145,10 @@ export function useLiveSession({
     const next: LiveSession = { ...before, revision: before.revision + 1 };
     if (action === "join") next.state = join(before.state, fields.players!);
     if (action === "leave") next.state = leave(before.state, fields.player!);
+    if (action === "join" || action === "leave") {
+      next.last_match = null;
+      next.last_before = null;
+    }
     if (action === "start")
       next.state = startCourt(before.state, fields.lineup!);
     if (action === "assign")

@@ -67,6 +67,7 @@ beforeAll(async () => {
     "004_self_profile",
     "005_king_sessions",
     "006_live_sessions",
+    "007_live_queue_guards",
   ])
     await db.exec(
       await readFile(
@@ -149,6 +150,14 @@ describe.sequential("Partida en directo: cola, rotación y permisos", () => {
       command("start", {
         lineup: {
           blue: { defender: player(1), forward: player(2) },
+          red: { defender: player(3), forward: player(5) },
+        },
+      }),
+    ).rejects.toThrow(/cuatro primeros/);
+    await expect(
+      command("start", {
+        lineup: {
+          blue: { defender: player(1), forward: player(2) },
           red: { defender: player(3), forward: player(6) },
         },
       }),
@@ -173,6 +182,9 @@ describe.sequential("Partida en directo: cola, rotación y permisos", () => {
 
   it("solo quien está fichado apunta el resultado", async () => {
     await as(account(6));
+    await expect(command("leave", { player: player(5) })).rejects.toThrow(
+      /Fíchate/,
+    );
     await expect(command("result", { winner: "blue" })).rejects.toThrow(
       /Fíchate/,
     );
@@ -355,5 +367,18 @@ describe.sequential("Partida en directo: cola, rotación y permisos", () => {
     k = await command("result", { winner: "blue" });
     const court = k.state.court!;
     expect([court.red.defender.id, court.red.forward.id]).toContain(player(6));
+  });
+
+  it("un nuevo fichaje impide deshacer sobre una cola antigua", async () => {
+    const waiting = k.state.queue[0].id;
+    k = await command("leave", { player: waiting });
+    expect(k.last_match).toBeNull();
+    k = await command("result", { winner: "blue" });
+    expect(k.last_match).not.toBeNull();
+    k = await command("join", { players: [waiting] });
+    const currentQueue = k.state.queue;
+    expect(k.last_match).toBeNull();
+    await expect(command("undo", {})).rejects.toThrow(/No hay resultado/);
+    expect(k.state.queue).toEqual(currentQueue);
   });
 });

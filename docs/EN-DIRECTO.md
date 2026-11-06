@@ -58,9 +58,12 @@ Todas las escrituras pasan por la RPC `live_session_command`, con bloqueo por li
 
 Deshacer anula la última partida y restaura la cola tal y como estaba.
 
+La migración `007_live_queue_guards.sql` refuerza el orden inicial y los permisos para quitar a otros de la cola. Cuando alguien ficha o se desficha después de un resultado, deja de ofrecerse Deshacer: así no se pierden los cambios posteriores en la asistencia. El resultado sigue siendo corregible desde Administración.
+
 ## Pruebas
 
 - `tests/live.test.ts` — rotación, desempate, cola y marcador en vivo, en funciones puras.
 - `tests/odds.test.ts` — cuotas, margen y topes del pronóstico.
 - `tests/live-database.test.ts` — permisos, idempotencia, guardia de revisión y rotación en PostgreSQL embebido.
 - `tests/e2e/live.spec.ts` — recorrido completo en móvil y escritorio.
+
