@@ -6,6 +6,14 @@ Actualización del 5 de noviembre de 2026: migración 005 aplicada y sesión con
 
 Verificación de esta actualización: TypeScript, 64 pruebas de dominio/PostgreSQL y 24 pruebas de navegador en móvil/escritorio. RPC online comprobada en transacción revertida: rotación, idempotencia, victoria sin marcador, deshacer, pausa sin rivales y cierre. Las 58 partidas existentes se conservaron y no quedaron sesiones ni datos de prueba nuevos.
 
+Actualización del 9 de noviembre de 2026: migración `008_live_tablet.sql` aplicada en producción (Pol, desde el SQL Editor), con el modo tablet de pared. Consulta [la guía](TABLET-PARED.md).
+
+- Antes de aplicarla, se comprobó en solo lectura que estaban aplicadas la 005, la 006 y la 007. Las funciones `live_session_command` y `check_live` de producción coincidían byte a byte con las del repositorio (006 y 007), así que la vuelta atrás es reaplicar esos archivos.
+- Se aplicó el archivo exacto del commit `7e5d77f`, en una sola transacción, sin errores. No modifica datos existentes.
+- Verificado después: tabla `match_scorers` con RLS y política de lectura, función `live_goal_log`, rol `scoreboard` admitido, `live_session_command` con `prefer` y goleadores, y `check_live` validando `goal_log`. Una sesión en directo abierta de antes de la migración sigue siendo válida; sus goles anteriores quedan sin goleador.
+- Pruebas del cambio: 120 de dominio/PostgreSQL (incluida toda la batería del directo con la 008 aplicada) y 36 de navegador en móvil/escritorio.
+- Pendiente: comprobar que la web publicada incluye `7e5d77f`, crear la cuenta de la tablet y darle el rol «Tablet de la pared» desde Administración.
+
 - Proyecto: `foogrwxbycncnifbwlpe` (FutABLE, organización gratuita del propietario).
 - Liga real: `e51ccd56-6708-449a-8d2a-48eb4e4c0bd4`.
 - Temporada inicial: **Temporada 1**, activa, con goles variables (habitualmente 2 o 3).

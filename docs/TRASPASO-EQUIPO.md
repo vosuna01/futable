@@ -81,6 +81,8 @@ La última publicación comprobada en Sites es la versión 14. GitHub ha avanzad
 
 La migración 005 y el rey de la pista con parejas estaban verificados y publicados. El código de GitHub y el código actualmente servido pueden diferir.
 
+Actualización del 9 de noviembre de 2026: en producción están aplicadas las migraciones 005, 006 (directo), 007 (guardias de cola) y 008 (tablet de pared, commit 7e5d77f). Las tres primeras se comprobaron en solo lectura; la 008 la aplicó Pol con su acceso a Supabase. Detalles en ACTIVACION.md y TABLET-PARED.md. No se ha comprobado qué versión sirve Sites ahora mismo.
+
 ## Publicar sin depender de Víctor: acceso aún pendiente
 
 Guardar en main pasa las comprobaciones de GitHub, pero actualmente NO publica la web.
@@ -95,7 +97,7 @@ Para una publicación estática, pnpm build genera dist. La configuración públ
 
 ## Supabase: acceso independiente de GitHub
 
-Para ejecutar migraciones, modificar Auth o gestionar el backend, cada persona necesita invitación en Supabase a su correo. El panel no se abre por tener acceso al repositorio ni a Claude. Las invitaciones no se han enviado en esta entrega porque faltan los correos de las cuentas Supabase y el acceso de gestión correspondiente.
+Para ejecutar migraciones, modificar Auth o gestionar el backend, cada persona necesita invitación en Supabase a su correo. El panel no se abre por tener acceso al repositorio ni a Claude. Las invitaciones no se han enviado en esta entrega porque faltan los correos de las cuentas Supabase y el acceso de gestión correspondiente. A 9 de noviembre de 2026, Pol ya tiene acceso al proyecto con su cuenta de GitHub.
 
 El rol Developer permite trabajar con los recursos del proyecto; cambiar ajustes requiere un rol que lo permita. Elegid el alcance necesario según los roles disponibles y los proyectos de la organización; no compartáis la cuenta del propietario. Referencia: https://supabase.com/docs/guides/platform/access-control
 
@@ -105,4 +107,4 @@ Los permisos de administrador dentro de la liga son independientes de estos acce
 
 ## Alcance
 
-App móvil/PWA de futbolín; equipos Barça y Madrid, perfiles, ranking, resultados y rey de la pista. El modo en directo está en el código y requiere verificar su activación. No hay /display ni modo kiosco. Los esquemas y pruebas de hardware locales de Víctor no equivalen a una integración ESP32 desplegada.
+App móvil/PWA de futbolín; equipos Barça y Madrid, perfiles, ranking, resultados y rey de la pista. El modo en directo está en el código y sus migraciones están aplicadas. No hay /display ni modo kiosco, con una excepción pendiente de validar por el equipo: el modo tablet de pared en /?tablet, con el rol de liga scoreboard (ver TABLET-PARED.md). Los esquemas y pruebas de hardware locales de Víctor no equivalen a una integración ESP32 desplegada.

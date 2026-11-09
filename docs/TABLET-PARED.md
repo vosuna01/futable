@@ -2,7 +2,9 @@
 
 Vista de la [partida en directo](EN-DIRECTO.md) para una tablet colgada junto a la máquina. Botones grandes, pensados para tocar de lejos y con prisa.
 
-> **Decisión de equipo pendiente.** `TRASPASO-EQUIPO.md` pedía no implementar `/display` ni modo kiosco, y `001_league.sql` dice que no hay rol de display en esa versión. Esta vista se pidió expresamente (Pol, noviembre de 2026). No es una ruta nueva: va dentro de la app, en `/?tablet`, y no crea dispositivos ni endpoints. El rol `scoreboard` de la migración 008 sí es nuevo. Avisad a Marc y a Víctor antes de aplicarlo en producción.
+> **Decisión de equipo pendiente.** `TRASPASO-EQUIPO.md` pedía no implementar `/display` ni modo kiosco, y `001_league.sql` dice que no hay rol de display en esa versión. Esta vista se pidió expresamente (Pol, noviembre de 2026). No es una ruta nueva: va dentro de la app, en `/?tablet`, y no crea dispositivos ni endpoints. El rol `scoreboard` de la migración 008 sí es nuevo. Marc y Víctor tienen que validarlo.
+
+> **Estado (9 de noviembre de 2026):** migración 008 aplicada y verificada en producción. Falta comprobar que la web publicada en Sites incluye el commit `7e5d77f` y dar el rol a la cuenta de la tablet.
 
 ## Abrirla
 
