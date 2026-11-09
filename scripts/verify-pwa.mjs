@@ -5,8 +5,8 @@ const browser=await chromium.launch(process.env.PLAYWRIGHT_CHANNEL?{channel:proc
 try {
  const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
- const base='http://127.0.0.1:5174';
- await page.goto(base);
+ const base=(process.env.PWA_BASE_URL || 'http://127.0.0.1:5174').replace(/\/$/,'');
+ await page.goto(base+'/');
  await page.evaluate(()=>Promise.race([navigator.serviceWorker.ready,new Promise((_,reject)=>setTimeout(()=>reject(new Error('Service worker no disponible')),15000))]));
  await page.waitForFunction(()=>navigator.serviceWorker.controller!==null);
  const cached=await page.evaluate(async()=>{const names=await caches.keys();const c=await caches.open(names.find(n=>n.startsWith('cordoba-shell-')));return (await c.keys()).map(r=>r.url)});

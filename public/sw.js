@@ -1,5 +1,7 @@
 // Cache only the public application shell. Never intercept Supabase or private data.
-const CACHE = "cordoba-shell-v1";
+const ROOT = new URL("./", self.location.href).pathname;
+const CACHE_PREFIX = "cordoba-shell-" + encodeURIComponent(ROOT) + "-";
+const CACHE = CACHE_PREFIX + "cordoba-shell-v1";
 self.addEventListener("install", (event) =>
   event.waitUntil(
     caches
@@ -17,7 +19,7 @@ self.addEventListener("activate", (event) =>
       .then((keys) =>
         Promise.all(
           keys
-            .filter((k) => k.startsWith("cordoba-shell-") && k !== CACHE)
+            .filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE)
             .map((k) => caches.delete(k)),
         ),
       )
@@ -26,18 +28,20 @@ self.addEventListener("activate", (event) =>
 );
 self.addEventListener("fetch", (event) => {
   const u = new URL(event.request.url);
+  if (!u.pathname.startsWith(ROOT)) return;
+  const pathname = "/" + u.pathname.slice(ROOT.length);
   if (
     event.request.method !== "GET" ||
     u.origin !== self.location.origin ||
     !(
       event.request.mode === "navigate" ||
-      u.pathname === "/icon.svg" ||
-      u.pathname === "/manifest.webmanifest" ||
-      u.pathname.startsWith("/assets/") ||
-      u.pathname.startsWith("/fonts/") ||
-      u.pathname.startsWith("/brand/") ||
-      u.pathname.startsWith("/visuals/") ||
-      u.pathname.startsWith("/icons/")
+      pathname === "/icon.svg" ||
+      pathname === "/manifest.webmanifest" ||
+      pathname.startsWith("/assets/") ||
+      pathname.startsWith("/fonts/") ||
+      pathname.startsWith("/brand/") ||
+      pathname.startsWith("/visuals/") ||
+      pathname.startsWith("/icons/")
     )
   )
     return;
@@ -59,7 +63,7 @@ self.addEventListener("fetch", (event) => {
             (c) =>
               c ||
               (event.request.mode === "navigate"
-                ? caches.match("/")
+                ? caches.match(ROOT)
                 : Response.error()),
           ),
       ),

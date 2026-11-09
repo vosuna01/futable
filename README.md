@@ -2,11 +2,12 @@
 
 Código común de la liga de futbolín de ABLE Human Motion.
 
-- **Aplicación:** https://liga-cordoba-movil-victor.vosunas.chatgpt.site/
+- **Aplicación compartida:** https://vosuna01.github.io/futable/
+- **URL anterior de Sites:** https://liga-cordoba-movil-victor.vosunas.chatgpt.site/
 - **Repositorio de colaboración:** https://github.com/vosuna01/futable
 - **Cómo contribuir:** [CONTRIBUTING.md](CONTRIBUTING.md)
 
-Trabajamos sobre la misma app con edición libre: los colaboradores pueden guardar cambios directamente en `main`. No se exigen ramas ni pull requests. Los cambios en GitHub no se publican automáticamente en la web. La configuración actual de publicación sigue en Sites.
+Trabajamos sobre la misma app con edición libre: los colaboradores pueden guardar cambios directamente en `main`. No se exigen ramas ni pull requests. El workflow **Publicar FutABLE** publica en GitHub Pages si pasan las comprobaciones. Sites conserva su publicación independiente. Consulta [la guía de publicación](docs/GITHUB-PAGES.md).
 
 Para solicitar acceso, envía a Víctor tu usuario o el correo asociado a GitHub. El propietario te invita desde **Settings → Collaborators → Add people**, y debes aceptar la invitación. El enlace de un repositorio privado puede mostrar un 404 hasta que tengas acceso.
 
@@ -106,3 +107,8 @@ La aplicación selecciona la primera membresía activa de la cuenta; esta versi�
 - [Pruebas y verificación remota](docs/PRUEBAS.md)
 
 Referencias oficiales: [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [Realtime Postgres Changes](https://supabase.com/docs/guides/realtime/postgres-changes), [Vite](https://vite.dev/guide/), [Tailwind con Vite](https://tailwindcss.com/docs/installation/using-vite).
+
+# Publicación compartida
+
+App del equipo: https://vosuna01.github.io/futable/. Cada push a `main` publica con GitHub Actions si pasan las comprobaciones. [Instrucciones para Pol, Marc y Víctor](docs/GITHUB-PAGES.md).
+

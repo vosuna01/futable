@@ -1,3 +1,4 @@
+import { appUrl } from "../domain/app-url";
 import { useEffect, useState, type FormEvent } from "react";
 import { ArrowRight, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import {
@@ -46,7 +47,7 @@ export function Auth({ onDemo }: { onDemo: () => void }) {
       return;
     }
     try {
-      const redirect = location.origin;
+      const redirect = new URL(appUrl(), location.origin).href;
       const result =
         mode === "signup"
           ? await supabase.auth.signUp({
@@ -86,7 +87,7 @@ export function Auth({ onDemo }: { onDemo: () => void }) {
               ? "Sesión iniciada."
               : "Si tu cuenta está autorizada, recibirás un correo.",
       );
-      if (mode === "password") location.assign("/");
+      if (mode === "password") location.assign(appUrl());
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -96,7 +97,7 @@ export function Auth({ onDemo }: { onDemo: () => void }) {
   return (
     <div className="auth-layout">
       <div className="auth-story">
-        <a className="brand" href="/">
+        <a className="brand" href={appUrl()}>
           <Logo />
           <span>
             LIGA<strong>FutABLE</strong>

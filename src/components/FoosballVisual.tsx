@@ -1,3 +1,4 @@
+import { appUrl } from "../domain/app-url";
 export function FoosballVisual({
   variant = "home",
 }: {
@@ -10,7 +11,7 @@ export function FoosballVisual({
       <span className="visual-orbit orbit-two" aria-hidden="true" />
       <img
         className="foosball-table"
-        src="/visuals/foosball-table.png"
+        src={appUrl("visuals/foosball-table.png")}
         alt="Ilustración de un futbolín de madera con patas, barras y jugadores azules y rojos"
         width="1536"
         height="1024"

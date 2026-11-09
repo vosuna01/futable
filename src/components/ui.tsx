@@ -1,3 +1,4 @@
+import { appUrl } from "../domain/app-url";
 import type { ReactNode } from "react";
 import { X, Shield, ArrowUpRight } from "lucide-react";
 import type { Player } from "../domain/types";
@@ -43,7 +44,12 @@ export function Avatar({
 export function Logo() {
   return (
     <span className="brand-mark" aria-hidden="true">
-      <img src="/brand/liga-cordoba-logo.svg" alt="" width="52" height="52" />
+      <img
+        src={appUrl("brand/liga-cordoba-logo.svg")}
+        alt=""
+        width="52"
+        height="52"
+      />
     </span>
   );
 }

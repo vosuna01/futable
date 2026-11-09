@@ -1,3 +1,4 @@
+import { appUrl } from "../domain/app-url";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -50,7 +51,7 @@ export function InstallHelp({ compact = false }: { compact?: boolean }) {
           <Modal title="Instalar FutABLE" onClose={() => setOpen(false)}>
             <div className="install-app-preview">
               <img
-                src="/brand/liga-cordoba-logo.svg"
+                src={appUrl("brand/liga-cordoba-logo.svg")}
                 alt="Icono de FutABLE"
                 width="64"
                 height="64"

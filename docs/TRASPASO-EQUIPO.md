@@ -1,5 +1,7 @@
 # FutABLE: guía compartida para Pol y Marc
 
+**Publicación compartida (9 de noviembre de 2026):** GitHub Pages está configurado con GitHub Actions. La URL del equipo es https://vosuna01.github.io/futable/. Los pushes a main publican esa URL después de superar las comprobaciones; consulta [GITHUB-PAGES.md](GITHUB-PAGES.md). La URL de Sites se conserva y su acceso editorial sigue siendo independiente. Las notas posteriores sobre publicación exclusiva mediante Sites describen la situación anterior.
+
 Actualizado el 6 de noviembre de 2026.
 
 ## Enlaces y accesos comprobados

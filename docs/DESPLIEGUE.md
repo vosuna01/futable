@@ -1,5 +1,7 @@
 # Vercel y PWA móvil
 
+La publicación compartida actual usa [GitHub Pages](GITHUB-PAGES.md): https://vosuna01.github.io/futable/. Las instrucciones de Vercel que siguen se conservan como alternativa; no hay que contratar Vercel para publicar cambios del equipo.
+
 ## Vercel
 
 1. Crea tu repositorio con el contenido de esta carpeta. `.env.local`, `node_modules` y `dist` están ignorados. El lockfile debe versionarse.

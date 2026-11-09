@@ -1,3 +1,4 @@
+import { appUrl } from "./domain/app-url";
 import { useEffect, useState } from "react";
 import {
   Activity,
@@ -95,7 +96,7 @@ export default function App() {
     );
   const openTablet = (on: boolean) => {
     setTablet(on);
-    history.replaceState(null, "", on ? "/?tablet" : "/");
+    history.replaceState(null, "", on ? `${appUrl()}?tablet` : appUrl());
     if (!on) setPage("live");
   };
   useEffect(() => {
@@ -103,7 +104,7 @@ export default function App() {
     let fresh = false;
     let hasController = Boolean(navigator.serviceWorker.controller);
     navigator.serviceWorker
-      .register("/sw.js")
+      .register(appUrl("sw.js"))
       .then((reg) => {
         if (reg.waiting) setUpdate(reg);
         reg.addEventListener("updatefound", () => {
@@ -147,12 +148,12 @@ export default function App() {
     setSidebar(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  if (location.pathname !== "/")
+  if (location.pathname !== appUrl())
     return (
       <main className="not-found">
         <Logo />
         <h1>Esta página no existe.</h1>
-        <a href="/" className="primary">
+        <a href={appUrl()} className="primary">
           Volver a Liga FutABLE
         </a>
       </main>
@@ -247,7 +248,7 @@ export default function App() {
     <div className="app-shell">
       <aside className={`sidebar ${sidebar ? "open" : ""}`}>
         <a
-          href="/"
+          href={appUrl()}
           className="brand"
           onClick={(e) => {
             e.preventDefault();
@@ -633,7 +634,7 @@ export default function App() {
                   <FoosballVisual />
                   <div className="hero-club-tag">
                     <img
-                      src="/brand/liga-cordoba-logo.svg"
+                      src={appUrl("brand/liga-cordoba-logo.svg")}
                       alt=""
                       width="30"
                       height="30"

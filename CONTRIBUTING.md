@@ -39,14 +39,17 @@ git commit -m "Describe el cambio"
 git push origin main
 ```
 
-Antes de empezar, descarga los últimos cambios. Si alguien publica mientras estás trabajando, integra sus cambios antes de subir los tuyos; conserva las mejoras de ambos y evita forzar la subida. Las comprobaciones automáticas siguen ejecutándose después de cada cambio en `main` y sirven como aviso. No imponen revisión previa ni publican el sitio.
+Antes de empezar, descarga los últimos cambios. Si alguien publica mientras estás trabajando, integra sus cambios antes de subir los tuyos; conserva las mejoras de ambos y evita forzar la subida. Las comprobaciones automáticas no imponen revisión previa. El workflow **Publicar FutABLE** actualiza GitHub Pages después de pasar sus comprobaciones.
 
 ## Publicación
 
-Integrar una pull request no actualiza automáticamente la app. La persona responsable de publicar toma el código revisado de `main` y lo publica en el Site existente, conservando `.openai/hosting.json`, el proyecto y la URL actuales. La publicación requiere acceso al Site; editar el repositorio no lo concede.
+La publicación compartida es **GitHub Pages**: https://vosuna01.github.io/futable/. Cada push a `main` ejecuta **Publicar FutABLE** y actualiza esa URL si pasan las comprobaciones. Todos los colaboradores con escritura pueden usar este flujo. Consulta [la guía](docs/GITHUB-PAGES.md).
+
+La URL anterior de Sites se conserva y requiere su propio flujo de publicación y acceso al Site. Un push a GitHub no actualiza Sites. Conserva `.openai/hosting.json` para ese alojamiento.
 
 Los cambios de base de datos se añaden como una nueva migración y se revisan aparte antes de aplicarlos a producción. No subas datos reales de jugadores, `.env`, contraseñas, claves de servidor o tokens. La clave publicable del cliente no es una clave de administración.
 
 ## Alcance actual
 
 Aplicación móvil/PWA, perfiles, partidas, rankings, administración y sincronización. El display, el modo kiosco y las integraciones NFC/ESP32 siguen fuera de la versión implementada.
+
