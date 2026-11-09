@@ -2,8 +2,8 @@
 
 La app compartida se publica en https://vosuna01.github.io/futable/.
 El código sigue en https://github.com/vosuna01/futable, rama `main`.
-La URL anterior de Sites se conserva: https://liga-cordoba-movil-victor.vosunas.chatgpt.site/.
-Sites no recibe los despliegues automáticos de GitHub Pages; puede mostrar una versión anterior.
+La URL anterior de Sites está retirada y redirige automáticamente a la app compartida: https://liga-cordoba-movil-victor.vosunas.chatgpt.site/.
+Sites conserva solo la redirección; no debe publicarse allí otra copia de la aplicación.
 
 ## Cómo publicar una mejora
 

@@ -3,11 +3,11 @@
 Código común de la liga de futbolín de ABLE Human Motion.
 
 - **Aplicación compartida:** https://vosuna01.github.io/futable/
-- **URL anterior de Sites:** https://liga-cordoba-movil-victor.vosunas.chatgpt.site/
+- **URL antigua retirada (redirige a la app compartida):** https://liga-cordoba-movil-victor.vosunas.chatgpt.site/
 - **Repositorio de colaboración:** https://github.com/vosuna01/futable
 - **Cómo contribuir:** [CONTRIBUTING.md](CONTRIBUTING.md)
 
-Trabajamos sobre la misma app con edición libre: los colaboradores pueden guardar cambios directamente en `main`. No se exigen ramas ni pull requests. El workflow **Publicar FutABLE** publica en GitHub Pages si pasan las comprobaciones. Sites conserva su publicación independiente. Consulta [la guía de publicación](docs/GITHUB-PAGES.md).
+Trabajamos sobre la misma app con edición libre: los colaboradores pueden guardar cambios directamente en `main`. No se exigen ramas ni pull requests. El workflow **Publicar FutABLE** publica en GitHub Pages si pasan las comprobaciones. La antigua URL de Sites redirige a la app compartida. Consulta [la guía de publicación](docs/GITHUB-PAGES.md).
 
 Para solicitar acceso, envía a Víctor tu usuario o el correo asociado a GitHub. El propietario te invita desde **Settings → Collaborators → Add people**, y debes aceptar la invitación. El enlace de un repositorio privado puede mostrar un 404 hasta que tengas acceso.
 
