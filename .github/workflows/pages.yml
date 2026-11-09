@@ -27,6 +27,7 @@ jobs:
         env:
           SITE_BASE_PATH: /futable/
       - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:auth
       - run: pnpm exec playwright test --config playwright.hosting.config.ts
       - uses: actions/upload-pages-artifact@v4
         with:

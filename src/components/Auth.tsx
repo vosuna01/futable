@@ -1,5 +1,7 @@
 import { appUrl } from "../domain/app-url";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useAuthProviders } from "../data/useAuthProviders";
+import { oauthCallbackError } from "../domain/auth";
 import { ArrowRight, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import {
   supabase,
@@ -11,12 +13,43 @@ import { Logo } from "./ui";
 import { FoosballVisual } from "./FoosballVisual";
 import { InstallHelp } from "./InstallHelp";
 export function Auth({ onDemo }: { onDemo: () => void }) {
+  const providers = useAuthProviders();
+  const googleAttempt = useRef(false);
   const [mode, setMode] = useState<
       "login" | "signup" | "link" | "reset" | "password"
     >(passwordFlow ? "password" : "login"),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState(""),
+    [error, setError] = useState(() =>
+      oauthCallbackError(location.search, location.hash),
+    ),
     [message, setMessage] = useState("");
+  async function enterWithGoogle() {
+    if (googleAttempt.current || busy || !supabase || !providers.google) return;
+    if (!navigator.onLine) {
+      setError("Necesitas conexión para entrar con Google.");
+      return;
+    }
+    googleAttempt.current = true;
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const result = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: new URL(appUrl(), location.origin).href,
+          queryParams: { prompt: "select_account" },
+        },
+      });
+      if (result.error) throw result.error;
+    } catch {
+      setError(
+        "No se ha podido abrir Google. Vuelve a intentarlo o entra con tu contraseña.",
+      );
+      googleAttempt.current = false;
+      setBusy(false);
+    }
+  }
   useEffect(() => {
     const sub = supabase?.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") setMode("password");
@@ -141,6 +174,48 @@ export function Auth({ onDemo }: { onDemo: () => void }) {
                 ? "Crea tu cuenta y únete a la competición como jugador."
                 : "Entra en tu cuenta o crea una para unirte a la liga."}
           </p>
+          {providers.google && (mode === "login" || mode === "signup") && (
+            <div className="google-access">
+              <button
+                type="button"
+                className="google-login full"
+                disabled={busy}
+                onClick={() => void enterWithGoogle()}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill="#4285F4"
+                    d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-2 3.02v2.51h3.23c1.89-1.74 2.99-4.3 2.99-7.36Z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 22c2.7 0 4.96-.9 6.61-2.41l-3.23-2.51c-.89.6-2.03.96-3.38.96-2.6 0-4.81-1.76-5.6-4.13H3.06v2.59A10 10 0 0 0 12 22Z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M6.4 13.91a6 6 0 0 1 0-3.82V7.5H3.06a10 10 0 0 0 0 9l3.34-2.59Z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.96c1.47 0 2.79.51 3.82 1.51l2.87-2.87A9.61 9.61 0 0 0 12 2a10 10 0 0 0-8.94 5.5l3.34 2.59A5.99 5.99 0 0 1 12 5.96Z"
+                  />
+                </svg>
+                {busy ? "Conectando…" : "Entrar con Google"}
+              </button>
+              <p className="rule-note">
+                Sin otra contraseña. Si ya juegas, elige el mismo correo de tu
+                cuenta para conservar tu perfil y tus partidas.
+              </p>
+              <div className="divider">
+                <span>O ENTRA CON TU CORREO Y CONTRASEÑA</span>
+              </div>
+            </div>
+          )}
           {mode !== "password" && (
             <div
               className="auth-switch"

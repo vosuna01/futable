@@ -7,6 +7,7 @@ import "./brand.css";
 import "./club.css";
 import "./install.css";
 import "./premium.css";
+import "./auth.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
