@@ -45,8 +45,10 @@ import { KingCourt } from "./components/KingCourt";
 import { useKingSession } from "./data/useKingSession";
 import { LiveMatch } from "./components/LiveMatch";
 import { useLiveSession } from "./data/useLiveSession";
+import { LiveTablet } from "./components/LiveTablet";
 import "./king.css";
 import "./live.css";
+import "./tablet.css";
 const nav = [
   ["home", "Inicio", Home],
   ["rankings", "Clasificaciones", BarChart3],
@@ -86,7 +88,16 @@ export default function App() {
     [myProfile, setMyProfile] = useState(false),
     [sidebar, setSidebar] = useState(false),
     [update, setUpdate] = useState<ServiceWorkerRegistration | null>(null),
-    [recovery, setRecovery] = useState(passwordFlow);
+    [recovery, setRecovery] = useState(passwordFlow),
+    // `/?tablet` opens the wall-tablet scoreboard of the live match.
+    [tablet, setTablet] = useState(() =>
+      new URLSearchParams(location.search).has("tablet"),
+    );
+  const openTablet = (on: boolean) => {
+    setTablet(on);
+    history.replaceState(null, "", on ? "/?tablet" : "/");
+    if (!on) setPage("live");
+  };
   useEffect(() => {
     if (!("serviceWorker" in navigator) || !import.meta.env.PROD) return;
     let fresh = false;
@@ -185,6 +196,17 @@ export default function App() {
       );
     return <Auth onDemo={league.startDemo} />;
   }
+  if (tablet)
+    return (
+      <LiveTablet
+        live={liveMatch}
+        data={data}
+        demo={demo}
+        user={kingUser}
+        online={online}
+        onExit={() => openTablet(false)}
+      />
+    );
   const active = data.seasons.find((s) => s.status === "active"),
     season =
       data.seasons.find((s) => s.id === seasonId) || active || data.seasons[0];
@@ -503,6 +525,7 @@ export default function App() {
               me={ownPlayer}
               user={kingUser}
               online={online}
+              onTablet={() => openTablet(true)}
             />
           )}
           {page === "home" && (

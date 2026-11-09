@@ -7,6 +7,7 @@ import {
   Play,
   Plus,
   Radio,
+  Tablet,
   Ticket,
   TrendingUp,
   Undo2,
@@ -15,7 +16,14 @@ import {
 } from "lucide-react";
 import type { useLiveSession } from "../data/useLiveSession";
 import type { Lineup, LiveState } from "../domain/live";
-import { liveError, playedBy, posts, sides } from "../domain/live";
+import {
+  liveError,
+  playedBy,
+  posts,
+  proposedLineup,
+  sides,
+  type Waiting,
+} from "../domain/live";
 import { forecast } from "../domain/odds";
 import {
   defaultRules,
@@ -64,12 +72,14 @@ export function LiveMatch({
   me,
   user,
   online,
+  onTablet,
 }: {
   live: ReturnType<typeof useLiveSession>;
   data: Snapshot;
   me: Player | undefined;
   user: string;
   online: boolean;
+  onTablet?: () => void;
 }) {
   const { session } = live;
   const state: LiveState | null = session?.state ?? null;
@@ -93,7 +103,9 @@ export function LiveMatch({
     : -1;
   const playing = !!me && onCourt.includes(me.id);
   const signedUp = playing || waitingAt >= 0;
-  const canRun = (signedUp || data.role === "admin") && sameSeason;
+  const canRun =
+    (signedUp || data.role === "admin" || data.role === "scoreboard") &&
+    sameSeason;
   const canClose =
     !!session && (session.owner_id === user || data.role === "admin");
   const invalid = state ? liveError(state, data.players) : null;
@@ -174,6 +186,11 @@ export function LiveMatch({
             <Radio /> Partida en directo<span>.</span>
           </h1>
           <p>Fíchate, espera tu turno y entra cuando toque.</p>
+          {onTablet && (
+            <button className="text-button live-tablet-link" onClick={onTablet}>
+              <Tablet size={16} /> Abrir modo tablet de pared
+            </button>
+          )}
         </div>
         {me && !signedUp && session && (
           <button
@@ -386,7 +403,10 @@ export function LiveMatch({
                             : "Recién salido de la pista"
                       }
                     />
-                    {(w.id === me?.id || data.role === "admin" || signedUp) && (
+                    {(w.id === me?.id ||
+                      data.role === "admin" ||
+                      data.role === "scoreboard" ||
+                      signedUp) && (
                       <button
                         className="icon-button"
                         aria-label={`Quitar a ${named(w.id)?.name || "jugador"} de la cola`}
@@ -502,7 +522,7 @@ export function LiveMatch({
 
       {starting && state && (
         <StartEditor
-          queue={state.queue.slice(0, 4).map((w) => w.id)}
+          queue={state.queue}
           players={data.players}
           busy={busy}
           onClose={() => setStarting(false)}
@@ -534,22 +554,30 @@ export function LiveMatch({
   );
 }
 
-function StartEditor({
+export function StartEditor({
   queue,
   players,
   busy,
   onClose,
   onStart,
 }: {
-  queue: string[];
+  queue: Waiting[];
   players: Player[];
   busy: boolean;
   onClose: () => void;
   onStart: (lineup: Lineup) => void;
 }) {
-  // The first four waiting are proposed in arrival order; tapping two posts
-  // swaps whoever stands in them.
-  const [slots, setSlots] = useState<string[]>(queue.slice(0, 4));
+  // The first four waiting are proposed in arrival order, with the posts they
+  // agreed while waiting; tapping two posts swaps whoever stands in them.
+  const [slots, setSlots] = useState<string[]>(() => {
+    const proposed = proposedLineup(queue);
+    return [
+      proposed.red.defender,
+      proposed.red.forward,
+      proposed.blue.defender,
+      proposed.blue.forward,
+    ];
+  });
   const [picked, setPicked] = useState<number | null>(null);
   const named = (id: string) => players.find((p) => p.id === id);
   const tapSlot = (index: number) => {

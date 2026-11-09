@@ -1,6 +1,7 @@
 export type Position = "defender" | "forward";
 export type Team = "blue" | "red";
-export type Role = "admin" | "player";
+/** `scoreboard` is the wall tablet's account: it runs the live court, nothing else. */
+export type Role = "admin" | "player" | "scoreboard";
 export interface Player {
   account_id?: string | null;
   id: string;

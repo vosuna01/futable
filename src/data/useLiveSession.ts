@@ -9,9 +9,10 @@ import {
   liveParticipants,
   rotate,
   scoreGoal,
+  setPost,
   startCourt,
 } from "../domain/live";
-import type { MatchInput, Snapshot, Team } from "../domain/types";
+import type { MatchInput, Position, Snapshot, Team } from "../domain/types";
 import { supabase } from "./supabase";
 
 export interface LiveFields {
@@ -23,7 +24,11 @@ export interface LiveFields {
   delta?: number;
   defender?: string;
   forward?: string;
+  /** `prefer`: the post agreed for a waiting player, or null to clear it. */
+  post?: Position | null;
 }
+/** Actions that only exist once migration 008 is applied. */
+const needs008 = new Set(["prefer"]);
 
 export function useLiveSession({
   data,
@@ -159,7 +164,14 @@ export function useLiveSession({
         fields.forward!,
       );
     if (action === "goal")
-      next.state = scoreGoal(before.state, fields.team!, fields.delta!);
+      next.state = scoreGoal(
+        before.state,
+        fields.team!,
+        fields.delta!,
+        fields.player,
+      );
+    if (action === "prefer")
+      next.state = setPost(before.state, fields.player!, fields.post ?? null);
     if (action === "result") {
       const board = boardScore(before.state, fields.winner!);
       next.state = rotate(before.state, fields.winner!, Math.random());
@@ -238,6 +250,13 @@ export function useLiveSession({
           // A database rejection is definite. A lost response must retry the exact request.
           if (result.error.code) retry.current = null;
           void refresh();
+          if (
+            needs008.has(action) &&
+            /Acción desconocida/.test(result.error.message)
+          )
+            throw new Error(
+              "Esta función necesita la migración 008 en la base de datos.",
+            );
           throw new Error(result.error.message);
         }
         if (requested !== currentScope.current) return;

@@ -1,4 +1,4 @@
-import type { Participant, Player, Team } from "./types";
+import type { Participant, Player, Position, Team } from "./types";
 
 /** A player standing on the court, with the wait they had served before entering. */
 export interface Slot {
@@ -9,6 +9,13 @@ export interface Slot {
 export interface Waiting {
   id: string;
   since: number;
+  /** Post already agreed for when they step in (migration 008). */
+  post?: Position;
+}
+/** One goal of the running match; `player` is null when only the team is known. */
+export interface Goal {
+  team: Team;
+  player: string | null;
 }
 export interface Side {
   defender: Slot;
@@ -19,6 +26,11 @@ export interface LiveState {
   court: { blue: Side; red: Side } | null;
   /** Goals of the match being played; everyone watching sees the same board. */
   goals: Record<Team, number>;
+  /**
+   * Goals in the order they went in, so a scorer can be credited and the last
+   * one taken back. Absent before migration 008; `goals` stays the board.
+   */
+  goal_log?: Goal[];
   /** Matches each player has played this session, kept across leaving the queue. */
   played: Record<string, number>;
   queue: Waiting[];
@@ -60,19 +72,124 @@ export function prioritise(
     ...queue.filter((w) => played[w.id] ?? 0),
   ];
 }
-/** Adds or cancels a goal, keeping the board inside what a match can hold. */
+/**
+ * The goal log of a running match. A session written before migration 008 only
+ * has the board, so its goals are rebuilt without a scorer.
+ */
+export function goalLog(state: LiveState): Goal[] {
+  if (Array.isArray(state.goal_log)) return state.goal_log;
+  return [
+    ...Array.from({ length: state.goals.blue ?? 0 }, () => ({
+      team: "blue" as const,
+      player: null,
+    })),
+    ...Array.from({ length: state.goals.red ?? 0 }, () => ({
+      team: "red" as const,
+      player: null,
+    })),
+  ];
+}
+/** Goals of each player in the running match. */
+export function goalsBy(state: LiveState): Record<string, number> {
+  const tally: Record<string, number> = {};
+  for (const goal of goalLog(state))
+    if (goal.player) tally[goal.player] = (tally[goal.player] ?? 0) + 1;
+  return tally;
+}
+/**
+ * Adds or cancels goals, keeping the board inside what a match can hold. With a
+ * player the goal is credited to them, who must be on that team; taking one
+ * back removes that player's last goal, or the team's last one without player.
+ */
 export function scoreGoal(
   state: LiveState,
   team: Team,
   delta: number,
+  player?: string | null,
 ): LiveState {
   if (!state.court) throw new Error("No hay ninguna partida en juego.");
+  const side = state.court[team];
+  if (player && side.defender.id !== player && side.forward.id !== player)
+    throw new Error("Ese jugador no está en ese equipo.");
+  const log = [...goalLog(state)];
+  const count = () => log.filter((g) => g.team === team).length;
+  for (let i = 0; i < delta && count() < 99; i++)
+    log.push({ team, player: player || null });
+  for (let i = 0; i < -delta; i++) {
+    let at = log.length - 1;
+    while (
+      at >= 0 &&
+      !(log[at].team === team && (!player || log[at].player === player))
+    )
+      at--;
+    if (at < 0) {
+      if (player) throw new Error("Ese jugador no tiene goles que quitar.");
+      break;
+    }
+    log.splice(at, 1);
+  }
   return {
     ...state,
-    goals: {
-      ...state.goals,
-      [team]: Math.max(0, Math.min(99, (state.goals[team] ?? 0) + delta)),
-    },
+    goal_log: log,
+    goals: { ...state.goals, [team]: count() },
+  };
+}
+/**
+ * Who of two players stepping in together defends. The first in the queue
+ * keeps the post they asked for; otherwise the second's choice is respected;
+ * with nothing agreed, the first defends and the second attacks.
+ */
+export function entryPosts<T extends { post?: Position }>(
+  first: T,
+  second: T,
+): { defender: T; forward: T } {
+  const swap =
+    first.post === "forward" || (!first.post && second.post === "defender");
+  return swap
+    ? { defender: second, forward: first }
+    : { defender: first, forward: second };
+}
+/** Agrees, or clears, the post a waiting player takes when they step in. */
+export function setPost(
+  state: LiveState,
+  id: string,
+  post: Position | null,
+): LiveState {
+  if (!state.queue.some((w) => w.id === id))
+    throw new Error("Esa persona no está esperando en la cola.");
+  return {
+    ...state,
+    queue: state.queue.map((w) => {
+      if (w.id !== id) return w;
+      const { post: _old, ...rest } = w;
+      return post ? { ...rest, post } : rest;
+    }),
+  };
+}
+/**
+ * The queue read two by two, as the pairs that will step in. With an odd queue
+ * the last one waits for a loser of the next match to complete the pair.
+ */
+export function queuePairs(
+  queue: Waiting[],
+): { defender: Waiting | null; forward: Waiting | null }[] {
+  const pairs: { defender: Waiting | null; forward: Waiting | null }[] = [];
+  for (let i = 0; i < queue.length; i += 2) {
+    const [first, second] = [queue[i], queue[i + 1]];
+    if (second) pairs.push(entryPosts(first, second));
+    else if (first.post === "forward")
+      pairs.push({ defender: null, forward: first });
+    else pairs.push({ defender: first, forward: null });
+  }
+  return pairs;
+}
+/** The opening lineup the queue proposes: Madrid first, then Barça. */
+export function proposedLineup(queue: Waiting[]): Lineup {
+  const red = entryPosts(queue[0], queue[1]);
+  const blue = entryPosts(queue[2], queue[3]);
+  return {
+    red: { defender: red.defender.id, forward: red.forward.id },
+    blue: { defender: blue.defender.id, forward: blue.forward.id },
   };
 }
 /**
@@ -153,10 +270,15 @@ export function rotate(
     ],
     played,
   );
-  const [enterDefender, enterForward] = queue;
+  // The two stepping in take the posts they had agreed while waiting.
+  const { defender: enterDefender, forward: enterForward } = entryPosts(
+    queue[0],
+    queue[1],
+  );
   return {
     round,
     goals: noGoals(),
+    goal_log: [],
     played,
     court: {
       ...state.court,
@@ -204,6 +326,7 @@ export function startCourt(state: LiveState, lineup: Lineup): LiveState {
     ...state,
     court,
     goals: noGoals(),
+    goal_log: [],
     queue: state.queue.filter((w) => !picked.includes(w.id)),
   };
 }

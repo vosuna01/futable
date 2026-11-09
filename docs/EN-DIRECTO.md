@@ -60,6 +60,8 @@ Deshacer anula la última partida y restaura la cola tal y como estaba.
 
 La migración `007_live_queue_guards.sql` refuerza el orden inicial y los permisos para quitar a otros de la cola. Cuando alguien ficha o se desficha después de un resultado, deja de ofrecerse Deshacer: así no se pierden los cambios posteriores en la asistencia. El resultado sigue siendo corregible desde Administración.
 
+La migración `008_live_tablet.sql` añade los goles por jugador (`goal_log` en `state` y la tabla `match_scorers`), el puesto acordado de quien espera (`queue[].post`, acción `prefer`) y el rol `scoreboard` para la cuenta de la tablet de pared. Detalles en [TABLET-PARED.md](TABLET-PARED.md).
+
 ## Pruebas
 
 - `tests/live.test.ts` — rotación, desempate, cola y marcador en vivo, en funciones puras.

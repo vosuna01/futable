@@ -68,6 +68,8 @@ beforeAll(async () => {
     "005_king_sessions",
     "006_live_sessions",
     "007_live_queue_guards",
+    // 008 must keep every earlier behaviour: the suite runs on top of it.
+    "008_live_tablet",
   ])
     await db.exec(
       await readFile(

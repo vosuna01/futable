@@ -212,7 +212,9 @@ export function Admin({
                   {m.active
                     ? m.role === "admin"
                       ? "Admin"
-                      : "Jugador"
+                      : m.role === "scoreboard"
+                        ? "Tablet"
+                        : "Jugador"
                     : "Revocada"}
                 </span>
               </div>
@@ -321,6 +323,9 @@ export function Admin({
                   <select name="role">
                     <option value="player">Jugador autorizado</option>
                     <option value="admin">Administrador</option>
+                    <option value="scoreboard">
+                      Tablet de la pared (solo directo, requiere migración 008)
+                    </option>
                   </select>
                 </label>
                 <label className="checkbox">
