@@ -397,6 +397,11 @@ export function Auth({ onDemo }: { onDemo: () => void }) {
             Datos ficticios · Sin conexión a una liga real
           </p>
           <InstallHelp />
+          <p className="rule-note">
+            <a href={appUrl("informacion.html")}>Acerca de FutABLE</a> ·{" "}
+            <a href={appUrl("privacidad.html")}>Privacidad</a> ·{" "}
+            <a href={appUrl("uso.html")}>Condiciones de uso</a>
+          </p>
           <footer>
             <ShieldCheck size={15} /> Registro personal · Sesión segura · Acceso
             con sesión
