@@ -1,10 +1,17 @@
-/* Wall tablet for the live match: everything is sized to be hit from a step away. */
+/*
+ * Wall tablet for the live match. The whole screen must fit without scrolling
+ * on any tablet, so every size follows the short side of the screen (vmin):
+ * landscape scales with the height, portrait with the width.
+ */
 .tablet {
-  min-height: 100dvh;
+  --u: 1vmin;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 14px clamp(12px, 2vw, 24px) 18px;
+  gap: calc(var(--u) * 1.4);
+  padding: calc(var(--u) * 1.6) calc(var(--u) * 2);
   background: #17122b;
   color: #f4f2fb;
   user-select: none;
@@ -18,42 +25,57 @@
   opacity: 0.45;
   cursor: default;
 }
+.tablet svg {
+  width: 1.15em;
+  height: 1.15em;
+  flex-shrink: 0;
+}
 .tablet-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: calc(var(--u) * 1.4);
+  flex-shrink: 0;
 }
 .tablet-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: calc(var(--u) * 1);
   flex: 1;
-  font-size: 20px;
+  font-size: clamp(14px, calc(var(--u) * 3), 22px);
   font-weight: 800;
   letter-spacing: 0.02em;
 }
 .tablet-icon {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
+  width: clamp(36px, calc(var(--u) * 6.5), 52px);
+  height: clamp(36px, calc(var(--u) * 6.5), 52px);
   border: 1px solid #3c3360;
-  border-radius: 14px;
+  border-radius: 12px;
   background: #241d40;
   color: inherit;
+  font-size: clamp(16px, calc(var(--u) * 3), 22px);
 }
+/* Messages float over the court so they never push anything off screen. */
 .tablet-alert,
 .tablet-notice,
 .tablet-hint {
+  position: fixed;
+  left: 50%;
+  z-index: 20;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100vw - 32px);
   margin: 0;
-  padding: 12px 16px;
+  padding: 10px 16px;
   border-radius: 14px;
-  font-size: 17px;
+  font-size: clamp(14px, calc(var(--u) * 2.4), 18px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 .tablet-alert {
+  top: calc(var(--u) * 10);
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   background: #4a1426;
   color: #ffd6df;
@@ -61,62 +83,64 @@
 .tablet-alert button {
   border: 0;
   border-radius: 10px;
-  padding: 8px 14px;
+  padding: 6px 12px;
   background: #ffd6df;
   color: #4a1426;
   font-weight: 700;
 }
 .tablet-notice {
-  position: fixed;
-  left: 50%;
-  bottom: 24px;
-  z-index: 20;
-  transform: translateX(-50%);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  bottom: calc(var(--u) * 3);
   background: #13453c;
   color: #c9f3e7;
 }
 .tablet-hint {
+  top: calc(var(--u) * 10);
   background: #2a2346;
   color: #cfc8ea;
-  font-size: 15px;
+  font-size: clamp(12px, calc(var(--u) * 2), 15px);
+  pointer-events: none;
+  opacity: 0.92;
 }
 .tablet-empty {
   display: grid;
-  place-items: center;
-  gap: 14px;
+  place-content: center;
+  justify-items: center;
+  gap: calc(var(--u) * 2);
   flex: 1;
+  min-height: 0;
   text-align: center;
 }
 .tablet-empty h1 {
   margin: 0;
-  font-size: clamp(30px, 5vw, 52px);
+  font-size: clamp(24px, calc(var(--u) * 6), 52px);
 }
 .tablet-start {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  min-height: 72px;
-  padding: 0 34px;
+  min-height: clamp(48px, calc(var(--u) * 9), 72px);
+  padding: 0 calc(var(--u) * 4);
   border: 0;
-  border-radius: 20px;
+  border-radius: 18px;
   background: #b0ca62;
   color: #17122b;
-  font-size: 24px;
+  font-size: clamp(18px, calc(var(--u) * 3.4), 26px);
   font-weight: 800;
 }
 .tablet-court {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: calc(var(--u) * 1.6);
   flex: 1;
+  min-height: 0;
 }
 .tablet-team {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: 24px;
+  gap: calc(var(--u) * 1.2);
+  min-height: 0;
+  padding: calc(var(--u) * 1.6) calc(var(--u) * 2);
+  border-radius: calc(var(--u) * 3);
 }
 .tablet-team.red {
   background: #fffdf4;
@@ -131,34 +155,42 @@
 .tablet-team-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: calc(var(--u) * 1.2);
 }
 .tablet-team h2 {
   margin: 0;
-  font-size: clamp(26px, 3.4vw, 40px);
+  font-size: clamp(18px, calc(var(--u) * 5), 40px);
 }
 .tablet-team.blue h2,
 .tablet-team.blue .tablet-score {
   color: #ffd84d;
 }
 .tablet-score {
-  font-size: clamp(72px, 10vw, 112px);
-  line-height: 0.9;
+  margin-left: auto;
+  font-size: clamp(40px, calc(var(--u) * 14), 120px);
+  line-height: 0.85;
   font-variant-numeric: tabular-nums;
+}
+/* Player rows and the goal row share whatever height is left. */
+.tablet-player,
+.tablet-goal-row {
+  flex: 1 1 0;
+  max-height: calc(var(--u) * 15);
 }
 .tablet-player {
   display: flex;
-  gap: 10px;
+  gap: calc(var(--u) * 1);
 }
 .tablet-scorer {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: calc(var(--u) * 1.4);
   flex: 1;
-  min-height: 72px;
-  padding: 8px 14px;
+  min-width: 0;
+  min-height: clamp(44px, calc(var(--u) * 10), 76px);
+  padding: calc(var(--u) * 0.8) calc(var(--u) * 1.6);
   border: 2px solid rgba(0, 0, 0, 0.1);
-  border-radius: 18px;
+  border-radius: calc(var(--u) * 2);
   background: #fff;
   color: #17122b;
   text-align: left;
@@ -169,69 +201,76 @@
 }
 .tablet-scorer .avatar {
   flex-shrink: 0;
-  width: 52px;
-  height: 52px;
+  width: clamp(30px, calc(var(--u) * 6.5), 52px);
+  height: clamp(30px, calc(var(--u) * 6.5), 52px);
 }
 .tablet-scorer > span:not(.avatar) {
   display: grid;
   flex: 1;
+  min-width: 0;
 }
 .tablet-scorer small {
   color: #6a638a;
-  font-size: 14px;
+  font-size: clamp(10px, calc(var(--u) * 1.7), 14px);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .tablet-scorer strong {
-  font-size: clamp(20px, 2.4vw, 28px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(14px, calc(var(--u) * 3.4), 28px);
 }
 .tablet-tally {
-  padding: 6px 12px;
+  padding: 4px 10px;
   border-radius: 999px;
   background: #efecfa;
   color: #5b47a8;
-  font-size: 18px;
+  font-size: clamp(12px, calc(var(--u) * 2.3), 18px);
   white-space: nowrap;
 }
 .tablet-minus {
   display: grid;
   place-items: center;
-  width: 64px;
-  min-height: 64px;
+  flex-shrink: 0;
+  width: clamp(40px, calc(var(--u) * 8.5), 64px);
   border: 2px solid rgba(0, 0, 0, 0.12);
-  border-radius: 18px;
+  border-radius: calc(var(--u) * 2);
   background: #fff;
   color: #4a1426;
+  font-size: clamp(16px, calc(var(--u) * 3), 24px);
 }
 .tablet-swap,
 .tablet-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-height: 56px;
-  padding: 0 18px;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: clamp(34px, calc(var(--u) * 6), 52px);
+  padding: 0 calc(var(--u) * 1.6);
   border: 2px dashed currentColor;
-  border-radius: 16px;
+  border-radius: calc(var(--u) * 1.6);
   background: transparent;
   color: inherit;
-  font-size: 18px;
+  font-size: clamp(12px, calc(var(--u) * 2.2), 17px);
   font-weight: 700;
+  white-space: nowrap;
 }
 .tablet-goal-row {
   display: flex;
-  gap: 10px;
+  gap: calc(var(--u) * 1);
 }
 .tablet-goal {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
-  min-height: 64px;
+  min-height: clamp(44px, calc(var(--u) * 9), 70px);
   border: 0;
-  border-radius: 18px;
-  font-size: 24px;
+  border-radius: calc(var(--u) * 2);
+  font-size: clamp(16px, calc(var(--u) * 3.4), 26px);
   font-weight: 800;
 }
 .tablet-goal.red {
@@ -246,12 +285,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-height: 60px;
+  gap: 8px;
+  min-height: clamp(40px, calc(var(--u) * 8), 62px);
   margin-top: auto;
   border: 0;
-  border-radius: 18px;
-  font-size: 22px;
+  border-radius: calc(var(--u) * 2);
+  font-size: clamp(15px, calc(var(--u) * 3.1), 24px);
   font-weight: 800;
 }
 .tablet-win.red {
@@ -262,39 +301,52 @@
   background: #fff;
   color: #a50044;
 }
+/* The queue is one strip: title, pairs (scrolling sideways) and actions. */
 .tablet-queue {
-  padding: 14px 16px;
-  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 1.4);
+  flex-shrink: 0;
+  padding: calc(var(--u) * 1.2) calc(var(--u) * 1.6);
+  border-radius: calc(var(--u) * 2.4);
   background: #241d40;
 }
 .tablet-queue-head {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  display: contents;
 }
 .tablet-queue-head h2 {
-  flex: 1;
+  order: 0;
   margin: 0;
   color: #f4f2fb;
-  font-size: 22px;
+  font-size: clamp(13px, calc(var(--u) * 2.4), 20px);
   font-weight: 800;
+  white-space: nowrap;
+}
+.tablet-queue-head .tablet-secondary {
+  order: 2;
+}
+.tablet-pairs,
+.tablet-queue .tablet-muted {
+  order: 1;
+  flex: 1;
+  min-width: 0;
 }
 .tablet-pairs {
   display: flex;
-  gap: 12px;
+  gap: calc(var(--u) * 1.2);
   overflow-x: auto;
-  margin: 12px 0 0;
-  padding: 0;
+  scrollbar-width: thin;
+  margin: 0;
+  padding: 2px;
   list-style: none;
 }
 .tablet-pairs li {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: calc(var(--u) * 1);
   flex-shrink: 0;
-  padding: 10px 12px;
-  border-radius: 16px;
+  padding: calc(var(--u) * 0.8) calc(var(--u) * 1.2);
+  border-radius: calc(var(--u) * 1.8);
   background: #302854;
 }
 .tablet-pairs li:first-child {
@@ -303,18 +355,19 @@
 .tablet-turn {
   font-weight: 800;
   color: #b0ca62;
+  font-size: clamp(12px, calc(var(--u) * 2), 16px);
 }
 .tablet-waiting {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 18px;
+  font-size: clamp(13px, calc(var(--u) * 2.3), 18px);
 }
 .tablet-waiting small {
-  padding: 2px 7px;
-  border-radius: 7px;
+  padding: 2px 6px;
+  border-radius: 6px;
   background: #4a3f7a;
-  font-size: 12px;
+  font-size: clamp(9px, calc(var(--u) * 1.5), 12px);
   font-weight: 800;
 }
 .tablet-waiting em {
@@ -325,23 +378,26 @@
   display: grid;
   place-items: center;
   border: 0;
-  border-radius: 12px;
+  border-radius: 10px;
   background: #4a3f7a;
   color: inherit;
 }
 .tablet-x {
-  width: 34px;
-  height: 34px;
+  width: clamp(26px, calc(var(--u) * 4.2), 34px);
+  height: clamp(26px, calc(var(--u) * 4.2), 34px);
+  font-size: 14px;
 }
 .tablet-pair-swap {
-  width: 52px;
-  height: 52px;
+  width: clamp(36px, calc(var(--u) * 6.5), 52px);
+  height: clamp(36px, calc(var(--u) * 6.5), 52px);
   background: #b0ca62;
   color: #17122b;
+  font-size: 18px;
 }
 .tablet-muted {
-  margin: 10px 0 0;
+  margin: 0;
   color: #a59cc9;
+  font-size: clamp(12px, calc(var(--u) * 2.1), 16px);
 }
 .tablet-confirm-score {
   font-size: 34px;
@@ -353,8 +409,8 @@
   align-items: center;
   gap: 6px;
 }
-/* A tablet held upright, or a phone, stacks the two teams. */
-@media (max-width: 760px) {
+/* Held upright, the two teams stack; vmin is then the width, so both fit. */
+@media (orientation: portrait) {
   .tablet-court {
     grid-template-columns: 1fr;
   }

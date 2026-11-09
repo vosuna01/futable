@@ -241,6 +241,24 @@ export function LiveTablet({
                 >
                   <div className="tablet-team-head">
                     <h2>{teamNames[team]}</h2>
+                    <button
+                      className="tablet-swap"
+                      aria-label="Intercambiar defensa y delantero"
+                      disabled={off}
+                      onClick={() =>
+                        void run(
+                          "assign",
+                          {
+                            team,
+                            defender: court[team].forward.id,
+                            forward: court[team].defender.id,
+                          },
+                          `${teamNames[team]}: puestos intercambiados.`,
+                        )
+                      }
+                    >
+                      <ArrowLeftRight size={20} /> Intercambiar
+                    </button>
                     <strong
                       className="tablet-score"
                       aria-label={`Goles ${teamNames[team]}`}
@@ -285,24 +303,6 @@ export function LiveTablet({
                       </div>
                     );
                   })}
-                  <button
-                    className="tablet-swap"
-                    disabled={off}
-                    onClick={() =>
-                      void run(
-                        "assign",
-                        {
-                          team,
-                          defender: court[team].forward.id,
-                          forward: court[team].defender.id,
-                        },
-                        `${teamNames[team]}: puestos intercambiados.`,
-                      )
-                    }
-                  >
-                    <ArrowLeftRight size={22} /> Intercambiar defensa y
-                    delantero
-                  </button>
                   <div className="tablet-goal-row">
                     <button
                       className={`tablet-goal ${team}`}
