@@ -8,6 +8,7 @@ import {
   leave,
   liveParticipants,
   rotate,
+  replacePair,
   scoreGoal,
   setPost,
   startCourt,
@@ -26,6 +27,8 @@ export interface LiveFields {
   forward?: string;
   /** `prefer`: the post agreed for a waiting player, or null to clear it. */
   post?: Position | null;
+  /** Pins a replacement editor to the state the user actually reviewed. */
+  expected_revision?: number;
 }
 /** Actions that only exist once migration 008 is applied. */
 const needs008 = new Set(["prefer"]);
@@ -163,6 +166,20 @@ export function useLiveSession({
         fields.defender!,
         fields.forward!,
       );
+    if (action === "replace") {
+      if (fields.expected_revision !== before.revision)
+        throw new Error(
+          "La sesión ha cambiado. Vuelve a abrir el cambio de jugadores.",
+        );
+      next.state = replacePair(
+        before.state,
+        fields.team!,
+        fields.defender!,
+        fields.forward!,
+      );
+      next.last_match = null;
+      next.last_before = null;
+    }
     if (action === "goal")
       next.state = scoreGoal(
         before.state,
@@ -250,6 +267,13 @@ export function useLiveSession({
           // A database rejection is definite. A lost response must retry the exact request.
           if (result.error.code) retry.current = null;
           void refresh();
+          if (
+            action === "replace" &&
+            /Acción desconocida/.test(result.error.message)
+          )
+            throw new Error(
+              "Cambiar jugadores necesita la migración 009 en la base de datos.",
+            );
           if (
             needs008.has(action) &&
             /Acción desconocida/.test(result.error.message)

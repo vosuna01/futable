@@ -57,7 +57,14 @@ export function LiveTablet({
     [notice, setNotice] = useState(""),
     [confirm, setConfirm] = useState<Team | null>(null),
     [starting, setStarting] = useState(false),
-    [adding, setAdding] = useState(false);
+    [adding, setAdding] = useState(false),
+    [editing, setEditing] = useState<{
+      team: Team;
+      revision: number;
+      session: string;
+      defender: string;
+      forward: string;
+    } | null>(null);
   const lock = useRef(false),
     attempt = useRef<{ key: string; id: string } | null>(null);
   const named = (id: string) => data.players.find((p) => p.id === id);
@@ -127,8 +134,10 @@ export function LiveTablet({
       await live.command(action, fields, attempt.current.id);
       attempt.current = null;
       if (done) setNotice(done);
+      return true;
     } catch (e) {
       setError((e as Error).message);
+      return false;
     } finally {
       lock.current = false;
       setBusy(false);
@@ -141,6 +150,29 @@ export function LiveTablet({
   };
 
   const court = state?.court ?? null;
+  const editStale =
+    !!editing &&
+    (editing.session !== session?.id || editing.revision !== session?.revision);
+  const editSide = editing && court ? court[editing.team] : null;
+  const editOther =
+    editing && court ? court[editing.team === "red" ? "blue" : "red"] : null;
+  const editPlayers = data.players.filter(
+    (p) =>
+      p.active &&
+      p.id !== editOther?.defender.id &&
+      p.id !== editOther?.forward.id,
+  );
+  const editChanged =
+    !!editing &&
+    !!editSide &&
+    (editing.defender !== editSide.defender.id ||
+      editing.forward !== editSide.forward.id);
+  const editMembersChanged =
+    !!editing &&
+    !!editSide &&
+    ![editSide.defender.id, editSide.forward.id].every(
+      (id) => id === editing.defender || id === editing.forward,
+    );
   const pairs = state ? queuePairs(state.queue) : [];
   const onCourt = court
     ? shown.flatMap((t) => posts.map((p) => court[t][p].id))
@@ -241,24 +273,43 @@ export function LiveTablet({
                 >
                   <div className="tablet-team-head">
                     <h2>{teamNames[team]}</h2>
-                    <button
-                      className="tablet-swap"
-                      aria-label="Intercambiar defensa y delantero"
-                      disabled={off}
-                      onClick={() =>
-                        void run(
-                          "assign",
-                          {
+                    <div className="tablet-team-actions">
+                      <button
+                        className="tablet-swap"
+                        aria-label="Intercambiar defensa y delantero"
+                        disabled={off}
+                        onClick={() =>
+                          void run(
+                            "assign",
+                            {
+                              team,
+                              defender: court[team].forward.id,
+                              forward: court[team].defender.id,
+                            },
+                            `${teamNames[team]}: puestos intercambiados.`,
+                          )
+                        }
+                      >
+                        <ArrowLeftRight size={20} /> Intercambiar
+                      </button>
+                      <button
+                        className="tablet-swap"
+                        aria-label={`Cambiar jugadores de ${teamNames[team]}`}
+                        disabled={off}
+                        onClick={() => {
+                          setError("");
+                          setEditing({
                             team,
-                            defender: court[team].forward.id,
-                            forward: court[team].defender.id,
-                          },
-                          `${teamNames[team]}: puestos intercambiados.`,
-                        )
-                      }
-                    >
-                      <ArrowLeftRight size={20} /> Intercambiar
-                    </button>
+                            revision: session.revision,
+                            session: session.id,
+                            defender: court[team].defender.id,
+                            forward: court[team].forward.id,
+                          });
+                        }}
+                      >
+                        <UserPlus size={20} /> Jugadores
+                      </button>
+                    </div>
                     <strong
                       className="tablet-score"
                       aria-label={`Goles ${teamNames[team]}`}
@@ -434,6 +485,102 @@ export function LiveTablet({
         </>
       )}
 
+      {editing && (
+        <Modal
+          title={`Cambiar jugadores de ${teamNames[editing.team]}`}
+          onClose={() => {
+            if (!busy) setEditing(null);
+          }}
+        >
+          <form
+            className="tablet-replace-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (off || editStale || !editChanged || !editSide) return;
+              void run(
+                editMembersChanged ? "replace" : "assign",
+                {
+                  team: editing.team,
+                  defender: editing.defender,
+                  forward: editing.forward,
+                  expected_revision: editing.revision,
+                },
+                `${teamNames[editing.team]}: jugadores actualizados.`,
+              ).then((saved) => {
+                if (saved) setEditing(null);
+              });
+            }}
+          >
+            {posts.map((post) => (
+              <label key={post}>
+                {postNames[post]}
+                <select
+                  value={editing[post]}
+                  disabled={off || editStale}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setEditing((current) =>
+                      current ? { ...current, [post]: value } : null,
+                    );
+                  }}
+                >
+                  {editPlayers.map((p) => (
+                    <option
+                      key={p.id}
+                      value={p.id}
+                      disabled={
+                        p.id ===
+                        editing[post === "defender" ? "forward" : "defender"]
+                      }
+                    >
+                      {p.name}
+                      {state?.queue.some((w) => w.id === p.id)
+                        ? " · En la cola"
+                        : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ))}
+            <p className="tablet-replace-note">
+              {editMembersChanged
+                ? "El marcador vuelve a 0–0 y se borran los goles de esta partida sin guardar un resultado. Quienes salen vuelven a la cola; el otro equipo se mantiene."
+                : "Si solo intercambias los puestos, se conservan los goles. Al sustituir jugadores por otras personas, el marcador vuelve a 0–0 y quienes salen vuelven a la cola."}
+            </p>
+            {editStale && (
+              <p role="alert">
+                La sesión ha cambiado. Cierra este diálogo y vuelve a abrirlo
+                para revisar la pareja actual.
+              </p>
+            )}
+            {error && <p role="alert">{error}</p>}
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="text-button"
+                disabled={busy}
+                onClick={() => setEditing(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="primary"
+                disabled={
+                  off ||
+                  editStale ||
+                  !editChanged ||
+                  ![editing.defender, editing.forward].every((id) =>
+                    editPlayers.some((p) => p.id === id),
+                  ) ||
+                  editing.defender === editing.forward
+                }
+              >
+                Guardar pareja
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
       {confirm && state?.court && (
         <Modal
           title={`¿Gana ${teamNames[confirm]}?`}

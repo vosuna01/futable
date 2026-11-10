@@ -362,6 +362,49 @@ export function join(state: LiveState, ids: string[]): LiveState {
     ),
   };
 }
+/** Replaces a side without recording a result; outgoing players rejoin the queue. */
+export function replacePair(
+  state: LiveState,
+  team: Team,
+  defender: string,
+  forward: string,
+): LiveState {
+  if (!state.court) throw new Error("No hay ninguna partida en juego.");
+  if (!defender || !forward || defender === forward)
+    throw new Error("Elige dos jugadores distintos.");
+  const side = state.court[team];
+  const other = state.court[team === "red" ? "blue" : "red"];
+  const picked = [defender, forward];
+  if (picked.some((id) => id === other.defender.id || id === other.forward.id))
+    throw new Error("No puedes elegir jugadores del equipo contrario.");
+  const old = [side.defender, side.forward];
+  if (old.every((slot) => picked.includes(slot.id)))
+    return assignPosts(state, team, defender, forward);
+  const slot = (id: string): Slot => {
+    const retained = old.find((s) => s.id === id);
+    if (retained) return retained;
+    const waiting = state.queue.find((w) => w.id === id);
+    return { id, waited: waiting ? state.round - waiting.since : 0 };
+  };
+  return {
+    ...state,
+    court: {
+      ...state.court,
+      [team]: { defender: slot(defender), forward: slot(forward) },
+    },
+    queue: prioritise(
+      [
+        ...state.queue.filter((w) => !picked.includes(w.id)),
+        ...old
+          .filter((s) => !picked.includes(s.id))
+          .map((s) => ({ id: s.id, since: state.round })),
+      ],
+      state.played,
+    ),
+    goals: noGoals(),
+    goal_log: [],
+  };
+}
 export function leave(state: LiveState, id: string): LiveState {
   if (!state.queue.some((w) => w.id === id))
     throw new Error("Esa persona no está esperando en la cola.");

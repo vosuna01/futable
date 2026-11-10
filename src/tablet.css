@@ -25,6 +25,56 @@
   opacity: 0.45;
   cursor: default;
 }
+/* The wall is dark, but its dialogs and player choices are light. */
+.tablet .modal {
+  color: #252234;
+  color-scheme: light;
+}
+.tablet .live-picker button {
+  color: #252234;
+  background: #fff;
+  border-color: #d8d5e2;
+  min-height: 52px;
+  font-size: 16px;
+}
+.tablet .live-picker button:hover:not(:disabled),
+.tablet .live-picker button:focus-visible {
+  background: #eef5ef;
+  outline: 2px solid #356a52;
+  outline-offset: -2px;
+}
+.tablet-team-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tablet-replace-form {
+  display: grid;
+  gap: 18px;
+}
+.tablet-replace-form label {
+  display: grid;
+  gap: 8px;
+  font-weight: 700;
+}
+.tablet-replace-form select {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px;
+  color: #252234;
+  background: #fff;
+  border: 1px solid #bdb8ce;
+  border-radius: 12px;
+  font: inherit;
+}
+.tablet-replace-note {
+  margin: 0;
+  padding: 14px;
+  border-radius: 12px;
+  color: #5b3c0c;
+  background: #fff4d6;
+  line-height: 1.5;
+}
 .tablet svg {
   width: 1.15em;
   height: 1.15em;

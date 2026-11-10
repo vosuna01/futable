@@ -2,13 +2,13 @@
 
 Vista de la [partida en directo](EN-DIRECTO.md) para una tablet colgada junto a la máquina. Botones grandes, pensados para tocar de lejos y con prisa.
 
-> **Decisión de equipo pendiente.** `TRASPASO-EQUIPO.md` pedía no implementar `/display` ni modo kiosco, y `001_league.sql` dice que no hay rol de display en esa versión. Esta vista se pidió expresamente (Pol, noviembre de 2026). No es una ruta nueva: va dentro de la app, en `/?tablet`, y no crea dispositivos ni endpoints. El rol `scoreboard` de la migración 008 sí es nuevo. Marc y Víctor tienen que validarlo.
+> Vista interactiva solicitada por Pol y ampliada expresamente por Víctor el 10 de noviembre de 2026. Está dentro de la aplicación, en `?tablet`; no añade una ruta `/display`.
 
-> **Estado (9 de noviembre de 2026):** migración 008 aplicada y verificada en producción. Falta comprobar que la web publicada en Sites incluye el commit `7e5d77f` y dar el rol a la cuenta de la tablet.
+> **Estado (10 de noviembre de 2026):** migraciones 008 y 009 aplicadas y verificadas en producción. La app se publica desde `main` en GitHub Pages; Sites está retirado. La 009 añade la sustitución de jugadores y conserva los permisos del directo.
 
 ## Abrirla
 
-- Enlace directo: `https://<url-de-la-app>/?tablet`
+- Enlace directo: [Modo tablet](https://vosuna01.github.io/futable/?tablet).
 - Desde la app: Partida en directo → «Abrir modo tablet de pared».
 - El icono de pantalla completa la pone a toda pantalla. Si el navegador lo permite, la pantalla no se apaga mientras está abierta (Wake Lock). Para que quede fija, añadidla a la pantalla de inicio como PWA y activad el modo de pantalla fija de la tablet (Android «Fijar aplicación», iPad «Acceso guiado»).
 - Para probarla sin backend: abrid `/?tablet` y pulsad «Explorar demostración».
@@ -27,7 +27,23 @@ Vista de la [partida en directo](EN-DIRECTO.md) para una tablet colgada junto a 
 
 «Quitar gol» sin jugador (botón del equipo, firmware y clientes antiguos) quita **el último gol de ese equipo**, sea de quien sea.
 
-### Alineación de la cola
+### Cambiar los integrantes de una pareja
+
+Pulsa **Jugadores** en la cabecera de Madrid o Barça y elige defensa y delantero. Puedes mantener a uno, sustituir a ambos o elegir a alguien que aún no esté fichado. No se puede seleccionar a un rival, repetir jugador ni elegir a alguien inactivo.
+
+Al guardar una sustitución, los salientes vuelven a la cola con la prioridad habitual y los entrantes dejan de esperar. El otro equipo permanece igual. **El marcador actual y sus goleadores vuelven a cero**, como avisa el diálogo; no se registra un resultado ni se altera ninguna partida guardada. El intercambio simple de posiciones sigue conservando los goles.
+
+Si la sesión cambia en otro dispositivo mientras eliges, hay que volver a abrir el diálogo. La RPC comprueba también esa revisión, conserva su bloqueo e idempotencia y registra `live.replace` en la auditoría. Se cancela el deshacer del resultado anterior para evitar restaurar una alineación anterior al cambio.
+
+Necesita aplicar una sola vez `supabase/migrations/009_live_replace_pair.sql` después de la 008. Añade un ayudante privado y la acción `replace` a la RPC existente; conserva los permisos de administrador, tablet y jugadores fichados. No modifica tablas ni datos de partidas. El helper no es invocable por clientes.
+
+Comprobación de instalación:
+
+```sql
+select to_regprocedure('public.live_replace_pair_state(jsonb,text,text,text)');
+```
+
+### Puestos al entrar desde la cola
 
 Cada persona que espera puede tener un puesto acordado (`queue[].post`). Al entrar dos juntos:
 

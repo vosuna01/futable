@@ -76,6 +76,7 @@ beforeAll(async () => {
     "006_live_sessions",
     "007_live_queue_guards",
     "008_live_tablet",
+    "009_live_replace_pair",
   ])
     await db.exec(
       await readFile(
@@ -292,3 +293,4 @@ describe.sequential("Migración 008: tablet de pared", () => {
     expect((k as unknown as { status: string }).status).toBe("closed");
   });
 });
+

@@ -21,6 +21,112 @@ async function openTablet(page: Page) {
   }
 }
 
+test("sustituye jugadores, conserva al rival y vuelve a guardar resultados", async ({
+  page,
+}) => {
+  await openTablet(page);
+  await page.getByRole("button", { name: "Empezar partida" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Empezar", exact: true })
+    .click();
+  await page.getByLabel(`Gol de ${names[0]}`, { exact: true }).click();
+  await page.getByLabel("Cambiar jugadores de Madrid").click();
+  const dialog = page.getByRole("dialog");
+  const defender = dialog.getByRole("combobox", {
+    name: "Defensa",
+    exact: true,
+  });
+  const incoming = { label: `${names[4]} · En la cola` };
+  await defender.selectOption(incoming);
+  // The other team cannot be selected and a player cannot occupy both posts.
+  await expect(defender).not.toContainText(names[2]);
+  await expect(defender).not.toContainText(names[3]);
+  await expect(dialog.getByText(/El marcador vuelve a 0–0/)).toBeVisible();
+  await dialog.getByRole("button", { name: "Cancelar", exact: true }).click();
+  await expect(page.getByLabel("Goles Madrid")).toHaveText("1");
+  await page.getByLabel("Cambiar jugadores de Madrid").click();
+  await dialog
+    .getByRole("combobox", { name: "Defensa", exact: true })
+    .selectOption(incoming);
+  await dialog.getByRole("button", { name: "Guardar pareja" }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(page.locator(`${madrid} .tablet-scorer`).first()).toContainText(
+    names[4],
+  );
+  await expect(page.locator(`${madrid} .tablet-scorer`).nth(1)).toContainText(
+    names[1],
+  );
+  await expect(page.locator(barca)).toContainText(names[2]);
+  await expect(page.locator(barca)).toContainText(names[3]);
+  await expect(page.getByLabel("Goles Madrid")).toHaveText("0");
+  await expect(page.locator(".tablet-queue")).toContainText(names[0]);
+  await expect(page.locator(".tablet-queue")).not.toContainText(names[4]);
+  await page.getByLabel(`Gol de ${names[4]}`, { exact: true }).click();
+  await page.getByRole("button", { name: "Gana Madrid", exact: true }).click();
+  await dialog.getByRole("button", { name: "Guardar resultado" }).click();
+  await expect(page.getByLabel("Goles Madrid")).toHaveText("0");
+  await expect(page.locator(madrid)).toContainText(names[4]);
+});
+
+test("los nombres al fichar tienen contraste y la tablet cabe en pantallas pequeñas", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 853, height: 533 });
+  await openTablet(page);
+  await page.getByRole("button", { name: "Apuntar", exact: true }).click();
+  const button = page
+    .getByRole("dialog")
+    .locator(".live-picker button")
+    .first();
+  const ratio = await button.evaluate((el) => {
+    const linear = (c: number) => {
+      const n = c / 255;
+      return n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
+    };
+    const luminance = (color: string) => {
+      const rgb = color
+        .match(/[\d.]+/g)!
+        .slice(0, 3)
+        .map(Number)
+        .map(linear);
+      return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+    };
+    const style = getComputedStyle(el),
+      fg = luminance(style.color),
+      bg = luminance(style.backgroundColor);
+    return (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05);
+  });
+  expect(ratio).toBeGreaterThanOrEqual(4.5);
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Cerrar", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Empezar partida" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Empezar", exact: true })
+    .click();
+  for (const size of [
+    { width: 853, height: 533 },
+    { width: 1024, height: 600 },
+    { width: 600, height: 1024 },
+  ]) {
+    await page.setViewportSize(size);
+    await expect(
+      page.getByLabel("Cambiar jugadores de Madrid"),
+    ).toBeInViewport();
+    await expect(
+      page.getByRole("button", { name: "Gana Barça", exact: true }),
+    ).toBeInViewport();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  }
+});
+
 test("la tablet lleva una partida entera: goleadores, puestos, cola y resultado", async ({
   page,
 }) => {
