@@ -23,6 +23,7 @@ Vista de la [partida en directo](EN-DIRECTO.md) para una tablet colgada junto a 
 | «Intercambiar defensa y delantero»                                  | `assign`                     | No                                                                                       |
 | ⇄ en una pareja de la cola                                          | `prefer {player, post}`      | Sí. Sin la 008 da el error «necesita la migración 008».                                  |
 | «Gana …» (con confirmación), «Deshacer último resultado»            | `result`, `undo`             | No                                                                                       |
+| «A N goles» en la barra superior: elegir a cuántos goles se juega   | `target {goals}`             | Sí, la **010**. Vale para el resto de la sesión; sin elegir, manda la temporada.         |
 | «Empezar partida» (propone la alineación acordada) y «Apuntar»      | `start`, `join`              | No                                                                                       |
 
 «Quitar gol» sin jugador (botón del equipo, firmware y clientes antiguos) quita **el último gol de ese equipo**, sea de quien sea.
@@ -41,6 +42,18 @@ Comprobación de instalación:
 
 ```sql
 select to_regprocedure('public.live_replace_pair_state(jsonb,text,text,text)');
+```
+
+### A cuántos goles se juega
+
+El botón **A N goles** de la barra superior abre un selector de 1 a 10. Lo elegido se guarda en `state.target` y vale para la partida actual y las siguientes de la sesión; al cerrar la sesión vuelve a mandar la regla de la temporada. Cuando un equipo llega a ese número y va por delante, su botón «Gana …» se resalta. El marcador ESP32 lee el mismo valor.
+
+Necesita `supabase/migrations/010_live_tiebreak_target.sql`, que se aplica después de la 009. La migración comprueba que la RPC de producción es exactamente la de la 009 y, si no lo es, no cambia nada. Además ajusta el desempate de los perdedores (ver EN-DIRECTO.md). No modifica tablas ni partidas.
+
+Comprobación de instalación:
+
+```sql
+select bool_or(prosrc like '%''target''%') from pg_proc where proname='live_session_command';
 ```
 
 ### Puestos al entrar desde la cola

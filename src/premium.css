@@ -1390,3 +1390,16 @@ button {
     scroll-behavior: auto !important;
   }
 }
+/* Nueva partida: casilla para precargar a los ganadores de la última partida. */
+.king-check {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0;
+  font-size: 13px;
+}
+.king-check input {
+  width: 19px !important;
+  height: 19px;
+  accent-color: #008477;
+}

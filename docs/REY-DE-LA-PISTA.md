@@ -1,5 +1,7 @@
 # Rey de la pista en FutABLE
 
+> **Retirado de la app en noviembre de 2026.** Ya no se usaba: la [partida en directo](EN-DIRECTO.md) lo sustituye. La base de datos conserva la tabla `king_sessions`, su RPC y todas las partidas que se guardaron con este modo, que siguen contando en la clasificación. Esta guía queda como referencia histórica.
+
 Entra en **Rey de la pista → Preparar sesión**. Elige defensa y delantero de Barça y Madrid; añade las parejas que esperan en la cola. Las personas deben tener una ficha activa en la liga.
 
 Durante la sesión, toca **Gana Barça** o **Gana Madrid**. No hay una confirmación adicional. Se guarda la victoria, la pareja ganadora sigue en su equipo y puestos, entra la primera pareja que esperaba y la perdedora pasa al final de la cola. Si la cola estaba vacía, el puesto perdedor queda libre: la sesión se pausa hasta que se añadan nuevos rivales. No se programa una revancha.

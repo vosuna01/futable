@@ -198,3 +198,35 @@ test("se abre y se cierra desde la partida en directo", async ({ page }) => {
   await expect(page).toHaveURL(/\/$/);
   await expect(page.locator(".live-match")).toBeVisible();
 });
+
+test("elige a cuántos goles se juega y avisa cuando un equipo llega", async ({
+  page,
+}) => {
+  await openTablet(page);
+  await page.getByRole("button", { name: "Empezar partida" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Empezar", exact: true })
+    .click();
+  await page.getByRole("button", { name: /Partidas a \d+ goles/ }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "2", exact: true })
+    .click();
+  const target = page.getByRole("button", { name: /Partidas a 2 goles/ });
+  await expect(target).toContainText("A 2 goles");
+  const madridWin = page.getByRole("button", { name: "Gana Madrid" });
+  await expect(madridWin).not.toHaveClass(/ready/);
+  await page.getByRole("button", { name: "Gol Madrid" }).click();
+  await page.getByRole("button", { name: "Gol Madrid" }).click();
+  await expect(page.getByLabel("Goles Madrid")).toHaveText("2");
+  await expect(madridWin).toHaveClass(/ready/);
+  // The choice lasts for the next matches of the session.
+  await madridWin.click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Guardar resultado" })
+    .click();
+  await expect(page.getByLabel("Goles Madrid")).toHaveText("0");
+  await expect(target).toContainText("A 2 goles");
+});

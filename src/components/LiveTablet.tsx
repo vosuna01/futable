@@ -8,6 +8,7 @@ import {
   Play,
   Plus,
   Radio,
+  Target,
   Undo2,
   UserPlus,
   X,
@@ -15,6 +16,7 @@ import {
 import type { useLiveSession } from "../data/useLiveSession";
 import {
   goalsBy,
+  goalsToWin,
   liveError,
   posts,
   queuePairs,
@@ -58,6 +60,7 @@ export function LiveTablet({
     [confirm, setConfirm] = useState<Team | null>(null),
     [starting, setStarting] = useState(false),
     [adding, setAdding] = useState(false),
+    [picking, setPicking] = useState(false),
     [editing, setEditing] = useState<{
       team: Team;
       revision: number;
@@ -70,6 +73,13 @@ export function LiveTablet({
   const named = (id: string) => data.players.find((p) => p.id === id);
   const activeSeason = data.seasons.find((s) => s.status === "active");
   const sameSeason = !session || session.season_id === activeSeason?.id;
+  // Goals to win: the session's choice, else the season's rule.
+  const target = state ? goalsToWin(state, activeSeason?.target ?? 3) : 3;
+  /** A team that has reached the target and leads: its win button lights up. */
+  const reached = (team: Team) =>
+    !!state?.court &&
+    state.goals[team] >= target &&
+    state.goals[team] > state.goals[team === "red" ? "blue" : "red"];
   const me = demo
     ? data.players[0]
     : data.players.find((p) => p.account_id && p.account_id === user);
@@ -203,6 +213,16 @@ export function LiveTablet({
         <span className="tablet-title">
           <Radio size={22} /> FutABLE · En directo
         </span>
+        {state && (
+          <button
+            className="tablet-target"
+            disabled={off}
+            aria-label={`Partidas a ${target} goles. Cambiar`}
+            onClick={() => setPicking(true)}
+          >
+            <Target size={20} /> A {target} goles
+          </button>
+        )}
         <span className={`connection ${online ? "" : "offline"}`}>
           <i />
           {demo ? "Demostración" : online ? "Conectado" : "Sin conexión"}
@@ -372,7 +392,7 @@ export function LiveTablet({
                     </button>
                   </div>
                   <button
-                    className={`tablet-win ${team}`}
+                    className={`tablet-win ${team} ${reached(team) ? "ready" : ""}`}
                     disabled={off || !!invalid}
                     onClick={() => setConfirm(team)}
                   >
@@ -622,6 +642,34 @@ export function LiveTablet({
             void run("start", { lineup }, "Partida en marcha.");
           }}
         />
+      )}
+      {picking && state && (
+        <Modal title="¿A cuántos goles?" onClose={() => setPicking(false)}>
+          <p className="rule-note">
+            Vale para esta partida y las siguientes de hoy. Sin elegir, manda la
+            temporada ({activeSeason?.target ?? 3}).
+          </p>
+          <div className="tablet-target-grid">
+            {Array.from({ length: 10 }, (_, i) => i + 1).map((goals) => (
+              <button
+                key={goals}
+                className={goals === target ? "selected" : ""}
+                aria-pressed={goals === target}
+                disabled={busy || !online}
+                onClick={() => {
+                  setPicking(false);
+                  void run(
+                    "target",
+                    { goals },
+                    `Partidas a ${goals} ${goals === 1 ? "gol" : "goles"}.`,
+                  );
+                }}
+              >
+                {goals}
+              </button>
+            ))}
+          </div>
+        </Modal>
       )}
       {adding && (
         <Modal title="Apuntar a la cola" onClose={() => setAdding(false)}>

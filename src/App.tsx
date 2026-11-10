@@ -42,12 +42,9 @@ import { MatchForm } from "./components/MatchForm";
 import { FoosballVisual } from "./components/FoosballVisual";
 import { InstallHelp } from "./components/InstallHelp";
 import { MyProfile } from "./components/MyProfile";
-import { KingCourt } from "./components/KingCourt";
-import { useKingSession } from "./data/useKingSession";
 import { LiveMatch } from "./components/LiveMatch";
 import { useLiveSession } from "./data/useLiveSession";
 import { LiveTablet } from "./components/LiveTablet";
-import "./king.css";
 import "./live.css";
 import "./tablet.css";
 const nav = [
@@ -59,19 +56,11 @@ const nav = [
 export default function App() {
   const league = useLeague();
   const { data, demo, online, synced, live } = league;
-  const kingUser = demo ? "demo" : league.session?.user.id || "";
-  const king = useKingSession({
-    data,
-    demo,
-    user: kingUser,
-    refreshLeague: league.refresh,
-    demoMatch: league.demoMatch,
-    demoVoid: league.demoVoid,
-  });
+  const liveUser = demo ? "demo" : league.session?.user.id || "";
   const liveMatch = useLiveSession({
     data,
     demo,
-    user: kingUser,
+    user: liveUser,
     refreshLeague: league.refresh,
     demoMatch: league.demoMatch,
     demoVoid: league.demoVoid,
@@ -203,7 +192,7 @@ export default function App() {
         live={liveMatch}
         data={data}
         demo={demo}
-        user={kingUser}
+        user={liveUser}
         online={online}
         onExit={() => openTablet(false)}
       />
@@ -353,11 +342,9 @@ export default function App() {
               <strong>
                 {page === "admin"
                   ? "Administración"
-                  : page === "king"
-                    ? "Rey de la pista"
-                    : page === "live"
-                      ? "Partida en directo"
-                      : nav.find((n) => n[0] === page)?.[1]}
+                  : page === "live"
+                    ? "Partida en directo"
+                    : nav.find((n) => n[0] === page)?.[1]}
               </strong>
             </span>
             <span className="mobile-brand">
@@ -477,23 +464,6 @@ export default function App() {
                   : "ARCHIVO DE TEMPORADA"}
             </span>
           </div>
-          {(active || king.session) && page !== "king" && (
-            <button
-              className={`king-entry ${page === "king" ? "selected" : ""}`}
-              onClick={() => navigate("king")}
-            >
-              <Trophy size={20} />
-              <span>
-                <strong>Rey de la pista</strong>
-                <small>
-                  {king.session
-                    ? "Continuar sesión · parejas y cola guardadas"
-                    : "Configura una vez. Apunta victorias con un toque."}
-                </small>
-              </span>
-              <ArrowRight size={18} />
-            </button>
-          )}
           {(active || liveMatch.session) && page !== "live" && (
             <button
               className={`live-entry ${page === "live" ? "selected" : ""}`}
@@ -511,20 +481,12 @@ export default function App() {
               <ArrowRight size={18} />
             </button>
           )}
-          {page === "king" && (
-            <KingCourt
-              king={king}
-              data={data}
-              user={kingUser}
-              online={online}
-            />
-          )}
           {page === "live" && (
             <LiveMatch
               live={liveMatch}
               data={data}
               me={ownPlayer}
-              user={kingUser}
+              user={liveUser}
               online={online}
               onTablet={() => openTablet(true)}
             />

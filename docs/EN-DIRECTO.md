@@ -2,7 +2,9 @@
 
 Modo de sesión continua con **cola de jugadores sueltos**, pensado para una tarde en la máquina: cada uno se ficha, la cola decide quién entra y los resultados se apuntan con un toque.
 
-Convive con [rey de la pista](REY-DE-LA-PISTA.md), que mantiene parejas fijas configuradas a mano. Son sesiones independientes: cada liga puede tener una de cada abierta y no comparten estado.
+El antiguo modo [rey de la pista](REY-DE-LA-PISTA.md), con parejas fijas, se retiró de la app en noviembre de 2026; la partida en directo es ahora el único modo de sesión.
+
+A cuántos goles se juega lo marca la temporada, pero desde la tablet se puede fijar otro valor para la sesión del día (migración 010, ver [TABLET-PARED.md](TABLET-PARED.md)).
 
 ## Cómo funciona
 
@@ -22,7 +24,8 @@ Los partidos jugados se cuentan por sesión y **se conservan aunque te desfiches
 Dentro del grupo de los que ya han jugado, los dos perdedores salen a la vez, así que hay que decidir cuál va antes:
 
 - Pasa primero quien **llevaba más tiempo esperando antes de entrar** a la partida que acaba de perder.
-- Si ambos habían esperado lo mismo — la primera ronda de la sesión, por ejemplo — **se sortea**.
+- Si ambos habían esperado lo mismo, pasa primero quien **lleva menos partidas jugadas ese día** (migración 010).
+- Solo si también han jugado las mismas — la primera ronda de la sesión, por ejemplo — **se sortea**.
 
 Un banner en lo alto de la pantalla dice si estás jugando, si esperas y en qué puesto de la cola vas.
 
@@ -68,4 +71,3 @@ La migración `008_live_tablet.sql` añade los goles por jugador (`goal_log` en 
 - `tests/odds.test.ts` — cuotas, margen y topes del pronóstico.
 - `tests/live-database.test.ts` — permisos, idempotencia, guardia de revisión y rotación en PostgreSQL embebido.
 - `tests/e2e/live.spec.ts` — recorrido completo en móvil y escritorio.
-

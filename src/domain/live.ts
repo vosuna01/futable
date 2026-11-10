@@ -31,6 +31,8 @@ export interface LiveState {
    * one taken back. Absent before migration 008; `goals` stays the board.
    */
   goal_log?: Goal[];
+  /** Goals to win chosen for this session (migration 010); else the season's. */
+  target?: number;
   /** Matches each player has played this session, kept across leaving the queue. */
   played: Record<string, number>;
   queue: Waiting[];
@@ -233,12 +235,30 @@ export function liveError(state: LiveState, players: Player[]): string | null {
 }
 /**
  * Both losers leave together, so their order in the queue has to be decided.
- * Whoever had waited longer before stepping onto the court goes first; when the
- * wait is identical — every player's first round, for instance — a coin decides.
+ * Whoever had waited longer before stepping onto the court goes first; with the
+ * same wait, whoever has played fewer matches today (migration 010); only when
+ * that is equal too — every player's first round, for instance — a coin decides.
  */
-export function loserOrder(a: Slot, b: Slot, coin: number): [Slot, Slot] {
+export function loserOrder(
+  a: Slot,
+  b: Slot,
+  coin: number,
+  played: Record<string, number> = {},
+): [Slot, Slot] {
   if (a.waited !== b.waited) return a.waited > b.waited ? [a, b] : [b, a];
+  const pa = played[a.id] ?? 0,
+    pb = played[b.id] ?? 0;
+  if (pa !== pb) return pa < pb ? [a, b] : [b, a];
   return coin < 0.5 ? [a, b] : [b, a];
+}
+/** Goals to win in this session: the one chosen on the tablet, else the season's. */
+export const goalsToWin = (state: LiveState, seasonTarget: number) =>
+  state.target ?? seasonTarget;
+/** Chooses how many goals win a match for the rest of the session. */
+export function setTarget(state: LiveState, goals: number): LiveState {
+  if (!Number.isInteger(goals) || goals < 1 || goals > 99)
+    throw new Error("Goles para ganar inválidos.");
+  return { ...state, target: goals };
 }
 /**
  * Losers to the back of the queue, then the first two waiting step in. With an
@@ -257,6 +277,7 @@ export function rotate(
     state.court[loser].defender,
     state.court[loser].forward,
     coin,
+    state.played,
   );
   // The four who just played add a match, which drops them behind anyone
   // still waiting for their first one.
@@ -276,6 +297,8 @@ export function rotate(
     queue[1],
   );
   return {
+    // Keeps session-wide settings such as the goals to win, as the server does.
+    ...state,
     round,
     goals: noGoals(),
     goal_log: [],

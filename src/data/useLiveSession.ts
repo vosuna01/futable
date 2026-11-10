@@ -11,6 +11,7 @@ import {
   replacePair,
   scoreGoal,
   setPost,
+  setTarget,
   startCourt,
 } from "../domain/live";
 import type { MatchInput, Position, Snapshot, Team } from "../domain/types";
@@ -29,6 +30,8 @@ export interface LiveFields {
   post?: Position | null;
   /** Pins a replacement editor to the state the user actually reviewed. */
   expected_revision?: number;
+  /** `target`: goals to win for the rest of the session (migration 010). */
+  goals?: number;
 }
 /** Actions that only exist once migration 008 is applied. */
 const needs008 = new Set(["prefer"]);
@@ -187,6 +190,8 @@ export function useLiveSession({
         fields.delta!,
         fields.player,
       );
+    if (action === "target")
+      next.state = setTarget(before.state, fields.goals!);
     if (action === "prefer")
       next.state = setPost(before.state, fields.player!, fields.post ?? null);
     if (action === "result") {
@@ -273,6 +278,13 @@ export function useLiveSession({
           )
             throw new Error(
               "Cambiar jugadores necesita la migración 009 en la base de datos.",
+            );
+          if (
+            action === "target" &&
+            /Acción desconocida/.test(result.error.message)
+          )
+            throw new Error(
+              "Elegir los goles necesita la migración 010 en la base de datos.",
             );
           if (
             needs008.has(action) &&

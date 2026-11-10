@@ -52,6 +52,8 @@ beforeAll(async () => {
     "007_live_queue_guards",
     "008_live_tablet",
     "009_live_replace_pair",
+    // 010: the same suite must hold with the newer tie-break and target.
+    "010_live_tiebreak_target",
   ])
     await db.exec(
       await readFile(
