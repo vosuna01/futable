@@ -13,7 +13,7 @@ A cuántos goles se juega lo marca la temporada, pero desde la tablet se puede f
 3. **Marcador en vivo.** Cada equipo tiene su tarjeta con el marcador grande, sus dos jugadores, el botón de ganar y, debajo, uno ancho para sumar gol y uno estrecho para anularlo. Las dos tarjetas van lado a lado también en el móvil. El marcador es estado compartido: todo el mundo ve el mismo, y es el que se guarda con la partida. Dejado a cero, se guarda solo la victoria.
 4. **Resultado.** Un toque en «Gana Madrid» o «Gana Barça». Lo apunta cualquiera que esté fichado, juegue o espere, o un administrador. Si el marcador no cuadra con el ganador, la app no guarda.
 5. **Rotación.** Los ganadores conservan equipo y posición. Los dos perdedores van al final de la cola y entran los dos primeros que estén esperando. Al guardar, un pop-up con los colores del equipo afectado confirma el resultado, deja repartir los puestos de quienes entran y ofrece cerrar la sesión del día.
-6. **Cerrar.** Quien abrió la sesión, o un administrador, la cierra al acabar el día. Se vacían pista y cola; las partidas guardadas se conservan.
+6. **Cerrar.** Cualquier miembro de la liga la cierra al acabar el día (desde la migración 011; antes solo quien la abrió o un administrador). Se vacían pista y cola; las partidas guardadas se conservan.
 
 ## Orden de la cola
 

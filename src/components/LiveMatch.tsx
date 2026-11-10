@@ -106,8 +106,8 @@ export function LiveMatch({
   const canRun =
     (signedUp || data.role === "admin" || data.role === "scoreboard") &&
     sameSeason;
-  const canClose =
-    !!session && (session.owner_id === user || data.role === "admin");
+  // Any member of the league may close the day (migration 011); matches stay.
+  const canClose = !!session;
   const invalid = state ? liveError(state, data.players) : null;
 
   const odds = useMemo(

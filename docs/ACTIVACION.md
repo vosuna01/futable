@@ -6,6 +6,8 @@ Actualización del 5 de noviembre de 2026: migración 005 aplicada y sesión con
 
 Verificación de esta actualización: TypeScript, 64 pruebas de dominio/PostgreSQL y 24 pruebas de navegador en móvil/escritorio. RPC online comprobada en transacción revertida: rotación, idempotencia, victoria sin marcador, deshacer, pausa sin rivales y cierre. Las 58 partidas existentes se conservaron y no quedaron sesiones ni datos de prueba nuevos.
 
+Actualización del 10 de noviembre de 2026: migración `011_live_close_any_member.sql` aplicada en producción (Pol, desde el SQL Editor), con el archivo exacto del commit `6552d3d`. Cualquier miembro activo de la liga puede cerrar la sesión en directo del día; antes solo quien la abrió o un administrador. Verificado después: la huella de `live_session_command` coincide con la de la 011 y conserva lo de la 010. No modifica tablas ni partidas.
+
 Actualización del 10 de noviembre de 2026: migración `010_live_tiebreak_target.sql` aplicada en producción (Pol, desde el SQL Editor), con el archivo exacto del commit `63f3aa6`. Antes de aplicarla se comprobó que la 009 estaba aplicada y que la RPC coincidía con la del repositorio; la propia migración lo vuelve a comprobar. Verificado después: la huella de `live_session_command` coincide con la de la 010, existe la acción `target` y el desempate por partidas del día. No modifica tablas ni partidas; la sesión en directo abierta sigue siendo válida. En la app se retira el modo Rey de la pista (la base de datos conserva `king_sessions` y sus partidas).
 
 Actualización del 9 de noviembre de 2026: migración `008_live_tablet.sql` aplicada en producción (Pol, desde el SQL Editor), con el modo tablet de pared. Consulta [la guía](TABLET-PARED.md).
