@@ -25,6 +25,11 @@ test("sustituye jugadores, conserva al rival y vuelve a guardar resultados", asy
   page,
 }) => {
   await openTablet(page);
+  await page.getByRole("button", { name: /Partidas a .* goles/ }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "5", exact: true })
+    .click();
   await page.getByRole("button", { name: "Empezar partida" }).click();
   await page
     .getByRole("dialog")
@@ -62,11 +67,17 @@ test("sustituye jugadores, conserva al rival y vuelve a guardar resultados", asy
   await expect(page.getByLabel("Goles Madrid")).toHaveText("0");
   await expect(page.locator(".tablet-queue")).toContainText(names[0]);
   await expect(page.locator(".tablet-queue")).not.toContainText(names[4]);
+  await expect(
+    page.getByRole("button", { name: /Partidas a 5 goles/ }),
+  ).toBeVisible();
   await page.getByLabel(`Gol de ${names[4]}`, { exact: true }).click();
   await page.getByRole("button", { name: "Gana Madrid", exact: true }).click();
   await dialog.getByRole("button", { name: "Guardar resultado" }).click();
   await expect(page.getByLabel("Goles Madrid")).toHaveText("0");
   await expect(page.locator(madrid)).toContainText(names[4]);
+  await expect(
+    page.getByRole("button", { name: /Partidas a 5 goles/ }),
+  ).toBeVisible();
 });
 
 test("los nombres al fichar tienen contraste y la tablet cabe en pantallas pequeñas", async ({

@@ -54,6 +54,8 @@ beforeAll(async () => {
     "009_live_replace_pair",
     // 010: the same suite must hold with the newer tie-break and target.
     "010_live_tiebreak_target",
+    // Verify replacements against Pol's latest permissions, too.
+    "011_live_close_any_member",
   ])
     await db.exec(
       await readFile(
@@ -138,6 +140,7 @@ describe.sequential("Sustituir una pareja desde la tablet", () => {
     await as(tablet);
   });
   it("permite entrar a alguien sin fichar, conserva al compañero y devuelve al saliente a la cola", async () => {
+    k = await command("target", { goals: 5 });
     k = await command("goal", { team: "blue", player: player(1), delta: 2 });
     const before = k.state;
     k = await command("replace", {
@@ -154,6 +157,7 @@ describe.sequential("Sustituir una pareja desde la tablet", () => {
     ]);
     expect(k.state.goals).toEqual({ blue: 0, red: 0 });
     expect(k.state.goal_log).toEqual([]);
+    expect(k.state.target).toBe(5);
     expect(k.last_match).toBeNull();
     expect((await db.query("select * from public.matches")).rows).toHaveLength(
       0,

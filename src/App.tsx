@@ -45,6 +45,8 @@ import { MyProfile } from "./components/MyProfile";
 import { LiveMatch } from "./components/LiveMatch";
 import { useLiveSession } from "./data/useLiveSession";
 import { LiveTablet } from "./components/LiveTablet";
+import { useCoins } from "./data/useCoins";
+import { CoinsClub, CoinMarketPanel } from "./components/CoinsClub";
 import "./live.css";
 import "./tablet.css";
 const nav = [
@@ -52,6 +54,7 @@ const nav = [
   ["rankings", "Clasificaciones", BarChart3],
   ["players", "Jugadores", Users],
   ["history", "Historial", Activity],
+  ["club", "Club", Trophy],
 ] as const;
 export default function App() {
   const league = useLeague();
@@ -83,6 +86,7 @@ export default function App() {
     [tablet, setTablet] = useState(() =>
       new URLSearchParams(location.search).has("tablet"),
     );
+  const coins = useCoins(data, liveMatch.session, demo, liveUser, seasonId);
   const openTablet = (on: boolean) => {
     setTablet(on);
     history.replaceState(null, "", on ? `${appUrl()}?tablet` : appUrl());
@@ -489,7 +493,16 @@ export default function App() {
               user={liveUser}
               online={online}
               onTablet={() => openTablet(true)}
+              betting={
+                <details className="coin-live-drawer">
+                  <summary>Coins · Apostar en esta partida</summary>
+                  <CoinMarketPanel coins={coins} online={online} />
+                </details>
+              }
             />
+          )}
+          {page === "club" && (
+            <CoinsClub coins={coins} data={data} online={online} demo={demo} />
           )}
           {page === "home" && (
             <>

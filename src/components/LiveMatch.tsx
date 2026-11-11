@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import {
   ArrowLeftRight,
   CheckCircle2,
@@ -73,6 +74,7 @@ export function LiveMatch({
   user,
   online,
   onTablet,
+  betting,
 }: {
   live: ReturnType<typeof useLiveSession>;
   data: Snapshot;
@@ -80,6 +82,7 @@ export function LiveMatch({
   user: string;
   online: boolean;
   onTablet?: () => void;
+  betting?: ReactNode;
 }) {
   const { session } = live;
   const state: LiveState | null = session?.state ?? null;
@@ -278,7 +281,7 @@ export function LiveMatch({
                 <div className="live-bet">
                   <div className="live-bet-head">
                     <TrendingUp size={17} />
-                    <strong>PRONÓSTICO BET365</strong>
+                    <strong>PRONÓSTICO DE LA PISTA</strong>
                   </div>
                   <div className="live-bet-rows">
                     {shown.map((team) => (
@@ -287,19 +290,20 @@ export function LiveMatch({
                         className={`live-bet-row ${odds.favourite === team ? "favourite" : ""}`}
                       >
                         <span>{teamNames[team]}</span>
-                        <b>{odds[team].decimal.toFixed(2)}</b>
+                        <b>{Math.round(odds[team].probability * 100)}%</b>
                         <small>
-                          {Math.round(odds[team].probability * 100)}%
+                          estimado
                         </small>
                       </div>
                     ))}
                   </div>
                   <p className="rule-note">
-                    Pronóstico de broma. No se apuesta dinero.
+                    Estimación estadística. El bote de coins se reparte por separado.
                   </p>
                 </div>
               )}
 
+              {betting}
               <div className="live-teams">
                 {shown.map((team) => (
                   <article key={team} className={`live-team ${team}`}>

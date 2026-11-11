@@ -126,13 +126,17 @@ test("la alineación se arma tocando dos puestos", async ({ page }) => {
   await expect(page.locator(madrid)).toContainText(names[3]);
 });
 
-test("el pronóstico pone cuotas a los dos equipos", async ({ page }) => {
+test("el pronóstico muestra probabilidades separadas del bote de coins", async ({
+  page,
+}) => {
   await signUp(page, 4);
   await start(page);
   const bet = page.locator(".live-bet");
-  await expect(bet).toContainText("PRONÓSTICO BET365");
-  // One decimal quote per team, printed like a bookmaker does.
+  await expect(bet).toContainText("PRONÓSTICO DE LA PISTA");
   await expect(bet.locator(".live-bet-row b")).toHaveCount(2);
-  for (const quote of await bet.locator(".live-bet-row b").allInnerTexts())
-    expect(Number(quote)).toBeGreaterThanOrEqual(1.01);
+  const probabilities = (
+    await bet.locator(".live-bet-row b").allInnerTexts()
+  ).map((q) => Number(q.replace("%", "")));
+  expect(probabilities.reduce((a, b) => a + b, 0)).toBe(100);
+  await expect(bet).toContainText("El bote de coins se reparte por separado");
 });

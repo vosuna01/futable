@@ -8,6 +8,7 @@ import "./club.css";
 import "./install.css";
 import "./premium.css";
 import "./auth.css";
+import "./coins.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
