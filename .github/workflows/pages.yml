@@ -10,8 +10,10 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
+    env:
+      PLAYWRIGHT_CHANNEL: chrome
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -26,7 +28,6 @@ jobs:
       - run: pnpm build
         env:
           SITE_BASE_PATH: /futable/
-      - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:auth
       - run: pnpm exec playwright test --config playwright.hosting.config.ts
       - uses: actions/upload-pages-artifact@v4
@@ -34,7 +35,7 @@ jobs:
           path: dist
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       pages: write
       id-token: write

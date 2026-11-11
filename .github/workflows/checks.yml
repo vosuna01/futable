@@ -10,8 +10,10 @@ concurrency:
   cancel-in-progress: true
 jobs:
   comprobar:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
+    env:
+      PLAYWRIGHT_CHANNEL: chrome
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -24,7 +26,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
       - run: pnpm build
-      - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - run: pnpm test:auth
 
