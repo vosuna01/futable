@@ -20,7 +20,6 @@ test("muestra la fecha y la cuenta atrás de Madrid y termina sin cerrar la temp
   await page.clock.setFixedTime(new Date("2026-11-27T23:00:01Z"));
   await expect(banner).toContainText("Plazo finalizado");
   await expect(banner.getByRole("timer")).toHaveCount(0);
-  await expect(
-    page.getByText("TEMPORADA EN JUEGO", { exact: true }),
-  ).toBeVisible();
+  // The compact mobile header hides this caption, but the season stays active.
+  await expect(page.locator(".season-info")).toHaveText("TEMPORADA EN JUEGO");
 });
