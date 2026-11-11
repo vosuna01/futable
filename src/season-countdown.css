@@ -1,0 +1,94 @@
+.season-countdown {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  background: linear-gradient(110deg, #f0f6ed, #f5f8f6);
+  border: 1px solid #d9e5d6;
+  border-radius: 18px;
+  padding: 18px 22px;
+  margin: 0 0 20px;
+  color: #284d3d;
+}
+.season-countdown-copy {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.season-countdown-copy > svg {
+  flex-shrink: 0;
+  color: #548062;
+}
+.season-countdown-copy > div {
+  display: grid;
+  gap: 5px;
+}
+.season-countdown-copy span {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #5b7966;
+}
+.season-countdown-copy strong {
+  font-size: 15px;
+  letter-spacing: -0.2px;
+  text-transform: capitalize;
+}
+.season-countdown-copy small {
+  font-size: 11px;
+  color: #61746a;
+}
+.season-countdown-clock {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(42px, 1fr));
+  gap: 8px;
+  flex-shrink: 0;
+}
+.season-countdown-clock > div {
+  display: grid;
+  gap: 3px;
+  justify-items: center;
+  min-width: 46px;
+}
+.season-countdown-clock b {
+  font-size: 27px;
+  line-height: 1.2;
+  letter-spacing: -0.6px;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono, monospace);
+  font-weight: 650;
+}
+.season-countdown-clock span {
+  font-size: 9px;
+  color: #61746a;
+}
+.season-countdown-finished {
+  font-size: 12px;
+  max-width: 250px;
+  line-height: 1.5;
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .season-countdown {
+    padding: 17px 18px;
+    gap: 17px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .season-countdown-clock {
+    width: 100%;
+    gap: 10px;
+  }
+  .season-countdown-clock > div {
+    padding: 9px 6px;
+    background: #ffffffb0;
+    border: 1px solid #dde7d9;
+    border-radius: 10px;
+  }
+  .season-countdown-clock b {
+    font-size: 25px;
+  }
+  .season-countdown-copy strong {
+    font-size: 14px;
+  }
+}

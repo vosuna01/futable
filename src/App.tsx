@@ -47,6 +47,7 @@ import { useLiveSession } from "./data/useLiveSession";
 import { LiveTablet } from "./components/LiveTablet";
 import { useCoins } from "./data/useCoins";
 import { CoinsClub, CoinMarketPanel } from "./components/CoinsClub";
+import { SeasonCountdown } from "./components/SeasonCountdown";
 import "./live.css";
 import "./tablet.css";
 const nav = [
@@ -468,6 +469,10 @@ export default function App() {
                   : "ARCHIVO DE TEMPORADA"}
             </span>
           </div>
+          {!allTime &&
+            season?.status === "active" &&
+            season.ends_at &&
+            page !== "live" && <SeasonCountdown date={season.ends_at} />}
           {(active || liveMatch.session) && page !== "live" && (
             <button
               className={`live-entry ${page === "live" ? "selected" : ""}`}

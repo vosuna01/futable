@@ -32,7 +32,7 @@ export function createDemo(): Snapshot {
     league_id: league.id,
     name: "Temporada de otoño · 2026",
     starts_at: "2026-09-01",
-    ends_at: null,
+    ends_at: "2026-11-27",
     status: "active" as const,
     final_results: null,
   };
