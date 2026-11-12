@@ -10,6 +10,7 @@ import {
   Radio,
   Tablet,
   Ticket,
+  Target,
   TrendingUp,
   Undo2,
   UserPlus,
@@ -34,6 +35,7 @@ import {
 } from "../domain/types";
 import { teamNames } from "../domain/teams";
 import { Avatar, Modal } from "./ui";
+import { PlayerPicker } from "./PlayerPicker";
 
 const postNames = { defender: "Defensa", forward: "Delantero" } as const;
 /** Madrid on the left and Barça on the right, as on the score form. */
@@ -90,6 +92,8 @@ export function LiveMatch({
     [error, setError] = useState(""),
     [notice, setNotice] = useState("");
   const [adding, setAdding] = useState(false),
+    [targeting, setTargeting] = useState(false),
+    [draftTarget, setDraftTarget] = useState(3),
     [starting, setStarting] = useState(false),
     [closing, setClosing] = useState(false),
     [sorting, setSorting] = useState<Team | null>(null);
@@ -164,6 +168,10 @@ export function LiveMatch({
         setClosing(false);
         setNotice("Sesión cerrada. Los resultados se conservan.");
       }
+      if (action === "target") {
+        setTargeting(false);
+        setNotice(`Partidas a ${fields.goals} goles.`);
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -234,7 +242,7 @@ export function LiveMatch({
           <h2>Nadie ha fichado todavía.</h2>
           <p>
             El primero en ficharse abre la sesión del día. A partir de cuatro,
-            la pista arranca sola.
+            podéis preparar los equipos y pulsar «Empezar partida».
           </p>
           {me ? (
             <button
@@ -270,9 +278,28 @@ export function LiveMatch({
               {playing
                 ? "Ahora mismo en la pista"
                 : waitingAt >= 0
-                  ? `${waitingAt + 1}º de la cola · ${waitingAt === 0 ? "entras en la próxima" : `${waitingAt} por delante`}`
+                  ? `${waitingAt + 1}º de la cola · ${state?.court && waitingAt < 2 ? "entras en la próxima pareja" : `${waitingAt} por delante`}`
                   : "Toca Fitxo para entrar en la cola"}
             </span>
+          </div>
+
+          <div className="live-session-tools">
+            <span>
+              <Target size={16} />
+              Partidas a{" "}
+              <b>{state?.target ?? activeSeason?.target ?? 3} goles</b>
+            </span>
+            <button
+              className="text-button"
+              aria-label="Cambiar objetivo de goles"
+              disabled={!canRun || busy || !online}
+              onClick={() => {
+                setDraftTarget(state?.target ?? activeSeason?.target ?? 3);
+                setTargeting(true);
+              }}
+            >
+              Cambiar objetivo
+            </button>
           </div>
 
           {state!.court ? (
@@ -291,14 +318,13 @@ export function LiveMatch({
                       >
                         <span>{teamNames[team]}</span>
                         <b>{Math.round(odds[team].probability * 100)}%</b>
-                        <small>
-                          estimado
-                        </small>
+                        <small>estimado</small>
                       </div>
                     ))}
                   </div>
                   <p className="rule-note">
-                    Estimación estadística. El bote de coins se reparte por separado.
+                    Estimación estadística. El bote de coins se reparte por
+                    separado.
                   </p>
                 </div>
               )}
@@ -392,6 +418,17 @@ export function LiveMatch({
               <h2>Cola</h2>
               <span>{state!.queue.length} esperando</span>
             </div>
+            {state!.queue.length >= 2 && state!.court && (
+              <p className="next-pair">
+                <strong>Próxima pareja</strong>
+                <span>
+                  {state!.queue
+                    .slice(0, 2)
+                    .map((w) => named(w.id)?.name ?? "Jugador")
+                    .join(" y ")}
+                </span>
+              </p>
+            )}
             {state!.queue.length ? (
               <ol>
                 {state!.queue.map((w, i) => (
@@ -438,8 +475,9 @@ export function LiveMatch({
             </button>
             <p className="rule-note">
               Quien no ha jugado todavía pasa delante. Después, los ganadores se
-              quedan y los perdedores van al final; si ambos esperaron lo mismo,
-              se sortea.
+              quedan y los perdedores van al final. Si esperaron lo mismo, entra
+              primero quien haya jugado menos hoy; solo se sortea si sigue el
+              empate.
             </p>
           </section>
 
@@ -461,18 +499,11 @@ export function LiveMatch({
             Apunta a quien no lleve el móvil. Quien aún no ha jugado tiene
             prioridad.
           </p>
-          <ul className="live-picker">
-            {eligible.map((p) => (
-              <li key={p.id}>
-                <button
-                  disabled={busy || !online}
-                  onClick={() => void run("join", { players: [p.id] })}
-                >
-                  <Avatar player={p} size="small" /> {p.name}
-                </button>
-              </li>
-            ))}
-          </ul>
+          <PlayerPicker
+            players={eligible}
+            disabled={busy || !online}
+            onPick={(id) => void run("join", { players: [id] })}
+          />
         </Modal>
       )}
 
@@ -534,6 +565,73 @@ export function LiveMatch({
         />
       )}
 
+      {targeting && (
+        <Modal
+          title="Objetivo de goles"
+          onClose={() => {
+            if (!busy) setTargeting(false);
+          }}
+        >
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (
+                Number.isInteger(draftTarget) &&
+                draftTarget >= 1 &&
+                draftTarget <= 99
+              )
+                void run("target", { goals: draftTarget });
+            }}
+          >
+            <p>
+              Se aplica a esta sesión y a las siguientes partidas del día. Si
+              hay apuestas abiertas, se devolverán al cambiarlo.
+            </p>
+            <div className="filter-pills goal-target-options">
+              {[2, 3, 4, 5, 6, 10].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  aria-pressed={draftTarget === n}
+                  onClick={() => setDraftTarget(n)}
+                >
+                  {n} goles
+                </button>
+              ))}
+            </div>
+            <label className="field">
+              Otro objetivo
+              <input
+                aria-label="Goles para ganar"
+                type="number"
+                required
+                min="1"
+                max="99"
+                value={draftTarget}
+                onChange={(e) => setDraftTarget(Number(e.target.value))}
+              />
+            </label>
+            {error && (
+              <p className="error" role="alert">
+                {error}
+              </p>
+            )}
+            <button
+              className="primary full"
+              disabled={
+                busy ||
+                !online ||
+                !Number.isInteger(draftTarget) ||
+                draftTarget < 1 ||
+                draftTarget > 99 ||
+                draftTarget === (state?.target ?? activeSeason?.target ?? 3)
+              }
+            >
+              Guardar objetivo
+            </button>
+          </form>
+        </Modal>
+      )}
       {closing && (
         <Modal title="Cerrar sesión" onClose={() => setClosing(false)}>
           <p>

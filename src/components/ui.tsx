@@ -1,5 +1,5 @@
 import { appUrl } from "../domain/app-url";
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { X, Shield, ArrowUpRight } from "lucide-react";
 import type { Player } from "../domain/types";
 export const pct = (v: number) =>
@@ -71,6 +71,8 @@ export function Empty({
     </div>
   );
 }
+let modalLocks = 0;
+let previousBodyOverflow = "";
 export function Modal({
   title,
   onClose,
@@ -80,28 +82,63 @@ export function Modal({
   onClose: () => void;
   children: ReactNode;
 }) {
+  const section = useRef<HTMLElement>(null);
+  const returnFocus = useRef(document.activeElement as HTMLElement | null);
+  useEffect(() => {
+    const previousFocus = returnFocus.current;
+    if (modalLocks++ === 0) {
+      previousBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
+    if (!section.current?.contains(document.activeElement))
+      section.current
+        ?.querySelector<HTMLButtonElement>("[data-modal-close]")
+        ?.focus();
+    return () => {
+      if (--modalLocks === 0)
+        document.body.style.overflow = previousBodyOverflow;
+      if (
+        previousFocus?.isConnected &&
+        (modalLocks === 0 || previousFocus.closest(".overlay"))
+      )
+        previousFocus.focus({ preventScroll: true });
+    };
+  }, []);
   return (
-    <div className="overlay" onClick={onClose}>
+    <div
+      className="overlay"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <section
+        ref={section}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         className="modal"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
-          if (e.key === "Escape") onClose();
+          if (e.key === "Escape") {
+            e.stopPropagation();
+            onClose();
+          }
           if (e.key === "Tab") {
             const els = Array.from(
               e.currentTarget.querySelectorAll<HTMLElement>(
-                "button:not(:disabled),input,select,a[href]",
+                "button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href],[tabindex]:not([tabindex='-1'])",
               ),
-            );
+            ).filter((el) => el.getClientRects().length > 0);
             const first = els[0],
               last = els.at(-1);
             if (e.shiftKey && document.activeElement === first) {
               e.preventDefault();
               last?.focus();
-            } else if (!e.shiftKey && document.activeElement === last) {
+            } else if (
+              !e.shiftKey &&
+              (document.activeElement === last ||
+                !section.current?.contains(document.activeElement))
+            ) {
               e.preventDefault();
               first?.focus();
             }
@@ -114,6 +151,8 @@ export function Modal({
             <h2>{title}</h2>
           </div>
           <button
+            data-modal-close
+            type="button"
             autoFocus
             className="icon-button"
             onClick={onClose}

@@ -8,6 +8,7 @@ import {
 } from "../domain/rankings";
 import type { Match, Player, Rules, Stats } from "../domain/types";
 import { Avatar, Empty, pct } from "./ui";
+import { matchesSearch } from "../domain/presentation";
 export function RankTable({
   rows,
   onPlayer,
@@ -151,9 +152,7 @@ export function Rankings({
   const positions = new Map(
     sortedAll.filter((s) => s.qualified).map((s, i) => [s.player.id, i + 1]),
   );
-  const sorted = sortedAll.filter((s) =>
-    s.player.name.toLowerCase().includes(query.toLowerCase()),
-  );
+  const sorted = sortedAll.filter((s) => matchesSearch(s.player.name, query));
   const pairs = pairRanking(players, matches, rules),
     improved = improvement(players, matches, rules);
   const all = ranking(players, matches, rules);
@@ -195,7 +194,31 @@ export function Rankings({
         </h1>
         <p>Las victorias importan. El contexto, también.</p>
       </div>
-      <div className="tabs" role="tablist" aria-label="Clasificaciones">
+      <div
+        className="tabs"
+        role="tablist"
+        aria-label="Clasificaciones"
+        onKeyDown={(e) => {
+          const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];
+          if (!keys.includes(e.key)) return;
+          const buttons = Array.from(
+            e.currentTarget.querySelectorAll<HTMLButtonElement>("[role=tab]"),
+          );
+          const at = buttons.indexOf(
+            document.activeElement as HTMLButtonElement,
+          );
+          const next =
+            e.key === "Home"
+              ? 0
+              : e.key === "End"
+                ? buttons.length - 1
+                : (at + (e.key === "ArrowRight" ? 1 : -1) + buttons.length) %
+                  buttons.length;
+          e.preventDefault();
+          setTab(buttons[next].textContent ?? "General");
+          buttons[next].focus();
+        }}
+      >
         {[
           "General",
           "Defensas",
@@ -207,6 +230,7 @@ export function Rankings({
           <button
             role="tab"
             aria-selected={tab === t}
+            tabIndex={tab === t ? 0 : -1}
             key={t}
             onClick={() => setTab(t)}
           >
@@ -288,7 +312,16 @@ export function Rankings({
               <div className="pair-row" key={p.id}>
                 <span className="rank-number">{p.qualified ? i + 1 : "—"}</span>
                 <div>
-                  <strong>{p.names.join(" + ")}</strong>
+                  <strong className="pair-members">
+                    {p.names.map((name, j) => (
+                      <span key={p.ids[j]}>
+                        {j > 0 && <span aria-hidden="true"> + </span>}
+                        <button onClick={() => onPlayer(p.ids[j])}>
+                          {name}
+                        </button>
+                      </span>
+                    ))}
+                  </strong>
                   <small>
                     {p.qualified ? "Pareja clasificada" : "Provisional"} ·{" "}
                     {p.games} PJ · {p.wins} victorias · real {pct(p.raw)}
@@ -327,12 +360,31 @@ export function Rankings({
               </select>
             </label>
           </div>
+          <p className="ranking-summary">
+            {sortedAll.filter((s) => s.qualified).length} clasificados ·{" "}
+            {sortedAll.filter((s) => !s.qualified).length} en clasificación ·
+            Mínimo {rules.minimum} partidas
+            {position
+              ? " en esta posición"
+              : tab === "Completos"
+                ? " en cada posición"
+                : ""}
+          </p>
           <div className="panel">
-            <RankTable
-              rows={sorted}
-              onPlayer={onPlayer}
-              positions={positions}
-            />
+            {!sorted.length && query.trim() ? (
+              <Empty title="No encontramos a ese jugador">
+                Revisa el nombre o prueba sin filtros.
+                <button className="secondary" onClick={() => setQuery("")}>
+                  Borrar búsqueda
+                </button>
+              </Empty>
+            ) : (
+              <RankTable
+                rows={sorted}
+                onPlayer={onPlayer}
+                positions={positions}
+              />
+            )}
           </div>
           {tab === "Completos" && (
             <div className="panel improvement">

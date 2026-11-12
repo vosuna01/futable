@@ -2,7 +2,14 @@ import { appUrl } from "../domain/app-url";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useAuthProviders } from "../data/useAuthProviders";
 import { oauthCallbackError } from "../domain/auth";
-import { ArrowRight, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import {
   supabase,
   passwordFlow,
@@ -22,7 +29,9 @@ export function Auth({ onDemo }: { onDemo: () => void }) {
     [error, setError] = useState(() =>
       oauthCallbackError(location.search, location.hash),
     ),
-    [message, setMessage] = useState("");
+    [message, setMessage] = useState(""),
+    [showPassword, setShowPassword] = useState(false);
+  useEffect(() => setShowPassword(false), [mode]);
   async function enterWithGoogle() {
     if (googleAttempt.current || busy || !supabase || !providers.google) return;
     if (!navigator.onLine) {
@@ -65,11 +74,17 @@ export function Auth({ onDemo }: { onDemo: () => void }) {
       return;
     }
     if (busy) return;
+    if (!navigator.onLine) {
+      setError(
+        "Necesitas conexión para entrar o crear tu cuenta. Puedes explorar la demostración mientras tanto.",
+      );
+      return;
+    }
     setBusy(true);
     setError("");
     setMessage("");
     const f = new FormData(e.currentTarget),
-      email = String(f.get("email") || ""),
+      email = String(f.get("email") || "").trim(),
       password = String(f.get("password") || "");
     if (
       mode === "signup" &&
@@ -280,6 +295,9 @@ export function Auth({ onDemo }: { onDemo: () => void }) {
                       autoComplete="email"
                       name="email"
                       type="email"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      inputMode="email"
                       required
                       placeholder="tu@empresa.com"
                     />
@@ -291,18 +309,34 @@ export function Auth({ onDemo }: { onDemo: () => void }) {
                 mode === "signup") && (
                 <label className="field">
                   Contraseña
-                  <input
-                    name="password"
-                    type="password"
-                    minLength={8}
-                    autoComplete={
-                      mode === "password" || mode === "signup"
-                        ? "new-password"
-                        : "current-password"
-                    }
-                    required
-                    placeholder="Tu contraseña"
-                  />
+                  <div className="password-field">
+                    <input
+                      name="password"
+                      aria-label="Contraseña"
+                      type={showPassword ? "text" : "password"}
+                      minLength={8}
+                      autoComplete={
+                        mode === "password" || mode === "signup"
+                          ? "new-password"
+                          : "current-password"
+                      }
+                      required
+                      placeholder="Tu contraseña"
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      aria-label={
+                        showPassword
+                          ? "Ocultar contraseña"
+                          : "Mostrar contraseña"
+                      }
+                      aria-pressed={showPassword}
+                      onClick={() => setShowPassword((v) => !v)}
+                    >
+                      {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+                    </button>
+                  </div>
                 </label>
               )}
               {mode === "signup" && (
@@ -310,7 +344,7 @@ export function Auth({ onDemo }: { onDemo: () => void }) {
                   Confirmar contraseña
                   <input
                     name="confirm_password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     minLength={8}
                     autoComplete="new-password"
                     required
@@ -328,7 +362,15 @@ export function Auth({ onDemo }: { onDemo: () => void }) {
                   {message}
                 </p>
               )}
-              <button className="primary full" disabled={busy}>
+              {!navigator.onLine && (
+                <p className="error">
+                  Sin conexión. Puedes explorar la demostración.
+                </p>
+              )}
+              <button
+                className="primary full"
+                disabled={busy || !navigator.onLine}
+              >
                 {busy
                   ? "Conectando…"
                   : mode === "password"

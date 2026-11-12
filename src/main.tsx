@@ -10,6 +10,7 @@ import "./premium.css";
 import "./auth.css";
 import "./coins.css";
 import "./season-countdown.css";
+import "./usability.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />

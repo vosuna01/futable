@@ -41,6 +41,7 @@ export function CoinMarketPanel({
     ![...m.signature.red, ...m.signature.blue].includes(s.player_id);
   const bet = m?.own_bet,
     pool = m ? m.red_pool + m.blue_pool : 0;
+  const selectedTeam = bet?.team ?? team;
   const potential = m
     ? pooledReturn(stake, pool + stake, m[`${team}_pool`] + stake)
     : 0;
@@ -77,8 +78,8 @@ export function CoinMarketPanel({
             {(["red", "blue"] as const).map((t) => (
               <button
                 key={t}
-                className={team === t ? "selected" : ""}
-                aria-pressed={team === t}
+                className={selectedTeam === t ? "selected" : ""}
+                aria-pressed={selectedTeam === t}
                 disabled={!spectator || !!bet || m.status !== "open"}
                 onClick={() => setTeam(t)}
               >
@@ -105,6 +106,13 @@ export function CoinMarketPanel({
                 {bet.stake} coins a {teamNames[bet.team]}
               </b>
               . Se resolverá al guardar el resultado.
+              <span className="coin-ticket-estimate">
+                Retorno estimado si aciertas:{" "}
+                <b>
+                  {pooledReturn(bet.stake, pool, m[`${bet.team}_pool`])} coins
+                </b>
+                . Incluye tu apuesta y puede cambiar con el bote.
+              </span>
             </p>
           ) : !spectator ? (
             <p>
@@ -150,6 +158,16 @@ export function CoinMarketPanel({
                   Apostar <ArrowUpRight size={17} />
                 </button>
               </div>
+              <p className="coin-fine">
+                Disponible:{" "}
+                <b>{s.wallet?.balance ?? s.settings.initial} coins</b> · Máximo:{" "}
+                {s.settings.max_stake} por partida.
+                {stake > (s.wallet?.balance ?? s.settings.initial)
+                  ? " El importe supera tu saldo."
+                  : stake > s.settings.max_stake
+                    ? " El importe supera el máximo."
+                    : ""}
+              </p>
               <p className="coin-fine">
                 Retorno estimado si aciertas: <b>{potential} coins</b>, incluida
                 tu apuesta. Cambia con el bote hasta el cierre.
@@ -212,9 +230,13 @@ export function CoinMarketPanel({
 function SettingsForm({
   settings,
   coins,
+  online,
+  onSaved,
 }: {
   settings: CoinSettings;
   coins: CoinsController;
+  online: boolean;
+  onSaved: () => void;
 }) {
   const [form, setForm] = useState(settings),
     [saved, setSaved] = useState(false);
@@ -223,7 +245,9 @@ function SettingsForm({
       className="coin-settings"
       onSubmit={async (e) => {
         e.preventDefault();
-        setSaved(await coins.command("settings", { ...form }));
+        const ok = await coins.command("settings", { ...form });
+        setSaved(ok);
+        if (ok) onSaved();
       }}
     >
       <h3>Reglas de coins</h3>
@@ -261,7 +285,7 @@ function SettingsForm({
         El saldo inicial se concede una vez por temporada. Cambiarlo no altera
         los saldos ya creados. Desactivar coins devuelve las apuestas abiertas.
       </p>
-      <button className="secondary" disabled={coins.busy}>
+      <button className="secondary" disabled={coins.busy || !online}>
         Guardar reglas
       </button>
       {saved && <p role="status">Reglas guardadas</p>}
@@ -280,7 +304,8 @@ export function CoinsClub({
   demo: boolean;
 }) {
   const [tab, setTab] = useState<"coins" | "honours">("coins"),
-    [publishing, setPublishing] = useState<Award[] | null>(null);
+    [publishing, setPublishing] = useState<Award[] | null>(null),
+    [notice, setNotice] = useState("");
   const s = coins.snapshot,
     season = coins.season;
   if (!s || !season)
@@ -406,7 +431,13 @@ export function CoinsClub({
                   {s.ledger.map((e) => (
                     <li key={e.id}>
                       <div>
-                        {reasons[e.reason] ?? e.reason}
+                        {e.reason === "win"
+                          ? e.amount > 0
+                            ? "Premio por victoria"
+                            : "Ajuste del premio por victoria"
+                          : e.reason === "payout" && e.amount < 0
+                            ? "Corrección del reparto"
+                            : (reasons[e.reason] ?? e.reason)}
                         <small>
                           {new Date(e.created_at).toLocaleString("es-ES", {
                             day: "numeric",
@@ -442,7 +473,15 @@ export function CoinsClub({
                             : "Pendiente"}
                       </small>
                     </div>
-                    <b>{b.returned} devueltas</b>
+                    <b>
+                      {b.status === "cancelled"
+                        ? `${b.returned} devueltas`
+                        : b.status === "settled"
+                          ? b.returned
+                            ? `${b.returned} recibidas`
+                            : "Sin premio"
+                          : "Por resolver"}
+                    </b>
                   </li>
                 ))}
               </ul>
@@ -483,6 +522,8 @@ export function CoinsClub({
                   }
                 }
                 coins={coins}
+                online={online}
+                onSaved={() => setNotice("Reglas de coins guardadas.")}
               />
             </details>
           )}
@@ -567,6 +608,11 @@ export function CoinsClub({
             </section>
           )}
         </>
+      )}
+      {notice && (
+        <p role="status" className="confirmation">
+          {notice}
+        </p>
       )}
       {coins.error && (
         <p className="coin-error" role="alert">

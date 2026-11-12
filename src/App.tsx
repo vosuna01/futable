@@ -48,6 +48,7 @@ import { LiveTablet } from "./components/LiveTablet";
 import { useCoins } from "./data/useCoins";
 import { CoinsClub, CoinMarketPanel } from "./components/CoinsClub";
 import { SeasonCountdown } from "./components/SeasonCountdown";
+import { newestFirst } from "./domain/presentation";
 import "./live.css";
 import "./tablet.css";
 const nav = [
@@ -210,9 +211,9 @@ export default function App() {
     : data.players.find((p) => p.account_id === league.session?.user.id);
   const allTime = seasonId === "all";
   const rules = allTime ? defaultRules : season || defaultRules;
-  const matches = data.matches.filter(
-      (m) => allTime || m.season_id === season?.id,
-    ),
+  const matches = data.matches
+      .filter((m) => allTime || m.season_id === season?.id)
+      .sort(newestFirst),
     valid = matches.filter((m) => m.status === "valid"),
     rows = ranking(data.players, matches, rules),
     competitive = rows.filter((r) => r.qualified),
@@ -230,6 +231,19 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const ownStats = rows.find((row) => row.player.id === ownPlayer?.id);
+  const livePlace = ownPlayer
+    ? (liveMatch.session?.state.queue.findIndex((p) => p.id === ownPlayer.id) ??
+      -1)
+    : -1;
+  const mySide =
+    ownPlayer && liveMatch.session?.state.court
+      ? (["red", "blue"] as const).find((t) =>
+          [
+            liveMatch.session!.state.court![t].defender.id,
+            liveMatch.session!.state.court![t].forward.id,
+          ].includes(ownPlayer.id),
+        )
+      : undefined;
   const newMatch = () => {
     if (!active) {
       setNotice("Crea una temporada activa desde Administración.");
@@ -260,6 +274,7 @@ export default function App() {
           {nav.map(([key, label, Icon]) => (
             <button
               className={page === key ? "active" : ""}
+              aria-current={page === key ? "page" : undefined}
               key={key}
               onClick={() => navigate(key)}
             >
@@ -375,8 +390,10 @@ export default function App() {
                 : !online
                   ? "Sin conexión"
                   : live
-                    ? "En directo"
-                    : "Conectando"}
+                    ? "Sincronizado"
+                    : synced
+                      ? "Actualizado"
+                      : "Conectando"}
             </span>
             <button
               className="icon-button"
@@ -472,19 +489,25 @@ export default function App() {
           {!allTime &&
             season?.status === "active" &&
             season.ends_at &&
-            page !== "live" && <SeasonCountdown date={season.ends_at} />}
+            (page === "home" || page === "club") && (
+              <SeasonCountdown date={season.ends_at} />
+            )}
           {(active || liveMatch.session) && page !== "live" && (
             <button
-              className={`live-entry ${page === "live" ? "selected" : ""}`}
+              className={`live-entry ${page === "home" ? "" : "compact"}`}
               onClick={() => navigate("live")}
             >
               <Swords size={20} />
               <span>
                 <strong>Partida en directo</strong>
                 <small>
-                  {liveMatch.session
-                    ? `Sesión abierta · ${liveMatch.session.state.queue.length} en la cola`
-                    : "Fíchate y la cola decide quién entra."}
+                  {mySide
+                    ? `Estás jugando con ${mySide === "red" ? "Madrid" : "Barça"}`
+                    : livePlace >= 0
+                      ? `Estás fichado · ${livePlace + 1}º en la cola`
+                      : liveMatch.session
+                        ? `${liveMatch.session.state.queue.length} esperando · Entra para ficharte`
+                        : "Fíchate y la cola decide quién entra."}
                 </small>
               </span>
               <ArrowRight size={18} />
@@ -839,7 +862,14 @@ export default function App() {
             />
           )}
           {page === "admin" && data.role === "admin" && (
-            <Admin data={data} demo={demo} command={league.admin} />
+            <Admin
+              data={data}
+              demo={demo}
+              command={league.admin}
+              online={online}
+              liveSession={!!liveMatch.session}
+              onLive={() => navigate("live")}
+            />
           )}
           <footer className="content-footer">
             <span>
@@ -860,6 +890,7 @@ export default function App() {
           <button
             key={key}
             className={page === key ? "active" : ""}
+            aria-current={page === key ? "page" : undefined}
             onClick={() => navigate(key)}
           >
             {i === 2 && <span className="nav-gap" />}
@@ -868,12 +899,13 @@ export default function App() {
           </button>
         ))}
         <button
-          className="mobile-add"
-          onClick={newMatch}
-          aria-label="Nueva partida"
-          disabled={!online}
+          className={`mobile-add ${page === "live" ? "selected" : ""}`}
+          onClick={() => navigate("live")}
+          aria-label="Ir a la partida en directo"
+          aria-current={page === "live" ? "page" : undefined}
         >
-          <Plus size={25} />
+          <Swords size={23} />
+          <span>Jugar</span>
         </button>
       </nav>
       {myProfile && ownPlayer && (

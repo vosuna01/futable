@@ -1,5 +1,13 @@
 import { useState, type FormEvent } from "react";
-import { Download, Plus, Settings2, ShieldCheck, Users } from "lucide-react";
+import {
+  Download,
+  Plus,
+  Settings2,
+  ShieldCheck,
+  Users,
+  Search,
+} from "lucide-react";
+import { matchesSearch } from "../domain/presentation";
 import type { Player, Snapshot } from "../domain/types";
 import { Avatar, date, Modal } from "./ui";
 type AdminCall = (
@@ -10,10 +18,16 @@ export function Admin({
   data,
   demo,
   command,
+  online = true,
+  liveSession = false,
+  onLive,
 }: {
   data: Snapshot;
   demo: boolean;
   command: AdminCall;
+  online?: boolean;
+  liveSession?: boolean;
+  onLive?: () => void;
 }) {
   const [dialog, setDialog] = useState<
       "player" | "account" | "season" | "rules" | "close" | null
@@ -21,13 +35,17 @@ export function Admin({
     [edit, setEdit] = useState<Player | null>(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
-    [notice, setNotice] = useState("");
+    [notice, setNotice] = useState(""),
+    [memberId, setMemberId] = useState(""),
+    [playerQuery, setPlayerQuery] = useState("");
   const active = data.seasons.find((s) => s.status === "active");
+  const member = data.memberships.find((m) => m.user_id === memberId);
   function open(d: typeof dialog, p?: Player) {
     setEdit(p || null);
     setError("");
     setNotice("");
     setDialog(d);
+    setMemberId("");
   }
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -131,18 +149,44 @@ export function Admin({
               <Plus size={16} /> Añadir
             </button>
           </div>
-          {data.players.map((p) => (
-            <div className="admin-row" key={p.id}>
-              <Avatar player={p} size="small" />
-              <span>
-                {p.name}
-                <small>{p.active ? "Activo" : "Inactivo"}</small>
-              </span>
-              <button className="text-button" onClick={() => open("player", p)}>
-                Editar
+          <label className="search admin-search">
+            <Search size={17} />
+            <input
+              type="search"
+              aria-label="Buscar jugador para administrar"
+              placeholder="Buscar jugador…"
+              value={playerQuery}
+              onChange={(e) => setPlayerQuery(e.target.value)}
+            />
+          </label>
+          {data.players
+            .filter((p) => matchesSearch(p.name, playerQuery))
+            .map((p) => (
+              <div className="admin-row" key={p.id}>
+                <Avatar player={p} size="small" />
+                <span>
+                  {p.name}
+                  <small>{p.active ? "Activo" : "Inactivo"}</small>
+                </span>
+                <button
+                  className="text-button"
+                  onClick={() => open("player", p)}
+                >
+                  Editar
+                </button>
+              </div>
+            ))}
+          {!data.players.some((p) => matchesSearch(p.name, playerQuery)) && (
+            <div className="search-empty">
+              <p>No hay jugadores con ese nombre.</p>
+              <button
+                className="text-button"
+                onClick={() => setPlayerQuery("")}
+              >
+                Borrar búsqueda
               </button>
             </div>
-          ))}
+          )}
         </section>
         <div className="admin-stack">
           <section className="panel admin-section">
@@ -182,10 +226,24 @@ export function Admin({
                   <button className="secondary" onClick={() => open("rules")}>
                     Configurar reglas
                   </button>
-                  <button className="secondary" onClick={() => open("close")}>
+                  <button
+                    className="secondary"
+                    disabled={liveSession || !online}
+                    onClick={() => open("close")}
+                  >
                     Cerrar temporada
                   </button>
                 </div>
+                {liveSession && (
+                  <p className="rule-note">
+                    Cierra primero la sesión del día para terminar la temporada.
+                    {onLive && (
+                      <button className="text-button" onClick={onLive}>
+                        Ir a la partida en directo
+                      </button>
+                    )}
+                  </p>
+                )}
               </>
             )}
           </section>
@@ -199,14 +257,14 @@ export function Admin({
               </button>
             </div>
             <p className="muted small">
-              Cada persona puede crear su cuenta desde el acceso. Utiliza su
-              UUID para cambiar permisos o revocar su acceso.
+              Cada persona puede crear su cuenta desde el acceso. Selecciona su
+              nombre para revisar sus permisos y su acceso a la liga.
             </p>
             {data.memberships.map((m) => (
               <div className="admin-row" key={m.user_id}>
                 <div>
                   <strong>{m.display_name}</strong>
-                  <small className="uuid">{m.user_id}</small>
+                  <small>{m.active ? "Acceso activo" : "Sin acceso"}</small>
                 </div>
                 <span className="chip">
                   {m.active
@@ -217,6 +275,16 @@ export function Admin({
                         : "Jugador"
                     : "Revocada"}
                 </span>
+                <button
+                  className="text-button"
+                  aria-label={`Gestionar acceso de ${m.display_name}`}
+                  onClick={() => {
+                    open("account");
+                    setMemberId(m.user_id);
+                  }}
+                >
+                  Gestionar
+                </button>
               </div>
             ))}
           </section>
@@ -235,7 +303,22 @@ export function Admin({
           data.audit.map((a) => (
             <details key={a.id} className="audit-row">
               <summary>
-                <span>{a.action}</span>
+                <span>
+                  {{
+                    "match.create": "Partida registrada",
+                    "match.correct": "Resultado corregido",
+                    "match.void": "Partida anulada",
+                    "match.identity.correct": "Ficha de jugador corregida",
+                    "season.schedule": "Fecha de cierre actualizada",
+                    "season.configure": "Reglas actualizadas",
+                    "season.close": "Temporada cerrada",
+                    "season.create": "Temporada creada",
+                    "player.save": "Jugador actualizado",
+                    "membership.save": "Acceso actualizado",
+                    "coins.settings": "Reglas de coins actualizadas",
+                    "coins.publish": "Palmarés publicado",
+                  }[a.action] ?? a.action}
+                </span>
                 <small>{date(a.created_at)}</small>
               </summary>
               <p className="muted small">
@@ -273,7 +356,10 @@ export function Admin({
             if (!busy) setDialog(null);
           }}
         >
-          <form onSubmit={(e) => void submit(e)}>
+          <form
+            key={dialog === "account" ? memberId : "form"}
+            onSubmit={(e) => void submit(e)}
+          >
             {dialog === "player" && (
               <>
                 <label className="field">
@@ -307,30 +393,65 @@ export function Admin({
             {dialog === "account" && (
               <>
                 <p className="muted">
-                  Usa el UUID de una cuenta registrada en Supabase. Para cambiar
-                  o revocar un acceso, utiliza su mismo UUID.
+                  Elige una cuenta registrada. Revisa el nombre y los permisos
+                  antes de guardar.
                 </p>
                 <label className="field">
+                  Cuenta registrada
+                  <select
+                    aria-label="Cuenta registrada"
+                    value={memberId}
+                    onChange={(e) => setMemberId(e.target.value)}
+                  >
+                    <option value="">Introducir otro ID de cuenta</option>
+                    {data.memberships.map((m) => (
+                      <option key={m.user_id} value={m.user_id}>
+                        {m.display_name} ·{" "}
+                        {m.role === "admin"
+                          ? "Admin"
+                          : m.role === "scoreboard"
+                            ? "Tablet"
+                            : "Jugador"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="field">
                   UUID de usuario
-                  <input name="user_id" required pattern="[0-9a-fA-F-]{36}" />
+                  <input
+                    name="user_id"
+                    required
+                    pattern="[0-9a-fA-F-]{36}"
+                    defaultValue={member?.user_id}
+                    readOnly={!!member}
+                  />
                 </label>
                 <label className="field">
                   Nombre visible
-                  <input name="display_name" required maxLength={60} />
+                  <input
+                    name="display_name"
+                    required
+                    maxLength={60}
+                    defaultValue={member?.display_name}
+                  />
                 </label>
                 <label className="field">
                   Permisos
-                  <select name="role">
+                  <select name="role" defaultValue={member?.role ?? "player"}>
                     <option value="player">Jugador autorizado</option>
                     <option value="admin">Administrador</option>
                     <option value="scoreboard">
-                      Tablet de la pared (solo directo, requiere migración 008)
+                      Tablet de la sala (gestión de partidas)
                     </option>
                   </select>
                 </label>
                 <label className="checkbox">
-                  <input type="checkbox" name="active" defaultChecked /> Acceso
-                  activo
+                  <input
+                    type="checkbox"
+                    name="active"
+                    defaultChecked={member?.active ?? true}
+                  />{" "}
+                  Acceso activo
                 </label>
               </>
             )}
@@ -403,7 +524,12 @@ export function Admin({
                 {error}
               </p>
             )}
-            <button className="primary full" disabled={busy}>
+            {!online && (
+              <p className="error">
+                Necesitas conexión para guardar los cambios.
+              </p>
+            )}
+            <button className="primary full" disabled={busy || !online}>
               {busy ? "Guardando…" : "Guardar cambios"}
             </button>
           </form>

@@ -26,6 +26,7 @@ import type { Player, Position, Snapshot, Team } from "../domain/types";
 import { teamNames } from "../domain/teams";
 import { Avatar, Modal } from "./ui";
 import { StartEditor } from "./LiveMatch";
+import { PlayerPicker } from "./PlayerPicker";
 
 const postNames = { defender: "Defensa", forward: "Delantero" } as const;
 const shortPost = { defender: "DEF", forward: "DEL" } as const;
@@ -673,25 +674,18 @@ export function LiveTablet({
       )}
       {adding && (
         <Modal title="Apuntar a la cola" onClose={() => setAdding(false)}>
-          <ul className="live-picker">
-            {eligible.map((p: Player) => (
-              <li key={p.id}>
-                <button
-                  disabled={busy || !online}
-                  onClick={() => {
-                    setAdding(false);
-                    void run(
-                      "join",
-                      { players: [p.id] },
-                      `${p.name} a la cola.`,
-                    );
-                  }}
-                >
-                  <Avatar player={p} size="small" /> {p.name}
-                </button>
-              </li>
-            ))}
-          </ul>
+          <PlayerPicker
+            players={eligible}
+            disabled={busy || !online}
+            onPick={(id) => {
+              setAdding(false);
+              void run(
+                "join",
+                { players: [id] },
+                `${named(id)?.name ?? "Jugador"} a la cola.`,
+              );
+            }}
+          />
         </Modal>
       )}
     </div>

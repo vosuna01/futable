@@ -34,6 +34,7 @@ export function useCoins(
   const [snapshot, setSnapshot] = useState<CoinsSnapshot | null>(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  const [demoRevision, setDemoRevision] = useState(0);
   const currentScope = useRef(scope);
   currentScope.current = scope;
   const lock = useRef(false),
@@ -76,17 +77,23 @@ export function useCoins(
     rewards.current.clear();
     oldSession.current = null;
     demoMarkets.current.clear();
-    void refresh();
   }, [scope, refresh]);
   useEffect(() => {
-    if (demo) return;
-    void refresh();
-    const timer = setInterval(() => void refresh(), 5000);
-    const focus = () => void refresh();
+    if (demo || !data?.league.id || !season?.id || !user) return;
+    const focus = () => {
+      if (navigator.onLine && document.visibilityState === "visible")
+        void refresh();
+    };
+    if (navigator.onLine) void refresh();
+    const timer = setInterval(focus, 5000);
     window.addEventListener("focus", focus);
+    window.addEventListener("online", focus);
+    document.addEventListener("visibilitychange", focus);
     return () => {
       clearInterval(timer);
       window.removeEventListener("focus", focus);
+      window.removeEventListener("online", focus);
+      document.removeEventListener("visibilitychange", focus);
     };
   }, [refresh, demo, session?.revision, data?.matches]);
   useEffect(() => {
@@ -137,6 +144,7 @@ export function useCoins(
           prev = rewards.current.get(key)?.amount ?? 0;
         const desired =
           match.status === "valid" &&
+          (state.settings!.enabled || rewards.current.has(key)) &&
           match.participants.some(
             (p) => p.player_id === pid && p.team === match.winner,
           )
@@ -246,7 +254,7 @@ export function useCoins(
       (a, b) => b.balance - a.balance || a.player_id.localeCompare(b.player_id),
     );
     setSnapshot(structuredClone(state));
-  }, [data, session, demo, scope, season?.id]);
+  }, [data, session, demo, scope, season?.id, demoRevision]);
   const command = async (
     action: string,
     fields: Record<string, unknown> = {},
@@ -348,6 +356,7 @@ export function useCoins(
           });
         }
         setSnapshot(structuredClone(state));
+        if (action === "settings") setDemoRevision((n) => n + 1);
       } else {
         if (!supabase || !navigator.onLine)
           throw Error("Necesitas conexión para usar las coins");

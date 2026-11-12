@@ -11,6 +11,7 @@ import { pairRanking, ranking } from "../domain/rankings";
 import type { Match, Player, Rules } from "../domain/types";
 import { Avatar, Empty, pct } from "./ui";
 import { Result } from "./History";
+import { matchesSearch, newestFirst } from "../domain/presentation";
 export function Players({
   players,
   matches,
@@ -30,11 +31,13 @@ export function Players({
     const s = ranking([player], matches, rules)[0],
       d = ranking([player], matches, rules, "defender")[0],
       f = ranking([player], matches, rules, "forward")[0],
-      games = matches.filter(
-        (m) =>
-          m.status === "valid" &&
-          m.participants.some((p) => p.player_id === player.id),
-      ),
+      games = matches
+        .filter(
+          (m) =>
+            m.status === "valid" &&
+            m.participants.some((p) => p.player_id === player.id),
+        )
+        .sort(newestFirst),
       pair = pairRanking(players, matches, rules).find(
         (p) => p.ids.includes(player.id) && p.qualified,
       );
@@ -201,7 +204,7 @@ export function Players({
     );
   }
   const rows = ranking(players, matches, rules).filter((s) =>
-    s.player.name.toLowerCase().includes(query.toLowerCase()),
+    matchesSearch(s.player.name, query),
   );
   return (
     <>
@@ -233,7 +236,11 @@ export function Players({
             <h3>{s.player.name}</h3>
             <span className="muted small">
               {s.player.active ? "En activo" : "Inactivo"} ·{" "}
-              {s.qualified ? "Clasificado" : "Provisional"}
+              {s.games === 0
+                ? "Aún sin partidas"
+                : s.qualified
+                  ? "Clasificado"
+                  : "Provisional"}
             </span>
             <div>
               <strong>
@@ -252,7 +259,14 @@ export function Players({
           </button>
         ))}
       </div>
-      {!rows.length && <Empty title="No hay jugadores" />}
+      {!rows.length && (
+        <Empty title="No encontramos jugadores">
+          Prueba otro nombre o apodo.
+          <button className="secondary" onClick={() => setQuery("")}>
+            Borrar búsqueda
+          </button>
+        </Empty>
+      )}
     </>
   );
 }

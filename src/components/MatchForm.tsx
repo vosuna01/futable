@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -18,6 +18,7 @@ import type {
 import { validateMatch } from "../domain/validation";
 import { lineupSlots as slots, matchLineup, teamNames } from "../domain/teams";
 import { Avatar, Modal } from "./ui";
+import { matchesSearch } from "../domain/presentation";
 export function MatchForm({
   players,
   season,
@@ -34,6 +35,7 @@ export function MatchForm({
   onSave: (m: MatchInput, edit?: Match, reason?: string) => Promise<void>;
 }) {
   const previous = useRef(last).current;
+  const errorArea = useRef<HTMLParagraphElement>(null);
   const [selected, setSelected] = useState<string[]>(() =>
     matchLineup(edit || previous, season, players, !edit),
   );
@@ -57,6 +59,13 @@ export function MatchForm({
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [reason, setReason] = useState("");
+  useEffect(() => {
+    if (error)
+      errorArea.current?.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      });
+  }, [error]);
   const operation = useRef(crypto.randomUUID()),
     locked = useRef(false),
     attempt = useRef("");
@@ -76,6 +85,9 @@ export function MatchForm({
     setConfirm(false);
     setError("");
   };
+  const available = players
+    .filter((p) => p.active && matchesSearch(p.name, query))
+    .sort((a, b) => a.name.localeCompare(b.name, "es"));
   async function submit() {
     if (locked.current) return;
     const validation = validateMatch(input, season, players);
@@ -216,32 +228,43 @@ export function MatchForm({
           aria-label="Buscar jugador"
         />
       </label>
-      <div className="player-options">
-        {players
-          .filter(
-            (p) =>
-              p.active && p.name.toLowerCase().includes(query.toLowerCase()),
-          )
-          .map((p) => (
-            <button
-              key={p.id}
-              disabled={selected.includes(p.id) && selected[active] !== p.id}
-              onClick={() => {
-                const next = selected.map((v, i) => (i === active ? p.id : v));
-                setSelected(next);
-                const after = next.findIndex((id, i) => i > active && !id);
-                const first = next.findIndex((id) => !id);
-                setActive(after >= 0 ? after : first >= 0 ? first : active);
-                setQuery("");
-                mutate();
-              }}
-            >
-              <Avatar player={p} size="small" />
-              <span>{p.name}</span>
-              {selected.includes(p.id) && <Check size={16} />}
-            </button>
-          ))}
+      <div className="selection-progress">
+        <strong>{selected.filter(Boolean).length}/4 jugadores</strong>
+        <span>
+          {selected.every(Boolean)
+            ? "Toca un puesto para cambiarlo"
+            : `Elige ${slots[active].position === "defender" ? "defensa" : "delantero"} de ${teamNames[slots[active].team]}`}
+        </span>
       </div>
+      <div className="player-options">
+        {available.map((p) => (
+          <button
+            key={p.id}
+            disabled={selected.includes(p.id) && selected[active] !== p.id}
+            onClick={() => {
+              const next = selected.map((v, i) => (i === active ? p.id : v));
+              setSelected(next);
+              const after = next.findIndex((id, i) => i > active && !id);
+              const first = next.findIndex((id) => !id);
+              setActive(after >= 0 ? after : first >= 0 ? first : active);
+              setQuery("");
+              mutate();
+            }}
+          >
+            <Avatar player={p} size="small" />
+            <span>{p.name}</span>
+            {selected.includes(p.id) && <Check size={16} />}
+          </button>
+        ))}
+      </div>
+      {!available.length && (
+        <div className="search-empty">
+          <p>No hay jugadores con ese nombre.</p>
+          <button className="text-button" onClick={() => setQuery("")}>
+            Borrar búsqueda
+          </button>
+        </div>
+      )}
       <label className="king-check">
         <input
           type="checkbox"
@@ -366,25 +389,46 @@ export function MatchForm({
         </div>
       )}
       {error && (
-        <p className="error" role="alert">
+        <p className="error" role="alert" ref={errorArea}>
           {error}
         </p>
       )}
-      <button
-        className="primary full"
-        onClick={() => void submit()}
-        disabled={busy}
-      >
-        {busy
-          ? "Guardando en el servidor…"
-          : confirm
-            ? "Confirmar y guardar"
-            : "Revisar resultado"}
-        <ArrowRight size={18} />
-      </button>
-      <p className="rule-note">
-        El resultado solo se confirma tras guardarlo correctamente.
-      </p>
+      <div className="match-submit">
+        {confirm && (
+          <div className="confirmation-lineups">
+            {(["red", "blue"] as const).map((team) => (
+              <div key={team}>
+                <strong>{teamNames[team]}</strong>
+                <span>
+                  {participants
+                    .filter((p) => p.team === team)
+                    .map(
+                      (p) =>
+                        players.find((x) => x.id === p.player_id)?.name ??
+                        "Jugador",
+                    )
+                    .join(" y ")}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+        <button
+          className="primary full"
+          onClick={() => void submit()}
+          disabled={busy}
+        >
+          {busy
+            ? "Guardando en el servidor…"
+            : confirm
+              ? "Confirmar y guardar"
+              : "Revisar resultado"}
+          <ArrowRight size={18} />
+        </button>
+        <p className="rule-note">
+          El resultado solo se confirma tras guardarlo correctamente.
+        </p>
+      </div>
     </Modal>
   );
 }

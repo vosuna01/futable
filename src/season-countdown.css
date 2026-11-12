@@ -32,7 +32,7 @@
 .season-countdown-copy strong {
   font-size: 15px;
   letter-spacing: -0.2px;
-  text-transform: capitalize;
+  text-transform: none;
 }
 .season-countdown-copy small {
   font-size: 11px;
