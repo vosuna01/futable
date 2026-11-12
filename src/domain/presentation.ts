@@ -1,4 +1,11 @@
-import type { Match } from "./types";
+import type { Match, Membership } from "./types";
+export function membershipLabel(member: Membership, members: Membership[]) {
+  return members.filter(
+    (m) => searchText(m.display_name) === searchText(member.display_name),
+  ).length > 1
+    ? `${member.display_name} · ID ${member.user_id.slice(-8)}`
+    : member.display_name;
+}
 export const searchText = (text: string) =>
   text
     .normalize("NFD")

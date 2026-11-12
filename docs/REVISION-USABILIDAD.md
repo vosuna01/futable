@@ -15,7 +15,7 @@
 | Plantilla y perfiles | Búsqueda más tolerante, recuperación al no encontrar personas y evolución ordenada cronológicamente. Los perfiles sin partidas se identifican como tales. |
 | Coins | El equipo resaltado coincide con la apuesta registrada; saldo disponible y retorno estimado visibles. Se distinguen apuestas pendientes, repartos y devoluciones. Confirmación de reglas guardadas y menos consultas repetidas o en segundo plano. |
 | Palmarés | Revisado el flujo de propuestas, temporada cerrada y publicación. La publicación permanece a cargo de un administrador. |
-| Administración | Selección de cuentas por nombre y precarga de identidad, rol y estado actuales. Buscador de jugadores, acciones de auditoría legibles y ayuda para cerrar la sesión del día antes de cerrar temporada. |
+| Administración | Selección de cuentas por nombre y precarga de identidad, rol y estado actuales. Foto e identificador corto cuando se repite un nombre. Buscador de jugadores, acciones de auditoría legibles y ayuda para cerrar la sesión del día antes de cerrar temporada. |
 | Diálogos y accesibilidad | Fondo bloqueado al abrir un diálogo, devolución de foco al cerrarlo, recorrido de teclado por controles habilitados, cabecera accesible y controles táctiles más amplios. Se respeta movimiento reducido. |
 | Sincronización e instalación | La conexión distingue «Sincronizado» de una consulta reciente. Revisados acceso Google, registro, falta de conexión, recuperación de la PWA y rutas bajo `/futable/`. |
 

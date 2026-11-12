@@ -7,7 +7,7 @@ import {
   Users,
   Search,
 } from "lucide-react";
-import { matchesSearch } from "../domain/presentation";
+import { matchesSearch, membershipLabel } from "../domain/presentation";
 import type { Player, Snapshot } from "../domain/types";
 import { Avatar, date, Modal } from "./ui";
 type AdminCall = (
@@ -262,8 +262,17 @@ export function Admin({
             </p>
             {data.memberships.map((m) => (
               <div className="admin-row" key={m.user_id}>
+                <Avatar
+                  size="small"
+                  player={
+                    data.players.find((p) => p.account_id === m.user_id) ?? {
+                      name: m.display_name,
+                      avatar_url: null,
+                    }
+                  }
+                />
                 <div>
-                  <strong>{m.display_name}</strong>
+                  <strong>{membershipLabel(m, data.memberships)}</strong>
                   <small>{m.active ? "Acceso activo" : "Sin acceso"}</small>
                 </div>
                 <span className="chip">
@@ -277,7 +286,7 @@ export function Admin({
                 </span>
                 <button
                   className="text-button"
-                  aria-label={`Gestionar acceso de ${m.display_name}`}
+                  aria-label={`Gestionar acceso de ${membershipLabel(m, data.memberships)}`}
                   onClick={() => {
                     open("account");
                     setMemberId(m.user_id);
@@ -406,7 +415,7 @@ export function Admin({
                     <option value="">Introducir otro ID de cuenta</option>
                     {data.memberships.map((m) => (
                       <option key={m.user_id} value={m.user_id}>
-                        {m.display_name} ·{" "}
+                        {membershipLabel(m, data.memberships)} ·{" "}
                         {m.role === "admin"
                           ? "Admin"
                           : m.role === "scoreboard"
