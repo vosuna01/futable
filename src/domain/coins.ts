@@ -19,6 +19,7 @@ export interface CoinBet {
   market_id: string;
   team: Team;
   stake: number;
+  odds?: number | null;
   returned: number;
   status?: string;
   created_at: string;
@@ -34,6 +35,7 @@ export interface CoinMarket {
   goals: Record<Team, number>;
   red_pool: number;
   blue_pool: number;
+  odds?: Record<Team, number> | null;
   own_bet: CoinBet | null;
 }
 export interface Award {
@@ -63,6 +65,9 @@ export const coinDefaults: CoinSettings = {
 };
 export const pooledReturn = (stake: number, pool: number, backed: number) =>
   backed > 0 ? Math.floor((stake * pool) / backed) : 0;
+// Use integer hundredths to avoid 100 * 1.13 losing a coin to float rounding.
+export const fixedReturn = (stake: number, odds: number) =>
+  Math.floor((stake * Math.round(odds * 100)) / 100);
 export function awardSuggestions(
   data: Snapshot,
   season: Season,

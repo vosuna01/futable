@@ -4,6 +4,7 @@ import type { useCoins } from "../data/useCoins";
 import {
   awardSuggestions,
   pooledReturn,
+  fixedReturn,
   type Award,
   type CoinSettings,
 } from "../domain/coins";
@@ -16,7 +17,7 @@ const reasons: Record<string, string> = {
   welcome: "Bienvenida a la temporada",
   win: "Premio por victoria · ajuste",
   stake: "Apuesta registrada",
-  payout: "Reparto del bote · ajuste",
+  payout: "Premio de apuesta · ajuste",
   refund: "Devolución · ajuste",
 };
 export function CoinMarketPanel({
@@ -31,6 +32,7 @@ export function CoinMarketPanel({
     [confirm, setConfirm] = useState<{
       market: string;
       revision: number;
+      odds: number;
     } | null>(null);
   const s = coins.snapshot,
     m = s?.market;
@@ -42,12 +44,12 @@ export function CoinMarketPanel({
   const bet = m?.own_bet,
     pool = m ? m.red_pool + m.blue_pool : 0;
   const selectedTeam = bet?.team ?? team;
-  const potential = m
-    ? pooledReturn(stake, pool + stake, m[`${team}_pool`] + stake)
-    : 0;
+  const quote = m?.odds?.[team];
+  const potential = quote ? fixedReturn(stake, quote) : 0;
   const canBet =
     !!m &&
     m.status === "open" &&
+    !!quote &&
     spectator &&
     !bet &&
     online &&
@@ -67,7 +69,7 @@ export function CoinMarketPanel({
         </h2>
         <strong>
           {pool} <Coins size={19} />
-          <small>en el bote</small>
+          <small>apostadas</small>
         </strong>
       </div>
       {!m ? (
@@ -86,6 +88,7 @@ export function CoinMarketPanel({
                 <span>
                   {teamNames[t]} <b>{m.goals[t]}</b>
                 </span>
+                <strong>Cuota {m.odds?.[t]?.toFixed(2) ?? "—"}</strong>
                 <small>{m[`${t}_pool`]} coins apostadas</small>
                 <small>
                   {m.signature[t]
@@ -105,13 +108,27 @@ export function CoinMarketPanel({
               <b>
                 {bet.stake} coins a {teamNames[bet.team]}
               </b>
+              {bet.odds != null && (
+                <>
+                  {" "}
+                  · cuota <b>{bet.odds.toFixed(2)}</b>
+                </>
+              )}
               . Se resolverá al guardar el resultado.
               <span className="coin-ticket-estimate">
-                Retorno estimado si aciertas:{" "}
+                {bet.odds != null
+                  ? "Recibirás si aciertas:"
+                  : "Retorno estimado si aciertas:"}{" "}
                 <b>
-                  {pooledReturn(bet.stake, pool, m[`${bet.team}_pool`])} coins
+                  {bet.odds != null
+                    ? fixedReturn(bet.stake, bet.odds)
+                    : pooledReturn(bet.stake, pool, m[`${bet.team}_pool`])}{" "}
+                  coins
                 </b>
-                . Incluye tu apuesta y puede cambiar con el bote.
+                . Incluye tu apuesta.{" "}
+                {bet.odds != null
+                  ? "Tu cuota ya está fijada."
+                  : "Apuesta del sistema anterior por bote."}
               </span>
             </p>
           ) : !spectator ? (
@@ -152,7 +169,11 @@ export function CoinMarketPanel({
                   className="primary"
                   disabled={!canBet}
                   onClick={() =>
-                    setConfirm({ market: m.id, revision: m.revision })
+                    setConfirm({
+                      market: m.id,
+                      revision: m.revision,
+                      odds: quote!,
+                    })
                   }
                 >
                   Apostar <ArrowUpRight size={17} />
@@ -169,9 +190,15 @@ export function CoinMarketPanel({
                     : ""}
               </p>
               <p className="coin-fine">
-                Retorno estimado si aciertas: <b>{potential} coins</b>, incluida
-                tu apuesta. Cambia con el bote hasta el cierre.
+                Recibirás si aciertas: <b>{potential} coins</b>, incluida tu
+                apuesta. La cuota queda fijada al confirmar.
               </p>
+              {!quote && (
+                <p role="status">
+                  Actualizando el sistema de cuotas. Las apuestas estarán
+                  disponibles en breve.
+                </p>
+              )}
             </>
           )}
         </>
@@ -192,6 +219,11 @@ export function CoinMarketPanel({
             después.
           </p>
           <p>
+            Cuota <b>{confirm.odds.toFixed(2)}</b> · Recibirás{" "}
+            <b>{fixedReturn(stake, confirm.odds)} coins</b> si aciertas,
+            incluida tu apuesta.
+          </p>
+          <p>
             Saldo después: {(s.wallet?.balance ?? s.settings.initial) - stake}{" "}
             coins.
           </p>
@@ -200,6 +232,7 @@ export function CoinMarketPanel({
             disabled={
               !canBet ||
               confirm.market !== m.id ||
+              confirm.odds !== quote ||
               confirm.revision !== m.revision
             }
             onClick={async () => {
@@ -209,6 +242,7 @@ export function CoinMarketPanel({
                   revision: confirm.revision,
                   team,
                   stake,
+                  expected_odds: confirm.odds,
                 })
               )
                 setConfirm(null);
@@ -216,7 +250,9 @@ export function CoinMarketPanel({
           >
             Confirmar {stake} coins
           </button>
-          {(confirm.market !== m.id || confirm.revision !== m.revision) && (
+          {(confirm.market !== m.id ||
+            confirm.revision !== m.revision ||
+            confirm.odds !== quote) && (
             <p role="status">
               La partida ha cambiado. Cierra este panel y revisa la apuesta.
             </p>
@@ -465,6 +501,7 @@ export function CoinsClub({
                   <li key={b.id}>
                     <div>
                       {b.stake} a {teamNames[b.team]}
+                      {b.odds != null && <> · cuota {b.odds.toFixed(2)}</>}
                       <small>
                         {b.status === "cancelled"
                           ? "Devuelta"
@@ -497,15 +534,18 @@ export function CoinsClub({
             </p>
             <p>
               Solo apuestan espectadores, una vez por partida, hasta{" "}
-              {s.settings?.max_stake ?? 25} coins. El bote se reparte entre los
-              acertantes según lo apostado; los decimales se redondean hacia
-              abajo. Si nadie acierta, el bote no se reparte.
+              {s.settings?.max_stake ?? 25} coins. Si aciertas, recibes lo
+              apostado multiplicado por la cuota que aceptaste, incluida tu
+              apuesta; se redondea hacia abajo a coins enteras. El premio no
+              depende del bote. Las cuotas usan el historial de cada jugador en
+              su posición y de la pareja, con un margen del 8 %. Se calculan al
+              preparar cada partida.
             </p>
             <p>
               Las apuestas cierran al alcanzar el objetivo o registrar el
               ganador. Una sustitución o cambio de objetivo devuelve las
-              apuestas. Corregir o anular un resultado ajusta premios y
-              repartos; puede dejar saldo negativo si ya gastaste esos puntos.
+              apuestas. Corregir o anular un resultado ajusta premios y pagos;
+              puede dejar saldo negativo si ya gastaste esos puntos.
             </p>
           </details>
           {data.role === "admin" && (

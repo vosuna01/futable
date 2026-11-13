@@ -323,8 +323,8 @@ export function LiveMatch({
                     ))}
                   </div>
                   <p className="rule-note">
-                    Estimación estadística. El bote de coins se reparte por
-                    separado.
+                    Estimación estadística según el historial. Consulta la cuota
+                    y el premio de tu apuesta en el panel de coins.
                   </p>
                 </div>
               )}

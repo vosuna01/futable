@@ -6,9 +6,11 @@ import {
   coinDefaults,
   marketSignature,
   pooledReturn,
+  fixedReturn,
   type CoinsSnapshot,
   type CoinMarket,
 } from "../domain/coins";
+import { forecast } from "../domain/odds";
 const empty = (): CoinsSnapshot => ({
   settings: coinDefaults,
   player_id: null,
@@ -191,11 +193,13 @@ export function useCoins(
       const desired = cancelled
         ? bet.stake
         : match!.winner === bet.team
-          ? pooledReturn(
-              bet.stake,
-              entry.market.red_pool + entry.market.blue_pool,
-              entry.market[`${bet.team}_pool`],
-            )
+          ? bet.odds != null
+            ? fixedReturn(bet.stake, bet.odds)
+            : pooledReturn(
+                bet.stake,
+                entry.market.red_pool + entry.market.blue_pool,
+                entry.market[`${bet.team}_pool`],
+              )
           : 0;
       delta(
         state.player_id,
@@ -239,6 +243,15 @@ export function useCoins(
           red_pool: 0,
           blue_pool: 0,
           own_bet: null,
+          odds: (() => {
+            const f = forecast(
+              session.state,
+              data.players,
+              data.matches.filter((m) => m.season_id === season.id),
+              season,
+            )!;
+            return { red: f.red.decimal, blue: f.blue.decimal };
+          })(),
         };
       state.market.revision = session.revision;
       state.market.goals = session.state.goals;
@@ -305,6 +318,8 @@ export function useCoins(
               throw Error("La partida ha cambiado. Actualiza antes de apostar");
             if ([...m.signature.red, ...m.signature.blue].includes(pid))
               throw Error("Solo pueden apostar espectadores");
+            if (!m.odds || fields.expected_odds !== m.odds[team])
+              throw Error("La cuota ha cambiado. Revisa la apuesta");
             if (
               !Number.isInteger(n) ||
               n < 1 ||
@@ -319,6 +334,7 @@ export function useCoins(
               market_id: m.id,
               team,
               stake: n,
+              odds: m.odds[team],
               returned: 0,
               created_at: new Date().toISOString(),
               round: m.round,

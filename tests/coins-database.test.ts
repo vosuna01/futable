@@ -389,5 +389,101 @@ describe.sequential(
         db.query("select public.coins_snapshot($1,$2)", [id(999), s]),
       ).rejects.toThrow(/Sin acceso/);
     });
+    it("actualizar a cuotas devuelve pendientes y conserva apuestas históricas y partidas", async () => {
+      await db.exec("reset role");
+      const wallet = (
+        await db.query<{ id: string }>(
+          "select id from public.coin_wallets where player_id=$1 and season_id=$2",
+          [p(7), s],
+        )
+      ).rows[0].id;
+      const makeMarket = async (status: string) =>
+        (
+          await db.query<{ id: string }>(
+            "insert into public.coin_markets(league_id,season_id,session_id,round,signature,status) values($1,$2,$3,99,$4,$5) returning id",
+            [
+              l,
+              s,
+              k.id,
+              JSON.stringify({
+                red: [p(1), p(2)],
+                blue: [p(3), p(4)],
+                target: 5,
+              }),
+              status,
+            ],
+          )
+        ).rows[0].id;
+      const settled = await makeMarket("settled");
+      const pending = await makeMarket("open");
+      await db.query(
+        "insert into public.coin_bets(market_id,wallet_id,team,stake,returned) values($1,$3,'red',10,15),($2,$3,'blue',7,0)",
+        [settled, pending, wallet],
+      );
+      await db.query("select public._coin_delta($1,-2,'qa',null)", [wallet]);
+      const before = (
+        await db.query<{ balance: number }>(
+          "select balance::int balance from public.coin_wallets where id=$1",
+          [wallet],
+        )
+      ).rows[0].balance;
+      const digest = async () =>
+        (
+          await db.query<{ v: string }>(
+            "select md5(string_agg(to_jsonb(m)::text,'' order by id)) v from public.matches m",
+          )
+        ).rows[0].v;
+      const original = await digest();
+      await db.exec(
+        await readFile(
+          new URL("../supabase/migrations/013_fixed_odds.sql", import.meta.url),
+          "utf8",
+        ),
+      );
+      expect(await digest()).toBe(original);
+      expect(
+        (
+          await db.query<{ balance: number }>(
+            "select balance::int balance from public.coin_wallets where id=$1",
+            [wallet],
+          )
+        ).rows[0].balance,
+      ).toBe(before + 7);
+      expect(
+        (
+          await db.query(
+            "select returned::int,odds from public.coin_bets where market_id=$1",
+            [settled],
+          )
+        ).rows[0],
+      ).toEqual({ returned: 15, odds: null });
+      expect(
+        (
+          await db.query("select status from public.coin_markets where id=$1", [
+            pending,
+          ])
+        ).rows[0],
+      ).toEqual({ status: "cancelled" });
+      // Historical corrections keep the old pooled calculation (10/10 of pool).
+      await db.query("select public._coin_return($1,false,'red')", [settled]);
+      expect(
+        (
+          await db.query(
+            "select returned::int from public.coin_bets where market_id=$1",
+            [settled],
+          )
+        ).rows[0],
+      ).toEqual({ returned: 10 });
+      await as(viewer);
+      await expect(
+        db.query("select public._coin_odds($1,$2)", [s, JSON.stringify({})]),
+      ).rejects.toThrow(/permission denied/);
+      await expect(
+        db.query(
+          "select public._coins_command_before_fixed_odds($1,'claim','{}')",
+          [l],
+        ),
+      ).rejects.toThrow(/permission denied/);
+    });
   },
 );

@@ -176,7 +176,9 @@ test("al apostar al Barça el equipo resaltado coincide con el boleto", async ({
   await expect(barca).toHaveAttribute("aria-pressed", "true");
   await expect(madrid).toHaveAttribute("aria-pressed", "false");
   await expect(page.locator(".coin-ticket")).toContainText("5 coins a Barça");
-  await expect(page.locator(".coin-ticket")).toContainText("Retorno estimado");
+  await expect(page.locator(".coin-ticket")).toContainText(
+    "Recibirás si aciertas",
+  );
   await expect(page.getByText("Por resolver", { exact: true })).toBeVisible();
   await page.getByText("Administrar coins", { exact: true }).click();
   await page.getByLabel("Activar coins", { exact: true }).uncheck();

@@ -25,6 +25,13 @@ test("coins: apuesta como espectador, reparto, deshacer y palmarés sin historia
   await club(page);
   await page.getByRole("button", { name: "Recibir 100 coins" }).click();
   await expect(page.locator(".coin-wallet strong")).toHaveText("100");
+  const priceText = await page
+    .locator(".coin-sides button")
+    .filter({ hasText: "Madrid" })
+    .locator("strong")
+    .innerText();
+  const price = Number(priceText.replace("Cuota ", ""));
+  const payout = Math.floor((10 * Math.round(price * 100)) / 100);
   await page.getByLabel("Coins a apostar").fill("10");
   await page.getByRole("button", { name: "Apostar", exact: true }).click();
   await page
@@ -33,6 +40,10 @@ test("coins: apuesta como espectador, reparto, deshacer y palmarés sin historia
     .click();
   await expect(page.locator(".coin-wallet strong")).toHaveText("90");
   await expect(page.locator(".coin-ticket")).toContainText("10 coins a Madrid");
+  await expect(page.locator(".coin-ticket")).toContainText(
+    `cuota ${price.toFixed(2)}`,
+  );
+  await expect(page.locator(".coin-ticket")).toContainText(`${payout} coins`);
   await page.locator(".live-entry").click();
   await page.getByRole("button", { name: "Gana Madrid", exact: true }).click();
   await page
@@ -40,10 +51,12 @@ test("coins: apuesta como espectador, reparto, deshacer y palmarés sin historia
     .getByRole("button", { name: "Así está bien" })
     .click();
   await club(page);
-  await expect(page.locator(".coin-wallet strong")).toHaveText("100");
+  await expect(page.locator(".coin-wallet strong")).toHaveText(
+    String(90 + payout),
+  );
   await expect(page.locator(".coin-standings")).toContainText("105");
   await expect(page.locator(".coin-ledger").first()).toContainText(
-    "Reparto del bote",
+    "Premio de apuesta",
   );
   await page.locator(".live-entry").click();
   await page.getByRole("button", { name: "Deshacer último resultado" }).click();
