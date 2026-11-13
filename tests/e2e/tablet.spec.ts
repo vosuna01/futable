@@ -276,3 +276,41 @@ test("celebra cada gol con la cara de quien marca y al final pide confirmar o vo
   await expect(end).not.toBeVisible();
   await expect(page.getByLabel("Goles Madrid")).toHaveText("0");
 });
+
+test("suena al marcar un gol y otra vez al terminar la partida, y se puede silenciar", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { sounds: string[] };
+    w.sounds = [];
+    window.addEventListener("futable-sound", (e) =>
+      w.sounds.push((e as CustomEvent<string>).detail),
+    );
+  });
+  const sounds = () =>
+    page.evaluate(() => (window as unknown as { sounds: string[] }).sounds);
+  await openTablet(page);
+  await page.getByRole("button", { name: "Empezar partida" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Empezar", exact: true })
+    .click();
+  await page.getByRole("button", { name: /Partidas a \d+ goles/ }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "2", exact: true })
+    .click();
+  // A normal goal plays the goal sound.
+  await page.getByLabel(`Gol de ${names[0]}`, { exact: true }).click();
+  await expect.poll(sounds).toEqual(["goal"]);
+  // Muting is remembered on the tablet (the sound is still asked for, but silent).
+  await page.getByRole("button", { name: "Silenciar sonidos" }).click();
+  await expect(page.getByRole("button", { name: "Activar sonidos" })).toBeVisible();
+  // The winning goal plays the end-of-match sound instead of the goal one.
+  await page.getByLabel(`Gol de ${names[0]}`, { exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Fin de partida" })).toBeVisible();
+  await expect.poll(sounds).toEqual(["goal", "final"]);
+  await page.reload();
+  await page.getByRole("button", { name: "Explorar demostración" }).click();
+  await expect(page.getByRole("button", { name: "Activar sonidos" })).toBeVisible();
+});

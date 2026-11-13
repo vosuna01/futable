@@ -47,6 +47,7 @@ select to_regprocedure('public.live_replace_pair_state(jsonb,text,text,text)');
 ### Celebración de gol y fin de partida
 
 - **Cada gol** que entra en `goal_log`, venga de la tablet, del móvil o de los pulsadores del marcador, muestra 2,5 s una celebración con la foto de perfil de quien ha marcado (o sus iniciales; si el gol no tiene goleador, el escudo del equipo). No bloquea los toques.
+- **Sonidos**: cada gol suena con una fanfarria corta sobre un rugido de grada, y al llegar a los goles para ganar suenan tres pitidos y un acorde de victoria (el gol ganador solo suena con el de fin). Se generan en el navegador con Web Audio, sin archivos. Los navegadores solo permiten sonido después de un toque: **tocad la pantalla una vez** al colgar la tablet. El botón del altavoz de la barra superior los silencia; la elección se guarda en esa tablet.
 - **Fin de partida:** cuando un equipo llega a los goles para ganar y va por delante, la tablet muestra a pantalla completa a los ganadores, el resultado y dos botones. **Confirmar** guarda la partida (`result`) y entra la siguiente. **Volver atrás** quita el último gol del registro (`goal` con `delta: -1` y su goleador), por si se pulsó dos veces o no valía, y se sigue jugando. El marcador físico deja de sumar al llegar al objetivo y espera esta confirmación.
 - «Gana …» sigue disponible para terminar antes de llegar al objetivo.
 

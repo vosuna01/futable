@@ -11,9 +11,18 @@ import {
   Target,
   Undo2,
   UserPlus,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
 import type { useLiveSession } from "../data/useLiveSession";
+import {
+  playFinal,
+  playGoal,
+  setSoundEnabled,
+  soundEnabled,
+  unlockSound,
+} from "../data/sounds";
 import {
   goalLog,
   goalsBy,
@@ -128,7 +137,39 @@ export function LiveTablet({
     if (!before || before.match !== matchKey || count <= before.count) return;
     const goal = log[count - 1];
     setCheer({ key: Date.now(), team: goal.team, player: goal.player });
+    // The winning goal gets the end-of-match sound instead.
+    if (!finished) playGoal();
   }, [matchKey, log.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // End of match: a whistle and a victory chord, once each time a team reaches
+  // the goals to win (again after "Volver atrás" and a new winning goal).
+  const ended = useRef<{ match: string; finished: Team | null } | null>(null);
+  useEffect(() => {
+    const before = ended.current;
+    ended.current = { match: matchKey, finished };
+    if (before && before.match === matchKey && !before.finished && finished)
+      playFinal();
+  }, [matchKey, finished]);
+
+  // Sound: browsers only allow it after a tap, so the first touch unlocks it.
+  const [sound, setSound] = useState(soundEnabled);
+  useEffect(() => {
+    const unlock = () => unlockSound();
+    document.addEventListener("pointerdown", unlock);
+    document.addEventListener("keydown", unlock);
+    return () => {
+      document.removeEventListener("pointerdown", unlock);
+      document.removeEventListener("keydown", unlock);
+    };
+  }, []);
+  const toggleSound = () => {
+    const next = !sound;
+    setSoundEnabled(next);
+    setSound(next);
+    unlockSound();
+    // Short sample so whoever turns it on hears that it works.
+    if (next) setTimeout(playGoal, 150);
+  };
   useEffect(() => {
     if (!cheer) return;
     const timer = setTimeout(() => setCheer(null), 2600);
@@ -274,6 +315,14 @@ export function LiveTablet({
           <i />
           {demo ? "Demostración" : online ? "Conectado" : "Sin conexión"}
         </span>
+        <button
+          className="tablet-icon"
+          onClick={toggleSound}
+          aria-label={sound ? "Silenciar sonidos" : "Activar sonidos"}
+          aria-pressed={sound}
+        >
+          {sound ? <Volume2 size={22} /> : <VolumeX size={22} />}
+        </button>
         <button
           className="tablet-icon"
           onClick={fullScreen}
