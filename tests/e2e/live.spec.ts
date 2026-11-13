@@ -126,7 +126,7 @@ test("la alineación se arma tocando dos puestos", async ({ page }) => {
   await expect(page.locator(madrid)).toContainText(names[3]);
 });
 
-test("el pronóstico muestra probabilidades separadas del bote de coins", async ({
+test("el pronóstico muestra probabilidades y dirige a las cuotas de coins", async ({
   page,
 }) => {
   await signUp(page, 4);
@@ -138,5 +138,5 @@ test("el pronóstico muestra probabilidades separadas del bote de coins", async 
     await bet.locator(".live-bet-row b").allInnerTexts()
   ).map((q) => Number(q.replace("%", "")));
   expect(probabilities.reduce((a, b) => a + b, 0)).toBe(100);
-  await expect(bet).toContainText("El bote de coins se reparte por separado");
+  await expect(bet).toContainText("Consulta la cuota y el premio de tu apuesta");
 });
