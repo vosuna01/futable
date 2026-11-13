@@ -7,7 +7,7 @@ import {
   Shield,
   Swords,
 } from "lucide-react";
-import { pairRanking, ranking } from "../domain/rankings";
+import { pairRanking, RANK_GAMES, ranking } from "../domain/rankings";
 import type { Match, Player, Rules } from "../domain/types";
 import { Avatar, Empty, pct } from "./ui";
 import { Result } from "./History";
@@ -43,9 +43,7 @@ export function Players({
       );
     const evolution = [...games]
       .reverse()
-      .map(
-        (_, i, ms) => ranking([player], ms.slice(0, i + 1), rules)[0].adjusted,
-      );
+      .map((_, i, ms) => ranking([player], ms.slice(0, i + 1), rules)[0].raw);
     const path = evolution
       .map(
         (v, i) =>
@@ -72,12 +70,12 @@ export function Players({
         </div>
         <div className="stats-strip">
           <div>
-            <span>% AJUSTADO</span>
-            <strong className="gold">{pct(s.adjusted)}</strong>
+            <span>% REAL</span>
+            <strong className="gold">{pct(s.raw)}</strong>
           </div>
           <div>
-            <span>% REAL</span>
-            <strong>{pct(s.raw)}</strong>
+            <span>GOLES</span>
+            <strong>{s.goals}</strong>
           </div>
           <div>
             <span>VICTORIAS</span>
@@ -102,14 +100,14 @@ export function Players({
               <article className="panel position-card" key={String(label)}>
                 <I size={22} />
                 <h2>{String(label)}</h2>
-                <strong>{pct(x.adjusted)}</strong>
+                <strong>{pct(x.raw)}</strong>
                 <p>
-                  {x.wins} V · {x.losses} D · {x.games} PJ · Real {pct(x.raw)}
+                  {x.wins} V · {x.losses} D · {x.games} PJ · ⚽ {x.goals}
                 </p>
                 <small>
                   {x.qualified
                     ? "Clasificado"
-                    : `Necesita ${Math.max(0, rules.minimum - x.games)} partidos más`}{" "}
+                    : `Necesita ${Math.max(0, RANK_GAMES - x.games)} partidos más`}{" "}
                   · Racha {x.streak}
                 </small>
               </article>
@@ -119,14 +117,14 @@ export function Players({
         <article className="panel evolution">
           <div className="panel-heading">
             <h2>Tu evolución</h2>
-            <span className="chip">% ajustado · tras cada partida</span>
+            <span className="chip">% real · tras cada partida</span>
           </div>
           {evolution.length ? (
             <>
               <svg
                 viewBox="0 0 620 180"
                 role="img"
-                aria-label="Evolución del porcentaje ajustado"
+                aria-label="Evolución del porcentaje real"
               >
                 <defs>
                   <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
@@ -182,7 +180,7 @@ export function Players({
               <>
                 <strong>{pair.names.join(" + ")}</strong>
                 <p>
-                  {pct(pair.adjusted)} ajustado · {pair.games} partidos
+                  {pct(pair.raw)} real · {pair.games} partidos
                 </p>
               </>
             ) : (
@@ -244,8 +242,8 @@ export function Players({
             </span>
             <div>
               <strong>
-                {pct(s.adjusted)}
-                <small>AJUSTADO</small>
+                {pct(s.raw)}
+                <small>REAL</small>
               </strong>
               <strong>
                 {s.wins}

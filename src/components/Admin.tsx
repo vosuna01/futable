@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { RANK_GAMES } from "../domain/rankings";
 import {
   Download,
   Plus,
@@ -218,9 +219,9 @@ export function Admin({
             {active && (
               <>
                 <p className="muted small">
-                  Mínimo {active.minimum} PJ · Ajuste {active.prior_wins}/
-                  {active.prior_games} · Parejas {active.pair_minimum} PJ ·
-                  Goles variables · Inicio sugerido: {active.target}
+                  Clasificación por % real · {RANK_GAMES} PJ para entrar ·
+                  Parejas {active.pair_minimum} PJ · Goles variables · Inicio
+                  sugerido: {active.target}
                 </p>
                 <div className="button-row">
                   <button className="secondary" onClick={() => open("rules")}>
@@ -483,11 +484,19 @@ export function Admin({
             )}
             {dialog === "rules" && active && (
               <>
+                {/* The adjusted rate is gone: these keep their stored value. */}
+                {(["minimum", "prior_wins", "prior_games"] as const).map(
+                  (key) => (
+                    <input
+                      key={key}
+                      type="hidden"
+                      name={key}
+                      value={active[key]}
+                    />
+                  ),
+                )}
                 {(
                   [
-                    ["minimum", "Mínimo de partidos", 1],
-                    ["prior_wins", "Victorias virtuales", 0],
-                    ["prior_games", "Partidas virtuales", 1],
                     ["pair_minimum", "Mínimo de partidas por pareja", 1],
                     [
                       "target",
@@ -509,9 +518,8 @@ export function Admin({
                   </label>
                 ))}
                 <p className="muted small">
-                  Las victorias virtuales no pueden superar las partidas
-                  virtuales. Los cambios recalculan la clasificación de esta
-                  temporada.
+                  La clasificación usa el porcentaje real y separa a quien lleva{" "}
+                  {RANK_GAMES} partidas o más.
                 </p>
               </>
             )}

@@ -517,3 +517,209 @@
     grid-template-columns: 1fr;
   }
 }
+/* Goal celebration: a short burst with the scorer's face, never blocking taps. */
+.tablet-cheer {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: calc(var(--u) * 1.4);
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(23, 18, 43, 0.75) 0 35%,
+    rgba(23, 18, 43, 0) 70%
+  );
+  animation: cheer-out 2.6s ease forwards;
+}
+.tablet-cheer .tablet-cheer-face .avatar.large {
+  width: calc(var(--u) * 26);
+  height: calc(var(--u) * 26);
+  font-size: calc(var(--u) * 8);
+  border: calc(var(--u) * 1) solid #ffd84d;
+  box-shadow: 0 0 0 calc(var(--u) * 1.4) rgba(255, 216, 77, 0.35);
+  animation:
+    cheer-pop 0.7s cubic-bezier(0.2, 1.6, 0.4, 1) both,
+    cheer-spin 1.6s ease-in-out 0.7s;
+}
+.tablet-cheer.red .tablet-cheer-face .avatar.large {
+  border-color: #e3b93f;
+}
+.tablet-cheer-title {
+  font-size: calc(var(--u) * 11);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #ffd84d;
+  text-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  animation: cheer-pop 0.6s 0.15s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+.tablet-cheer-name {
+  padding: 6px 18px;
+  border-radius: 999px;
+  background: #fff;
+  color: #17122b;
+  font-size: calc(var(--u) * 4);
+  font-weight: 800;
+  animation: cheer-pop 0.6s 0.3s ease both;
+}
+.tablet-cheer-burst {
+  position: absolute;
+  inset: 50% auto auto 50%;
+}
+.tablet-cheer-burst i {
+  position: absolute;
+  width: calc(var(--u) * 2.2);
+  height: calc(var(--u) * 2.2);
+  border-radius: 3px;
+  background: hsl(calc(var(--i) * 30), 85%, 60%);
+  transform: rotate(calc(var(--i) * 30deg)) translateY(0);
+  animation: cheer-burst 1.4s ease-out forwards;
+}
+@keyframes cheer-burst {
+  to {
+    transform: rotate(calc(var(--i) * 30deg)) translateY(calc(var(--u) * -32))
+      rotate(240deg);
+    opacity: 0;
+  }
+}
+@keyframes cheer-pop {
+  from {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+}
+@keyframes cheer-spin {
+  50% {
+    transform: rotate(-8deg) scale(1.06);
+  }
+}
+@keyframes cheer-out {
+  80% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+/* End of the match: winners, score, confirm or take the last goal back. */
+.tablet-final {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: calc(var(--u) * 3);
+  background: rgba(23, 18, 43, 0.82);
+}
+.tablet-final-card {
+  display: grid;
+  justify-items: center;
+  gap: calc(var(--u) * 1.6);
+  width: min(100%, 720px);
+  max-height: 100%;
+  overflow: auto;
+  padding: calc(var(--u) * 3) calc(var(--u) * 4);
+  border-radius: calc(var(--u) * 3);
+  background: #fffdf4;
+  color: #17122b;
+  text-align: center;
+  animation: cheer-pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.tablet-final.blue .tablet-final-card {
+  background: linear-gradient(150deg, #004d98 0 52%, #a50044 52% 100%);
+  color: #fff;
+}
+.tablet-final-kicker {
+  font-size: clamp(12px, calc(var(--u) * 2.2), 16px);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  opacity: 0.75;
+}
+.tablet-final h2 {
+  margin: 0;
+  font-size: clamp(26px, calc(var(--u) * 7), 56px);
+}
+.tablet-final.blue h2 {
+  color: #ffd84d;
+}
+.tablet-final-faces {
+  display: flex;
+  gap: calc(var(--u) * 4);
+}
+.tablet-final-faces figure {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.tablet-final .tablet-final-faces .avatar.large {
+  width: calc(var(--u) * 16);
+  height: calc(var(--u) * 16);
+  font-size: calc(var(--u) * 5);
+  border: 4px solid #ffd84d;
+  animation:
+    cheer-pop 0.6s 0.2s cubic-bezier(0.2, 1.6, 0.4, 1) both,
+    cheer-spin 1.8s ease-in-out 0.8s infinite;
+}
+.tablet-final-faces figcaption {
+  font-size: clamp(14px, calc(var(--u) * 2.8), 22px);
+  font-weight: 800;
+}
+.tablet-final-score {
+  margin: 0;
+  font-size: clamp(20px, calc(var(--u) * 5), 40px);
+  font-weight: 700;
+}
+.tablet-final-score b {
+  font-size: 1.4em;
+}
+.tablet-final-actions {
+  display: flex;
+  gap: calc(var(--u) * 2);
+  width: 100%;
+}
+.tablet-final-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: clamp(52px, calc(var(--u) * 10), 76px);
+  border-radius: calc(var(--u) * 2);
+  font-size: clamp(16px, calc(var(--u) * 3.2), 24px);
+  font-weight: 800;
+  cursor: pointer;
+}
+.tablet-final-back {
+  flex: 1;
+  border: 2px solid currentColor;
+  background: transparent;
+  color: inherit;
+}
+.tablet-final-confirm {
+  flex: 2;
+  border: 0;
+  background: #b0ca62;
+  color: #17122b;
+}
+.tablet-final-note {
+  margin: 0;
+  font-size: clamp(11px, calc(var(--u) * 1.9), 14px);
+  opacity: 0.75;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tablet-cheer *,
+  .tablet-final-card,
+  .tablet-final-faces .avatar {
+    animation-duration: 0.01s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+/* Initials (no profile photo) need a solid circle to read over the scoreboard. */
+.tablet-cheer .tablet-cheer-face .avatar.large,
+.tablet-final .tablet-final-faces .avatar.large {
+  background: #fff;
+  color: #17122b;
+  font-weight: 800;
+}

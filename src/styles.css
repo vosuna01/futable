@@ -3234,3 +3234,15 @@ select option {
 .auth-switch + .setup-notice {
   margin-bottom: 22px;
 }
+/* Goals have their own column on wide screens and sit under the % below 1200px. */
+.goals-column {
+  text-align: center;
+}
+@media (max-width: 1200px) {
+  .goals-column {
+    display: none;
+  }
+  .ranking-table .inline-raw {
+    font-size: 11px;
+  }
+}

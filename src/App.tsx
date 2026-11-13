@@ -22,7 +22,7 @@ import {
 import { useLeague } from "./data/useLeague";
 import { passwordFlow } from "./data/supabase";
 import { defaultRules, type Match } from "./domain/types";
-import { pairRanking, ranking } from "./domain/rankings";
+import { pairRanking, RANK_GAMES, ranking } from "./domain/rankings";
 import { latestValidMatch } from "./domain/teams";
 import { Auth } from "./components/Auth";
 import {
@@ -589,20 +589,20 @@ export default function App() {
                         : "Camino a la clasificación"}
                       <strong>
                         {ownStats.qualified
-                          ? pct(ownStats.adjusted)
-                          : `${ownStats.games} / ${rules.minimum} PJ`}
+                          ? pct(ownStats.raw)
+                          : `${ownStats.games} / ${RANK_GAMES} PJ`}
                       </strong>
                     </span>
                     <div
                       role="progressbar"
                       aria-label="Partidas para clasificar"
                       aria-valuemin={0}
-                      aria-valuemax={rules.minimum}
-                      aria-valuenow={Math.min(ownStats.games, rules.minimum)}
+                      aria-valuemax={RANK_GAMES}
+                      aria-valuenow={Math.min(ownStats.games, RANK_GAMES)}
                     >
                       <i
                         style={{
-                          width: `${Math.min(100, (ownStats.games / rules.minimum) * 100)}%`,
+                          width: `${Math.min(100, (ownStats.games / RANK_GAMES) * 100)}%`,
                         }}
                       />
                     </div>
@@ -666,8 +666,8 @@ export default function App() {
                       </span>
                       <div className="leader-stats">
                         <div>
-                          <strong>{pct(competitive[0].adjusted)}</strong>
-                          <small>% AJUSTADO</small>
+                          <strong>{pct(competitive[0].raw)}</strong>
+                          <small>% REAL</small>
                         </div>
                         <div>
                           <strong>
@@ -687,8 +687,7 @@ export default function App() {
                     </>
                   ) : (
                     <Empty title="El liderato te espera">
-                      Se necesitan {rules.minimum} partidos reales para
-                      competir.
+                      Se necesitan {RANK_GAMES} partidos para competir.
                     </Empty>
                   )}
                 </section>
@@ -732,7 +731,7 @@ export default function App() {
                   <div className="panel">
                     <div className="panel-subtitle">
                       <span className="chip gold-chip">GENERAL</span>
-                      <span>El porcentaje ajustado decide.</span>
+                      <span>El porcentaje real decide.</span>
                     </div>
                     <RankTable
                       rows={rows.filter((x) => x.games > 0).slice(0, 5)}
@@ -741,7 +740,7 @@ export default function App() {
                     />
                   </div>
                   <p className="ranking-caption">
-                    Mínimo {rules.minimum} partidos para entrar en competición.
+                    Mínimo {RANK_GAMES} partidos para entrar en competición.
                     Cada resultado cuenta.
                   </p>
                 </div>
@@ -802,7 +801,7 @@ export default function App() {
                           {stat ? ` · ${stat.games} PJ` : ""}
                         </p>
                       </div>
-                      <strong>{stat ? pct(stat.adjusted) : "—"}</strong>
+                      <strong>{stat ? pct(stat.raw) : "—"}</strong>
                     </article>
                   );
                 })}
@@ -823,7 +822,7 @@ export default function App() {
                         : `Mínimo ${rules.pair_minimum} partidos juntos`}
                     </p>
                   </div>
-                  <strong>{pair ? pct(pair.adjusted) : "—"}</strong>
+                  <strong>{pair ? pct(pair.raw) : "—"}</strong>
                 </article>
               </div>
             </>
@@ -994,22 +993,19 @@ export default function App() {
           onClose={() => setHelp(false)}
         >
           <p>
-            La clasificación premia el rendimiento relativo y mantiene el tamaño
-            de muestra visible.
+            La clasificación ordena por porcentaje real de victorias y separa a
+            quien ya tiene muestra suficiente.
           </p>
-          <div className="help-formula">
-            (Victorias + {rules.prior_wins}) ÷ (Partidos + {rules.prior_games})
-            × 100
-          </div>
+          <div className="help-formula">Victorias ÷ Partidos × 100</div>
           <p>
-            Debes jugar {rules.minimum} partidos reales para clasificar. Defensa
-            y delantero cuentan solo las partidas en esa posición. El jugador
-            completo necesita {rules.minimum} en cada una.
+            Arriba aparece quien lleva {RANK_GAMES} partidos o más; debajo, el
+            resto. Defensa y delantero cuentan solo las partidas en esa
+            posición. El jugador completo necesita {RANK_GAMES} en cada una.
           </p>
           <p>
-            Se desempata por porcentaje real, partidos, victorias y nombre, sin
-            redondear los valores. Las parejas necesitan {rules.pair_minimum}{" "}
-            partidas conjuntas, con independencia de sus posiciones.
+            Se desempata por partidos, victorias y nombre, sin redondear los
+            valores. Las parejas necesitan {rules.pair_minimum} partidas
+            conjuntas, con independencia de sus posiciones.
           </p>
           <h3>Llévala en el móvil</h3>
           <p>

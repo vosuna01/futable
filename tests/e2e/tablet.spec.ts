@@ -232,12 +232,47 @@ test("elige a cuántos goles se juega y avisa cuando un equipo llega", async ({
   await page.getByRole("button", { name: "Gol Madrid" }).click();
   await expect(page.getByLabel("Goles Madrid")).toHaveText("2");
   await expect(madridWin).toHaveClass(/ready/);
-  // The choice lasts for the next matches of the session.
-  await madridWin.click();
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Guardar resultado" })
-    .click();
+  // Reaching the target opens the end screen; the choice lasts for the next matches.
+  const end = page.getByRole("dialog", { name: "Fin de partida" });
+  await expect(end).toContainText("Gana Madrid");
+  await end.getByRole("button", { name: "Confirmar" }).click();
+  await expect(end).not.toBeVisible();
   await expect(page.getByLabel("Goles Madrid")).toHaveText("0");
   await expect(target).toContainText("A 2 goles");
+});
+
+test("celebra cada gol con la cara de quien marca y al final pide confirmar o volver atrás", async ({
+  page,
+}) => {
+  await openTablet(page);
+  await page.getByRole("button", { name: "Empezar partida" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Empezar", exact: true })
+    .click();
+  await page.getByRole("button", { name: /Partidas a \d+ goles/ }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "2", exact: true })
+    .click();
+  // A goal credited to a player shows that player in the celebration.
+  await page.getByLabel(`Gol de ${names[0]}`, { exact: true }).click();
+  const cheer = page.locator(".tablet-cheer");
+  await expect(cheer).toContainText("¡GOOOL!");
+  await expect(cheer).toContainText(names[0]);
+  await expect(cheer).not.toBeVisible({ timeout: 5000 });
+  // The winning goal opens the end screen with the winners and the score.
+  await page.getByLabel(`Gol de ${names[0]}`, { exact: true }).click();
+  const end = page.getByRole("dialog", { name: "Fin de partida" });
+  await expect(end).toContainText("Gana Madrid");
+  await expect(end).toContainText(names[0]);
+  await expect(end.getByLabel("Resultado")).toContainText("2");
+  // A double press: going back removes that last goal and keeps playing.
+  await end.getByRole("button", { name: "Volver atrás" }).click();
+  await expect(end).not.toBeVisible();
+  await expect(page.getByLabel("Goles Madrid")).toHaveText("1");
+  await page.getByRole("button", { name: "Gol Madrid" }).click();
+  await end.getByRole("button", { name: "Confirmar" }).click();
+  await expect(end).not.toBeVisible();
+  await expect(page.getByLabel("Goles Madrid")).toHaveText("0");
 });

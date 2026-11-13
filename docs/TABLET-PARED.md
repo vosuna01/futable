@@ -44,6 +44,12 @@ Comprobación de instalación:
 select to_regprocedure('public.live_replace_pair_state(jsonb,text,text,text)');
 ```
 
+### Celebración de gol y fin de partida
+
+- **Cada gol** que entra en `goal_log`, venga de la tablet, del móvil o de los pulsadores del marcador, muestra 2,5 s una celebración con la foto de perfil de quien ha marcado (o sus iniciales; si el gol no tiene goleador, el escudo del equipo). No bloquea los toques.
+- **Fin de partida:** cuando un equipo llega a los goles para ganar y va por delante, la tablet muestra a pantalla completa a los ganadores, el resultado y dos botones. **Confirmar** guarda la partida (`result`) y entra la siguiente. **Volver atrás** quita el último gol del registro (`goal` con `delta: -1` y su goleador), por si se pulsó dos veces o no valía, y se sigue jugando. El marcador físico deja de sumar al llegar al objetivo y espera esta confirmación.
+- «Gana …» sigue disponible para terminar antes de llegar al objetivo.
+
 ### A cuántos goles se juega
 
 El botón **A N goles** de la barra superior abre un selector de 1 a 10. Lo elegido se guarda en `state.target` y vale para la partida actual y las siguientes de la sesión; al cerrar la sesión vuelve a mandar la regla de la temporada. Cuando un equipo llega a ese número y va por delante, su botón «Gana …» se resalta. El marcador ESP32 lee el mismo valor.
@@ -110,5 +116,5 @@ select * from public.match_scorers order by match_id desc limit 5;
 
 ## Pendiente (fuera de este cambio)
 
-- Mostrar los goleadores guardados (`match_scorers`) en el historial y los perfiles. `league_snapshot` todavía no los devuelve.
+- Mostrar los goleadores de cada partida en el historial. Desde la migración `014_snapshot_scorers.sql`, `league_snapshot` devuelve `scorers` en cada partida, y la clasificación y los perfiles ya suman los goles de cada jugador. Solo cuentan los goles con goleador de partidas en directo: los goles por equipo y las partidas apuntadas a mano no tienen goleador.
 - Si una partida del directo se corrige luego desde Administración cambiando jugadores, sus goleadores no se ajustan solos.

@@ -4,6 +4,7 @@ import {
   assignPosts,
   boardScore,
   emptyState,
+  goalsBy,
   join,
   leave,
   liveParticipants,
@@ -207,6 +208,9 @@ export function useLiveSession({
           red_score: board.red,
           winner: fields.winner,
           participants: liveParticipants(before.state),
+          scorers: Object.entries(goalsBy(before.state)).map(
+            ([player_id, goals]) => ({ player_id, goals }),
+          ),
         },
         next.last_match,
       );

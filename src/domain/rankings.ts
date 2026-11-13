@@ -13,10 +13,16 @@ export const adjustedWR = (
   games: number,
   r: Rules = defaultRules,
 ) => (100 * (wins + r.prior_wins)) / (games + r.prior_games);
+/**
+ * Matches needed to enter the main standings: more than 20, so 21. Below it a
+ * player is still listed, in a separate block. The real win rate decides the order.
+ */
+export const RANK_GAMES = 21;
+/** Matches needed in each half of a player's record to compare their improvement. */
+export const IMPROVE_HALF = 10;
 export function compareStats(a: Stats, b: Stats): number {
   return (
     Number(b.qualified) - Number(a.qualified) ||
-    b.adjusted - a.adjusted ||
     b.raw - a.raw ||
     b.games - a.games ||
     b.wins - a.wins ||
@@ -43,7 +49,8 @@ export function ranking(
       let games = 0,
         wins = 0,
         streak = 0,
-        bestStreak = 0;
+        bestStreak = 0,
+        goals = 0;
       for (const m of valid) {
         const p = m.participants.find(
           (p) =>
@@ -51,6 +58,7 @@ export function ranking(
         );
         if (!p) continue;
         games++;
+        goals += m.scorers?.find((s) => s.player_id === player.id)?.goals ?? 0;
         if (p.team === m.winner) {
           wins++;
           streak++;
@@ -64,9 +72,10 @@ export function ranking(
         losses: games - wins,
         raw: rawWR(wins, games),
         adjusted: adjustedWR(wins, games, rules),
+        goals,
         streak,
         bestStreak,
-        qualified: games >= rules.minimum,
+        qualified: games >= RANK_GAMES,
       };
     })
     .sort(compareStats);
@@ -88,6 +97,7 @@ export function completeRanking(
         losses: d.losses + f.losses,
         raw: rawWR(d.wins + f.wins, d.games + f.games),
         adjusted: (d.adjusted + f.adjusted) / 2,
+        goals: d.goals + f.goals,
         qualified: d.qualified && f.qualified,
         defense: d,
         forward: f,
@@ -131,7 +141,6 @@ export function pairRanking(
     .sort(
       (a, b) =>
         Number(b.qualified) - Number(a.qualified) ||
-        b.adjusted - a.adjusted ||
         b.raw - a.raw ||
         b.games - a.games ||
         b.wins - a.wins ||
@@ -171,7 +180,7 @@ export function improvement(
         first: rawWR(wins(a), a.length),
         second: rawWR(wins(b), b.length),
         delta: rawWR(wins(b), b.length) - rawWR(wins(a), a.length),
-        qualified: a.length >= rules.minimum && b.length >= rules.minimum,
+        qualified: a.length >= IMPROVE_HALF && b.length >= IMPROVE_HALF,
       };
     })
     .sort(

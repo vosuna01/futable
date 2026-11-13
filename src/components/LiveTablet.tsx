@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   ArrowLeftRight,
   CheckCircle2,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { useLiveSession } from "../data/useLiveSession";
 import {
+  goalLog,
   goalsBy,
   goalsToWin,
   liveError,
@@ -101,6 +102,51 @@ export function LiveTablet({
   const scorersPending =
     !demo && !!state?.court && !Array.isArray(state.goal_log);
   const off = !online || busy || !canRun;
+  // The match is over once a team reaches the goals to win and leads: the
+  // tablet asks to confirm (the scoreboard stops adding and waits for it).
+  const finished: Team | null = reached("red")
+    ? "red"
+    : reached("blue")
+      ? "blue"
+      : null;
+  const log = state ? goalLog(state) : [];
+
+  // Every new goal, wherever it was scored (tablet, phone or the table's
+  // buttons), gets a short celebration with the scorer's face.
+  const [cheer, setCheer] = useState<{
+    key: number;
+    team: Team;
+    player: string | null;
+  } | null>(null);
+  const seen = useRef<{ match: string; count: number } | null>(null);
+  const matchKey = session && state ? `${session.id}:${state.round}` : "";
+  useEffect(() => {
+    const count = log.length;
+    const before = seen.current;
+    seen.current = { match: matchKey, count };
+    // First reading, another match or a goal taken back: nothing to celebrate.
+    if (!before || before.match !== matchKey || count <= before.count) return;
+    const goal = log[count - 1];
+    setCheer({ key: Date.now(), team: goal.team, player: goal.player });
+  }, [matchKey, log.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!cheer) return;
+    const timer = setTimeout(() => setCheer(null), 2600);
+    return () => clearTimeout(timer);
+  }, [cheer]);
+
+  /** Takes back the latest goal: a double press or a goal that should not count. */
+  const takeBackLast = () => {
+    const last = log[log.length - 1];
+    if (!last) return;
+    void run(
+      "goal",
+      last.player
+        ? { team: last.team, delta: -1, player: last.player }
+        : { team: last.team, delta: -1 },
+      "Último gol anulado. Seguid jugando.",
+    );
+  };
 
   // A wall screen must not dim mid-match.
   useEffect(() => {
@@ -602,6 +648,69 @@ export function LiveTablet({
           </form>
         </Modal>
       )}
+      {cheer && !finished && state?.court && (
+        <GoalCheer
+          key={cheer.key}
+          team={cheer.team}
+          player={cheer.player ? named(cheer.player) : undefined}
+        />
+      )}
+      {finished && state?.court && !confirm && (
+        <div
+          className={`tablet-final ${finished}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Fin de partida"
+        >
+          <div className="tablet-final-card">
+            <span className="tablet-final-kicker">FIN DE PARTIDA</span>
+            <h2>🏆 Gana {teamNames[finished]}</h2>
+            <div className="tablet-final-faces">
+              {posts.map((post) => {
+                const player = named(state.court![finished][post].id);
+                return (
+                  <figure key={post}>
+                    <Avatar
+                      player={player || { name: "?", avatar_url: null }}
+                      size="large"
+                    />
+                    <figcaption>{player?.name || "?"}</figcaption>
+                  </figure>
+                );
+              })}
+            </div>
+            <p className="tablet-final-score" aria-label="Resultado">
+              Madrid <b>{state.goals.red}</b> · <b>{state.goals.blue}</b> Barça
+            </p>
+            <div className="tablet-final-actions">
+              <button
+                className="tablet-final-back"
+                disabled={off || !log.length}
+                onClick={takeBackLast}
+              >
+                <Undo2 size={22} /> Volver atrás
+              </button>
+              <button
+                className="tablet-final-confirm"
+                disabled={off || !!invalid}
+                onClick={() =>
+                  void run(
+                    "result",
+                    { winner: finished },
+                    `Gana ${teamNames[finished]}. Siguiente partida.`,
+                  )
+                }
+              >
+                <CheckCircle2 size={24} /> Confirmar
+              </button>
+            </div>
+            <p className="tablet-final-note">
+              «Volver atrás» quita el último gol, por si se pulsó dos veces o no
+              valía.
+            </p>
+          </div>
+        </div>
+      )}
       {confirm && state?.court && (
         <Modal
           title={`¿Gana ${teamNames[confirm]}?`}
@@ -688,6 +797,29 @@ export function LiveTablet({
           />
         </Modal>
       )}
+    </div>
+  );
+}
+
+/** A short goal celebration with the scorer's face; it never blocks a tap. */
+function GoalCheer({ team, player }: { team: Team; player?: Player }) {
+  return (
+    <div className={`tablet-cheer ${team}`} role="status" aria-live="polite">
+      <div className="tablet-cheer-burst" aria-hidden="true">
+        {Array.from({ length: 12 }, (_, i) => (
+          <i key={i} style={{ "--i": i } as CSSProperties} />
+        ))}
+      </div>
+      <div className="tablet-cheer-face">
+        <Avatar
+          player={player || { name: teamNames[team], avatar_url: null }}
+          size="large"
+        />
+      </div>
+      <strong className="tablet-cheer-title">¡GOOOL!</strong>
+      <span className="tablet-cheer-name">
+        {player ? player.name : `Gol del ${teamNames[team]}`}
+      </span>
     </div>
   );
 }

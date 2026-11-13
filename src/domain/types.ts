@@ -44,6 +44,8 @@ export interface Match {
   status: "valid" | "void";
   operation_id: string;
   participants: Participant[];
+  /** Credited scorers of a live match (migration 014); absent before. */
+  scorers?: { player_id: string; goals: number }[];
   revision: number;
 }
 export interface MatchInput {
@@ -53,6 +55,8 @@ export interface MatchInput {
   red_score: number | null;
   winner?: Team;
   participants: Participant[];
+  /** Demo only: the server stores live scorers itself. */
+  scorers?: { player_id: string; goals: number }[];
 }
 export interface Membership {
   user_id: string;
@@ -84,7 +88,10 @@ export interface Stats {
   wins: number;
   losses: number;
   raw: number;
+  /** Internal estimate for the forecast only; the standings use `raw`. */
   adjusted: number;
+  /** Goals credited to the player in the counted matches. */
+  goals: number;
   streak: number;
   bestStreak: number;
   qualified: boolean;

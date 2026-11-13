@@ -3,7 +3,9 @@ import { ArrowDownWideNarrow, Flame, Info, Search, Trophy } from "lucide-react";
 import {
   completeRanking,
   improvement,
+  IMPROVE_HALF,
   pairRanking,
+  RANK_GAMES,
   ranking,
 } from "../domain/rankings";
 import type { Match, Player, Rules, Stats } from "../domain/types";
@@ -31,8 +33,8 @@ export function RankTable({
             <th>#</th>
             <th>JUGADOR</th>
             <th>V / PJ</th>
-            <th className="raw-column">% REAL</th>
-            <th>% AJUSTADO</th>
+            <th className="goals-column">GOLES</th>
+            <th>% REAL</th>
             {!compact && <th>RACHA</th>}
           </tr>
         </thead>
@@ -75,12 +77,14 @@ export function RankTable({
                   <strong>{s.wins}</strong>
                   <span className="muted"> / {s.games}</span>
                 </td>
-                <td className="raw-column muted">{pct(s.raw)}</td>
+                <td className="goals-column">
+                  <strong>{s.goals}</strong>
+                </td>
                 <td>
-                  <strong className="adjusted">{pct(s.adjusted)}</strong>
-                  <small className="inline-raw">Real {pct(s.raw)}</small>
+                  <strong className="adjusted">{pct(s.raw)}</strong>
+                  <small className="inline-raw">⚽ {s.goals}</small>
                   <div className="mini-bar">
-                    <i style={{ width: `${s.adjusted}%` }} />
+                    <i style={{ width: `${s.raw}%` }} />
                   </div>
                 </td>
                 {!compact && (
@@ -105,7 +109,7 @@ export function RankTable({
         <>
           <div className="provisional-label">
             <span>EN CLASIFICACIÓN</span>
-            <small>Faltan partidos para entrar en competición</small>
+            <small>Menos de {RANK_GAMES} partidas jugadas</small>
           </div>
           {render(provisional, true)}
         </>
@@ -125,7 +129,7 @@ export function Rankings({
   onPlayer: (id: string) => void;
 }) {
   const [tab, setTab] = useState("General"),
-    [sort, setSort] = useState("adjusted"),
+    [sort, setSort] = useState("raw"),
     [query, setQuery] = useState("");
   const position =
     tab === "Defensas"
@@ -144,8 +148,8 @@ export function Rankings({
         ? b.wins - a.wins
         : sort === "games"
           ? b.games - a.games
-          : sort === "raw"
-            ? b.raw - a.raw
+          : sort === "goals"
+            ? b.goals - a.goals
             : 0) ||
       rows.indexOf(a) - rows.indexOf(b),
   );
@@ -159,6 +163,7 @@ export function Rankings({
   const awards = [
     ["Más victorias", [...all].sort((a, b) => b.wins - a.wins)[0], "wins"],
     ["Más activo", [...all].sort((a, b) => b.games - a.games)[0], "games"],
+    ["Máximo goleador", [...all].sort((a, b) => b.goals - a.goals)[0], "goals"],
     [
       "Mayor porcentaje real",
       [...all].filter((x) => x.qualified).sort((a, b) => b.raw - a.raw)[0],
@@ -172,17 +177,17 @@ export function Rankings({
     [
       "Mejor defensa",
       ranking(players, matches, rules, "defender").find((x) => x.qualified),
-      "adjusted",
+      "raw",
     ],
     [
       "Mejor delantero",
       ranking(players, matches, rules, "forward").find((x) => x.qualified),
-      "adjusted",
+      "raw",
     ],
     [
       "Jugador completo",
       completeRanking(players, matches, rules).find((x) => x.qualified),
-      "adjusted",
+      "raw",
     ],
   ] as const;
   return (
@@ -255,9 +260,8 @@ export function Rankings({
                       <strong>{s.player.name}</strong>
                     </button>
                     <p>
-                      {key === "raw" || key === "adjusted"
-                        ? pct(s[key])
-                        : s[key]}{" "}
+                      {key === "raw" ? pct(s[key]) : s[key]}
+                      {key === "goals" ? " goles" : ""}{" "}
                       <span className="muted">· {s.games} partidos</span>
                     </p>
                   </>
@@ -271,7 +275,7 @@ export function Rankings({
             <h2>Mayor mejora</h2>
             <p className="muted">
               Diferencia en puntos porcentuales entre la primera y segunda mitad
-              de las partidas de cada jugador. Mínimo {rules.minimum} en cada
+              de las partidas de cada jugador. Mínimo {IMPROVE_HALF} en cada
               mitad.
             </p>
             {improved.filter((x) => x.qualified).length ? (
@@ -324,10 +328,10 @@ export function Rankings({
                   </strong>
                   <small>
                     {p.qualified ? "Pareja clasificada" : "Provisional"} ·{" "}
-                    {p.games} PJ · {p.wins} victorias · real {pct(p.raw)}
+                    {p.games} PJ · {p.wins} victorias
                   </small>
                 </div>
-                <strong className="gold">{pct(p.adjusted)}</strong>
+                <strong className="gold">{pct(p.raw)}</strong>
               </div>
             ))
           ) : (
@@ -353,8 +357,8 @@ export function Rankings({
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
               >
-                <option value="adjusted">% ajustado</option>
                 <option value="raw">% real</option>
+                <option value="goals">Goles</option>
                 <option value="wins">Victorias</option>
                 <option value="games">Partidos</option>
               </select>
@@ -363,7 +367,7 @@ export function Rankings({
           <p className="ranking-summary">
             {sortedAll.filter((s) => s.qualified).length} clasificados ·{" "}
             {sortedAll.filter((s) => !s.qualified).length} en clasificación ·
-            Mínimo {rules.minimum} partidas
+            Mínimo {RANK_GAMES} partidas
             {position
               ? " en esta posición"
               : tab === "Completos"
@@ -395,10 +399,10 @@ export function Rankings({
                   <div className="metric-row" key={s.player.id}>
                     <span>{s.player.name}</span>
                     <small>
-                      DEF {pct(s.defense.adjusted)} · {s.defense.games} PJ
+                      DEF {pct(s.defense.raw)} · {s.defense.games} PJ
                     </small>
                     <small>
-                      DEL {pct(s.forward.adjusted)} · {s.forward.games} PJ
+                      DEL {pct(s.forward.raw)} · {s.forward.games} PJ
                     </small>
                   </div>
                 ))}
@@ -409,15 +413,15 @@ export function Rankings({
       <div className="info-note">
         <Info size={17} />
         <p>
-          Porcentaje ajustado = (victorias + {rules.prior_wins}) / (partidos +{" "}
-          {rules.prior_games}). Mínimo {rules.minimum} partidos
+          Porcentaje real = victorias / partidos. Arriba, quien lleva{" "}
+          {RANK_GAMES} partidas o más
           {tab === "Completos"
             ? " en cada posición"
             : position
               ? " en esta posición"
               : ""}
-          . Los provisionales siempre aparecen después de los clasificados. Se
-          ordena sin redondear.
+          ; debajo, el resto. Los goles son los marcados en partidas en directo
+          con goleador. Se ordena sin redondear.
         </p>
       </div>
     </>

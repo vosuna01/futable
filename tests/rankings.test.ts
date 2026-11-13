@@ -4,6 +4,7 @@ import {
   compareStats,
   completeRanking,
   pairRanking,
+  RANK_GAMES,
   ranking,
   rawWR,
   improvement,
@@ -64,8 +65,8 @@ describe("cálculos de clasificación", () => {
       adjustedWR(2, 4, { ...defaultRules, prior_wins: 2, prior_games: 8 }),
     ).toBeCloseTo(100 / 3);
   });
-  it("exige diez partidos y deja al provisional detrás aunque gane más", () => {
-    const ms = Array.from({ length: 10 }, (_, i) => match(i, false));
+  it("exige ${RANK_GAMES} partidos y deja al provisional detrás aunque gane más", () => {
+    const ms = Array.from({ length: RANK_GAMES }, (_, i) => match(i, false));
     ms.push({
       ...match(11),
       participants: match(11).participants.map((p) => ({
@@ -79,6 +80,51 @@ describe("cálculos de clasificación", () => {
     );
     expect(r.find((x) => x.player.id === "0")?.qualified).toBe(true);
     expect(r.at(-1)?.player.id).toBe("4");
+    // One match short of the threshold is still provisional.
+    expect(
+      ranking(players, ms.slice(1)).find((x) => x.player.id === "0")?.qualified,
+    ).toBe(false);
+  });
+  it("hacen falta más de 20 partidas: con 20 aún no, con 21 sí", () => {
+    const twenty = Array.from({ length: 20 }, (_, i) => match(i));
+    const of = (ms: Match[]) =>
+      ranking(players, ms).find((x) => x.player.id === "0")?.qualified;
+    expect(RANK_GAMES).toBe(21);
+    expect(of(twenty)).toBe(false);
+    expect(of([...twenty, match(20)])).toBe(true);
+  });
+  it("ordena por porcentaje real, sin ajuste", () => {
+    // The winners of every match lead with 100 %; the order follows the real rate.
+    const ms = Array.from({ length: RANK_GAMES }, (_, i) => match(i));
+    const r = ranking(players, ms).filter((x) => x.qualified);
+    expect(r[0].raw).toBe(100);
+    expect(r.map((x) => x.raw)).toEqual(
+      [...r.map((x) => x.raw)].sort((a, b) => b - a),
+    );
+  });
+  it("suma los goles de cada jugador en las partidas que cuenta", () => {
+    const ms = [
+      { ...match(1), scorers: [{ player_id: "0", goals: 2 }] },
+      {
+        ...match(2),
+        scorers: [
+          { player_id: "0", goals: 1 },
+          { player_id: "2", goals: 3 },
+        ],
+      },
+      {
+        ...match(3),
+        status: "void" as const,
+        scorers: [{ player_id: "0", goals: 9 }],
+      },
+      match(4),
+    ];
+    const r = ranking(players, ms);
+    expect(r.find((x) => x.player.id === "0")?.goals).toBe(3);
+    expect(r.find((x) => x.player.id === "2")?.goals).toBe(3);
+    expect(r.find((x) => x.player.id === "1")?.goals).toBe(0);
+    const full = completeRanking(players, ms).find((x) => x.player.id === "0")!;
+    expect(full.goals).toBe(3);
   });
   it("separa posiciones y calcula rachas solo en esa posición", () => {
     const ms = [
@@ -99,13 +145,16 @@ describe("cálculos de clasificación", () => {
     expect(f.qualified).toBe(false);
   });
   it("exige el mínimo en ambas posiciones para jugador completo", () => {
-    const ms = Array.from({ length: 20 }, (_, i) => match(i, true, i >= 10));
+    const ms = Array.from({ length: 2 * RANK_GAMES }, (_, i) =>
+      match(i, true, i >= RANK_GAMES),
+    );
     const s = completeRanking(players, ms).find((x) => x.player.id === "0")!;
     expect(s.qualified).toBe(true);
-    expect(s.adjusted).toBe((s.defense.adjusted + s.forward.adjusted) / 2);
+    expect(s.raw).toBe(100);
     expect(
-      completeRanking(players, ms.slice(0, 19)).find((x) => x.player.id === "0")
-        ?.qualified,
+      completeRanking(players, ms.slice(0, 2 * RANK_GAMES - 1)).find(
+        (x) => x.player.id === "0",
+      )?.qualified,
     ).toBe(false);
   });
   it("calcula parejas sin depender de las posiciones", () => {
@@ -123,7 +172,11 @@ describe("cálculos de clasificación", () => {
       b = { ...a, player: players[1] };
     expect(compareStats(a, b)).toBeLessThan(0);
     expect(
-      compareStats({ ...a, adjusted: 55.00001 }, { ...b, adjusted: 55 }),
+      compareStats({ ...a, raw: 55.00001 }, { ...b, raw: 55 }),
+    ).toBeLessThan(0);
+    // The adjusted estimate no longer orders the standings.
+    expect(
+      compareStats({ ...a, adjusted: 10 }, { ...b, adjusted: 90 }),
     ).toBeLessThan(0);
     expect(compareStats({ ...a, raw: 60 }, { ...b, raw: 50 })).toBeLessThan(0);
     expect(compareStats({ ...a, games: 11 }, { ...b, games: 10 })).toBeLessThan(
