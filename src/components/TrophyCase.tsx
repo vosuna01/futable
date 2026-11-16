@@ -7,7 +7,7 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
-import type { Honours } from "../domain/coins";
+import { trophyTitle, type Honours } from "../domain/coins";
 import type { Player, Season } from "../domain/types";
 import { Modal } from "./ui";
 
@@ -35,7 +35,7 @@ export function TrophyFigure({ title }: { title: string }) {
           ? Swords
           : title === "Mejor pareja"
             ? Users
-            : title.endsWith("de coins")
+            : trophyTitle(title) === "Ludópata"
               ? Coins
               : /^(Subcampeón|Tercer puesto)/.test(title)
                 ? Medal
@@ -88,7 +88,7 @@ export function TrophyCase({
           {trophies.map((trophy) => (
             <article key={trophy.key}>
               <TrophyFigure title={trophy.title} />
-              <strong>{trophy.title}</strong>
+              <strong>{trophyTitle(trophy.title)}</strong>
               <span>
                 {seasons.find((season) => season.id === trophy.seasonId)
                   ?.name ?? "Temporada"}

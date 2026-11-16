@@ -43,6 +43,11 @@ export interface Award {
   players: string[];
   detail?: string;
 }
+const coinChampionTitle = "Ludópata";
+export const trophyTitle = (title: string) =>
+  title === "Campeón de coins" || title === "Campeones de coins"
+    ? coinChampionTitle
+    : title;
 export interface Honours {
   season_id: string;
   published_at: string;
@@ -158,10 +163,7 @@ export function awardSuggestions(
     });
   if (standings.length)
     result.push({
-      title:
-        standings.filter((w) => w.balance === standings[0].balance).length > 1
-          ? "Campeones de coins"
-          : "Campeón de coins",
+      title: coinChampionTitle,
       players: standings
         .filter((w) => w.balance === standings[0].balance)
         .map((w) => w.player_id),

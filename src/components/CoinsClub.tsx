@@ -5,6 +5,7 @@ import {
   awardSuggestions,
   pooledReturn,
   fixedReturn,
+  trophyTitle,
   type Award,
   type CoinSettings,
 } from "../domain/coins";
@@ -591,7 +592,7 @@ export function CoinsClub({
                 {h.awards.map((a, i) => (
                   <article key={i}>
                     <TrophyFigure title={a.title} />
-                    <span>{a.title}</span>
+                    <span>{trophyTitle(a.title)}</span>
                     <strong>{a.players.map((p) => p.name).join(" y ")}</strong>
                   </article>
                 ))}
