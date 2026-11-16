@@ -1,5 +1,5 @@
 import { useRef, useState, type FormEvent } from "react";
-import { Camera, LogOut } from "lucide-react";
+import { Camera, LogOut, Trophy } from "lucide-react";
 import type { Player } from "../domain/types";
 import { prepareProfilePhoto } from "../data/profile-photo";
 import { Avatar, Modal } from "./ui";
@@ -11,6 +11,7 @@ export function MyProfile({
   onSave,
   onClose,
   onLogout,
+  onTrophyCase,
 }: {
   player: Player;
   demo: boolean;
@@ -18,6 +19,7 @@ export function MyProfile({
   onSave: (name: string, photo: string | null) => Promise<void>;
   onClose: () => void;
   onLogout: () => Promise<void>;
+  onTrophyCase: () => void;
 }) {
   const [name, setName] = useState(player.name);
   const [photo, setPhoto] = useState(player.avatar_url);
@@ -53,6 +55,14 @@ export function MyProfile({
         if (!busy && !preparing) onClose();
       }}
     >
+      <button
+        className="secondary"
+        type="button"
+        disabled={busy || preparing}
+        onClick={onTrophyCase}
+      >
+        <Trophy size={16} /> Mi vitrina
+      </button>
       <form className="my-profile" onSubmit={submit}>
         <p className="muted">
           Así te verán tus compañeros en la liga. Tus partidas y estadísticas

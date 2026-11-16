@@ -406,6 +406,36 @@
   font-size: 15px;
   color: #343040;
 }
+.coin-awards .trophy-figure {
+  width: 56px;
+  height: 56px;
+  padding: 8px;
+  color: #8b5c13;
+  background: radial-gradient(circle at 36% 28%, #fff7dc, #f3dfa2);
+  border-radius: 16px;
+  stroke-width: 2;
+}
+.coin-awards .trophy-figure.silhouette {
+  fill: #e3b854;
+  stroke: currentColor;
+  stroke-linejoin: round;
+}
+.coin-awards .trophy-figure.silver {
+  color: #525d71;
+  background: #e6eaf1;
+  fill: none;
+}
+.coin-awards .trophy-figure.bronze {
+  color: #805133;
+  background: #f4dfcc;
+  fill: none;
+}
+.coin-awards article small {
+  color: #6e5940;
+}
+.player-trophy-link {
+  margin: 0 0 16px;
+}
 .coin-award-check {
   display: flex;
   gap: 12px;

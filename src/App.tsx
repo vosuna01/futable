@@ -46,6 +46,7 @@ import { LiveMatch } from "./components/LiveMatch";
 import { useLiveSession } from "./data/useLiveSession";
 import { LiveTablet } from "./components/LiveTablet";
 import { useCoins } from "./data/useCoins";
+import { TrophyCase } from "./components/TrophyCase";
 import { CoinsClub, CoinMarketPanel } from "./components/CoinsClub";
 import { SeasonCountdown } from "./components/SeasonCountdown";
 import { newestFirst } from "./domain/presentation";
@@ -81,6 +82,7 @@ export default function App() {
     [notice, setNotice] = useState(""),
     [help, setHelp] = useState(false),
     [myProfile, setMyProfile] = useState(false),
+    [trophyPlayerId, setTrophyPlayerId] = useState<string | null>(null),
     [sidebar, setSidebar] = useState(false),
     [update, setUpdate] = useState<ServiceWorkerRegistration | null>(null),
     [recovery, setRecovery] = useState(passwordFlow),
@@ -231,6 +233,9 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const ownStats = rows.find((row) => row.player.id === ownPlayer?.id);
+  const trophyPlayer = data.players.find(
+    (player) => player.id === trophyPlayerId,
+  );
   const livePlace = ownPlayer
     ? (liveMatch.session?.state.queue.findIndex((p) => p.id === ownPlayer.id) ??
       -1)
@@ -842,6 +847,7 @@ export default function App() {
               rules={rules}
               selected={selected}
               onSelect={setSelected}
+              onTrophyCase={setTrophyPlayerId}
             />
           )}
           {page === "history" && (
@@ -913,6 +919,10 @@ export default function App() {
           demo={demo}
           online={online}
           onClose={() => setMyProfile(false)}
+          onTrophyCase={() => {
+            setMyProfile(false);
+            setTrophyPlayerId(ownPlayer.id);
+          }}
           onLogout={async () => {
             setMyProfile(false);
             await league.logout();
@@ -925,6 +935,15 @@ export default function App() {
                 : "Perfil guardado. Tu historial y tus estadísticas se conservan.",
             );
           }}
+        />
+      )}
+      {trophyPlayer && (
+        <TrophyCase
+          player={trophyPlayer}
+          honours={coins.snapshot?.honours}
+          seasons={data.seasons}
+          unavailable={!!coins.error || !online}
+          onClose={() => setTrophyPlayerId(null)}
         />
       )}
       {matchForm && active && (

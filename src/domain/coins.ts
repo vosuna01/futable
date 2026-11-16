@@ -41,6 +41,7 @@ export interface CoinMarket {
 export interface Award {
   title: string;
   players: string[];
+  detail?: string;
 }
 export interface Honours {
   season_id: string;
@@ -77,12 +78,19 @@ export function awardSuggestions(
     matches?: Match[];
     rules?: Season;
   } | null;
+  const seasonMatches = data.matches.filter((m) => m.season_id === season.id);
+  const current = new Map(seasonMatches.map((m) => [m.id, m]));
   const matches =
-    frozen?.matches ?? data.matches.filter((m) => m.season_id === season.id);
+    frozen?.matches?.map((match) => {
+      const source = current.get(match.id);
+      // Older season snapshots omitted scorers. Reuse credits only from the same revision.
+      return match.scorers || source?.revision !== match.revision
+        ? match
+        : { ...match, scorers: source?.scorers };
+    }) ?? seasonMatches;
   const rules = frozen?.rules ?? season;
-  const general = ranking(data.players, matches, rules).filter(
-    (r) => r.qualified,
-  );
+  const overall = ranking(data.players, matches, rules);
+  const general = overall.filter((r) => r.qualified);
   const result: Award[] = general.slice(0, 3).map((r, i) => ({
     title: ["Campeón de liga", "Subcampeón de liga", "Tercer puesto"][i],
     players: [r.player.id],
@@ -101,6 +109,53 @@ export function awardSuggestions(
     (r) => r.qualified,
   );
   if (pair) result.push({ title: "Mejor pareja", players: pair.ids });
+  const topGoals = overall.reduce((top, row) => Math.max(top, row.goals), 0);
+  if (topGoals > 0)
+    result.push({
+      title: "Bota de Oro",
+      players: overall
+        .filter((row) => row.goals === topGoals)
+        .map((row) => row.player.id),
+      detail: `${topGoals} goles con autor registrado`,
+    });
+  const defensiveStats = new Map<string, { games: number; conceded: number }>();
+  for (const match of matches) {
+    if (
+      match.status !== "valid" ||
+      match.red_score == null ||
+      match.blue_score == null
+    )
+      continue;
+    for (const player of match.participants) {
+      if (player.position !== "defender") continue;
+      const stat = defensiveStats.get(player.player_id) ?? {
+        games: 0,
+        conceded: 0,
+      };
+      stat.games++;
+      stat.conceded +=
+        player.team === "red" ? match.blue_score : match.red_score;
+      defensiveStats.set(player.player_id, stat);
+    }
+  }
+  const defenders = [...defensiveStats].filter(
+    ([, stat]) => stat.games >= rules.minimum,
+  );
+  // Compare ratios before rounding, including exact ties with different game counts.
+  const byConceded = (
+    a: (typeof defenders)[number],
+    b: (typeof defenders)[number],
+  ) => a[1].conceded * b[1].games - b[1].conceded * a[1].games;
+  defenders.sort(byConceded);
+  const best = defenders[0];
+  if (best)
+    result.push({
+      title: "Guante de Oro",
+      players: defenders
+        .filter((row) => byConceded(row, best) === 0)
+        .map(([id]) => id),
+      detail: `${(best[1].conceded / best[1].games).toLocaleString("es-ES", { maximumFractionDigits: 2 })} goles encajados por partido`,
+    });
   if (standings.length)
     result.push({
       title:

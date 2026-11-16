@@ -70,6 +70,25 @@ test("coins: apuesta como espectador, reparto, deshacer y palmarés sin historia
   await expect(
     page.getByText("TEMPORADA CERRADA", { exact: true }),
   ).toHaveCount(0);
+  await expect(page.getByText("Guante de Oro", { exact: true })).toBeVisible();
+  await page
+    .locator(".topbar")
+    .getByRole("button", { name: "Mi perfil", exact: true })
+    .filter({ visible: true })
+    .first()
+    .click();
+  await page
+    .getByRole("dialog", { name: "Mi perfil" })
+    .getByRole("button", { name: "Mi vitrina" })
+    .click();
+  const trophyCase = page.getByRole("dialog", {
+    name: "Vitrina de Álvaro Martín",
+  });
+  await expect(
+    trophyCase.getByText("Cuando se publique un premio", { exact: false }),
+  ).toBeVisible();
+  await trophyCase.getByRole("button", { name: "Cerrar", exact: true }).click();
+  await expect(trophyCase).toHaveCount(0);
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth > innerWidth,
   );

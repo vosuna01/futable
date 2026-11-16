@@ -11,6 +11,7 @@ import {
 import type { Snapshot, Team } from "../domain/types";
 import { teamNames } from "../domain/teams";
 import { Avatar, Modal } from "./ui";
+import { TrophyFigure } from "./TrophyCase";
 type CoinsController = ReturnType<typeof useCoins>;
 const amounts = new Intl.NumberFormat("es-ES");
 const reasons: Record<string, string> = {
@@ -356,7 +357,8 @@ export function CoinsClub({
         </button>
       </section>
     );
-  const suggestions = awardSuggestions(data, season, s.standings);
+  const suggestions =
+    tab === "honours" ? awardSuggestions(data, season, s.standings) : [];
   const published = s.honours.some((h) => h.season_id === season.id);
   return (
     <div className="coins-club">
@@ -574,9 +576,8 @@ export function CoinsClub({
             <Trophy size={45} />
             <h2>Un sitio para las temporadas inolvidables.</h2>
             <p>
-              Podio de liga, mejor defensa, mejor delantero, mejor pareja y
-              campeón de coins. Los premios se revisan al cerrar la temporada y
-              quedan guardados con los nombres de sus ganadores.
+              Los premios se revisan al cerrar la temporada y se añaden a las
+              vitrinas de sus ganadores al publicarlos.
             </p>
           </section>
           {s.honours.map((h) => (
@@ -589,7 +590,7 @@ export function CoinsClub({
               <div className="coin-awards">
                 {h.awards.map((a, i) => (
                   <article key={i}>
-                    <Trophy size={24} />
+                    <TrophyFigure title={a.title} />
                     <span>{a.title}</span>
                     <strong>{a.players.map((p) => p.name).join(" y ")}</strong>
                   </article>
@@ -606,14 +607,16 @@ export function CoinsClub({
                   : "Pendiente de publicar"}
               </h2>
               <p>
-                Las categorías deportivas respetan los mínimos de partidas de la
-                clasificación. Los nombres siguientes son propuestas hasta su
-                publicación.
+                La Bota de Oro premia al máximo goleador según los goles con
+                autor registrado. El Guante de Oro premia la menor media de
+                goles encajados como defensa, con al menos {season.minimum}{" "}
+                partidos con marcador. Si hay empate, se comparte el trofeo.
               </p>
               {suggestions.length ? (
                 <div className="coin-awards">
                   {suggestions.map((a) => (
                     <article key={a.title}>
+                      <TrophyFigure title={a.title} />
                       <span>{a.title}</span>
                       <strong>
                         {a.players
@@ -622,6 +625,7 @@ export function CoinsClub({
                           )
                           .join(" y ")}
                       </strong>
+                      {a.detail && <small>{a.detail}</small>}
                     </article>
                   ))}
                 </div>
@@ -685,6 +689,7 @@ export function CoinsClub({
                     .map((id) => data.players.find((p) => p.id === id)?.name)
                     .join(" y ")}
                 </small>
+                {a.detail && <small>{a.detail}</small>}
               </span>
             </label>
           ))}

@@ -6,6 +6,7 @@ import {
   Search,
   Shield,
   Swords,
+  Trophy,
 } from "lucide-react";
 import { pairRanking, RANK_GAMES, ranking } from "../domain/rankings";
 import type { Match, Player, Rules } from "../domain/types";
@@ -18,12 +19,14 @@ export function Players({
   rules,
   selected,
   onSelect,
+  onTrophyCase,
 }: {
   players: Player[];
   matches: Match[];
   rules: Rules;
   selected: string | null;
   onSelect: (id: string | null) => void;
+  onTrophyCase: (id: string) => void;
 }) {
   const [query, setQuery] = useState("");
   const player = players.find((p) => p.id === selected);
@@ -68,6 +71,13 @@ export function Players({
             </p>
           </div>
         </div>
+        <button
+          className="secondary player-trophy-link"
+          type="button"
+          onClick={() => onTrophyCase(player.id)}
+        >
+          <Trophy size={17} /> Ver vitrina
+        </button>
         <div className="stats-strip">
           <div>
             <span>% REAL</span>
