@@ -526,6 +526,7 @@ export default function App() {
               user={liveUser}
               online={online}
               onTablet={() => openTablet(true)}
+              market={coins.snapshot?.market}
               betting={
                 <details className="coin-live-drawer">
                   <summary>Coins · Apostar en esta partida</summary>

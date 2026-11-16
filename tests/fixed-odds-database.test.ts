@@ -159,6 +159,12 @@ beforeAll(async () => {
       "utf8",
     ),
   );
+  await db.exec(
+    await readFile(
+      new URL("../supabase/migrations/015_bet_at_kickoff.sql", import.meta.url),
+      "utf8",
+    ),
+  );
   await as(admin);
   await live("join", { players: [1, 2, 3, 4, 5, 6].map(p) });
   await live("start", {
@@ -241,6 +247,13 @@ describe.sequential(
       await live("goal", { team: "red", delta: 1 });
       await as(viewer);
       await expect(send("bet", b)).rejects.toThrow(/cambiado/);
+      expect((await snap()).market?.status).toBe("locked");
+      await expect(send("bet", await bet())).rejects.toThrow(/cambiado/);
+      expect((await snap()).wallet?.balance).toBe(100);
+      await as(admin);
+      await live("goal", { team: "red", delta: -1 });
+      await as(viewer);
+      expect((await snap()).market?.status).toBe("open");
     });
     it("rechaza cuotas manipuladas y clientes antiguos sin tocar el saldo", async () => {
       const b = await bet();
@@ -273,13 +286,14 @@ describe.sequential(
       await as(viewer);
       expect((await snap()).market!.own_bet!.odds).toBe(fixed);
     });
-    it("cierra al objetivo y paga la cuota y +5 a cada ganador una sola vez", async () => {
+    it("cierra con el primer gol y paga las apuestas aceptadas", async () => {
       await as(admin);
-      await live("goal", { team: "red", delta: 1 });
       await live("goal", { team: "red", delta: 1 });
       await as(viewer);
       expect((await snap()).market?.status).toBe("locked");
       await as(admin);
+      await live("goal", { team: "red", delta: 1 });
+      await live("goal", { team: "red", delta: 1 });
       await live("result", { winner: "red" });
       await as(viewer);
       const a = await snap();
@@ -307,7 +321,8 @@ describe.sequential(
     });
     it("sustituir pareja o cambiar objetivo devuelve apuestas y abre otro mercado", async () => {
       await as(admin);
-      await live("goal", { team: "red", delta: -1 });
+      for (let i = 0; i < 3; i++)
+        await live("goal", { team: "red", delta: -1 });
       await as(viewer);
       await send("bet", await bet());
       const old = (await snap()).market!.id;

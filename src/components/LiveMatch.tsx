@@ -27,6 +27,7 @@ import {
   type Waiting,
 } from "../domain/live";
 import { forecast } from "../domain/odds";
+import type { CoinMarket } from "../domain/coins";
 import {
   defaultRules,
   type Player,
@@ -77,6 +78,7 @@ export function LiveMatch({
   online,
   onTablet,
   betting,
+  market,
 }: {
   live: ReturnType<typeof useLiveSession>;
   data: Snapshot;
@@ -85,6 +87,7 @@ export function LiveMatch({
   online: boolean;
   onTablet?: () => void;
   betting?: ReactNode;
+  market?: CoinMarket | null;
 }) {
   const { session } = live;
   const state: LiveState | null = session?.state ?? null;
@@ -129,6 +132,13 @@ export function LiveMatch({
         : null,
     [state, data.players, data.matches, activeSeason],
   );
+
+  const quotes =
+    market &&
+    market.session_id === session?.id &&
+    market.revision === session.revision
+      ? market.odds
+      : null;
 
   const run = async (
     action: string,
@@ -318,13 +328,17 @@ export function LiveMatch({
                       >
                         <span>{teamNames[team]}</span>
                         <b>{Math.round(odds[team].probability * 100)}%</b>
-                        <small>estimado</small>
+                        <small>
+                          {quotes
+                            ? `Cuota ${quotes[team].toFixed(2)}`
+                            : "estimado"}
+                        </small>
                       </div>
                     ))}
                   </div>
                   <p className="rule-note">
-                    Estimación estadística según el historial. Consulta la cuota
-                    y el premio de tu apuesta en el panel de coins.
+                    Probabilidad estimada según el historial. Solo se puede
+                    apostar con 0–0.
                   </p>
                 </div>
               )}

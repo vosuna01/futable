@@ -256,7 +256,7 @@ export function useCoins(
       state.market.revision = session.revision;
       state.market.goals = session.state.goals;
       state.market.status =
-        Math.max(...Object.values(session.state.goals)) >= sig.target
+        session.state.goals.red !== 0 || session.state.goals.blue !== 0
           ? "locked"
           : "open";
     }

@@ -138,5 +138,11 @@ test("el pronóstico muestra probabilidades y dirige a las cuotas de coins", asy
     await bet.locator(".live-bet-row b").allInnerTexts()
   ).map((q) => Number(q.replace("%", "")));
   expect(probabilities.reduce((a, b) => a + b, 0)).toBe(100);
-  await expect(bet).toContainText("Consulta la cuota y el premio de tu apuesta");
+  await expect(bet.locator(".live-bet-row small").first()).toHaveText(
+    /^Cuota \d+\.\d{2}$/,
+  );
+  await expect(bet.locator(".live-bet-row small").last()).toHaveText(
+    /^Cuota \d+\.\d{2}$/,
+  );
+  await expect(bet).toContainText("Solo se puede apostar con 0–0");
 });

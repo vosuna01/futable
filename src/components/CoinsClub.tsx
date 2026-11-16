@@ -47,10 +47,11 @@ export function CoinMarketPanel({
     pool = m ? m.red_pool + m.blue_pool : 0;
   const selectedTeam = bet?.team ?? team;
   const quote = m?.odds?.[team];
+  const open = m?.status === "open" && m.goals.red === 0 && m.goals.blue === 0;
   const potential = quote ? fixedReturn(stake, quote) : 0;
   const canBet =
     !!m &&
-    m.status === "open" &&
+    open &&
     !!quote &&
     spectator &&
     !bet &&
@@ -84,7 +85,7 @@ export function CoinMarketPanel({
                 key={t}
                 className={selectedTeam === t ? "selected" : ""}
                 aria-pressed={selectedTeam === t}
-                disabled={!spectator || !!bet || m.status !== "open"}
+                disabled={!spectator || !!bet || !open}
                 onClick={() => setTeam(t)}
               >
                 <span>
@@ -138,8 +139,8 @@ export function CoinMarketPanel({
               Disfruta de la pista. Las apuestas están reservadas a quienes
               miran y tienen su propia cuenta de jugador.
             </p>
-          ) : m.status !== "open" ? (
-            <p>Apuestas cerradas: se ha alcanzado el objetivo de goles.</p>
+          ) : !open ? (
+            <p>Apuestas cerradas. Solo se puede apostar con 0–0.</p>
           ) : (
             <>
               <div className="coin-stake">
@@ -545,10 +546,10 @@ export function CoinsClub({
               preparar cada partida.
             </p>
             <p>
-              Las apuestas cierran al alcanzar el objetivo o registrar el
-              ganador. Una sustitución o cambio de objetivo devuelve las
-              apuestas. Corregir o anular un resultado ajusta premios y pagos;
-              puede dejar saldo negativo si ya gastaste esos puntos.
+              Las apuestas solo están abiertas con 0–0. Una sustitución o cambio
+              de objetivo devuelve las apuestas. Corregir o anular un resultado
+              ajusta premios y pagos; puede dejar saldo negativo si ya gastaste
+              esos puntos.
             </p>
           </details>
           {data.role === "admin" && (
