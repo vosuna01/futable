@@ -1,6 +1,6 @@
 # MMR (beta) y cuotas según el MMR
 
-Estado: **en pruebas**. El MMR se calcula en la app y está **visible en la web publicada** (pestaña, historial, directo y penalización), activado en `.github/workflows/pages.yml`. El pronóstico por MMR sigue apagado en la web. La migración `016_mmr_odds.sql` está **escrita y probada, pero no aplicada**: hay que revisarla aparte antes de llevarla a producción.
+Estado: **en pruebas**. El MMR se calcula en la app y está **visible en la web publicada** (pestaña, historial, directo y penalización), activado en `.github/workflows/pages.yml`. La migración `016_mmr_odds.sql` está **aplicada en producción desde el 24 de noviembre de 2026** (ver [ACTIVACION.md](ACTIVACION.md)): las cuotas de los mercados nuevos y el pronóstico de la web siguen el MMR.
 
 ## Qué hay
 
@@ -30,7 +30,7 @@ El ranking por porcentaje de victorias no cambia en ningún caso.
 | `VITE_MMR_PENALTY_ENABLED` | igual                                    | Penalización por regularidad en el MMR mostrado                          |
 | `VITE_MMR_ODDS_ENABLED`    | sigue a `VITE_MMR_ENABLED`               | Porcentaje del «Pronóstico de la pista» y cuotas de la demo según el MMR |
 
-Con los flags en `false` la app funciona exactamente igual que antes. La web publicada (GitHub Pages) los fija en el paso `pnpm build` de `.github/workflows/pages.yml`: `VITE_MMR_ENABLED` y `VITE_MMR_PENALTY_ENABLED` a `true`, `VITE_MMR_ODDS_ENABLED` a `false`. Para ocultar el MMR en la web, poned los dos primeros a `false` y haced push.
+Con los flags en `false` la app funciona exactamente igual que antes. La web publicada (GitHub Pages) los fija en el paso `pnpm build` de `.github/workflows/pages.yml`: los tres a `true`. Para ocultar el MMR en la web, poned los dos primeros a `false` y haced push; `VITE_MMR_ODDS_ENABLED` debe seguir a `true` mientras la 016 esté aplicada.
 
 ## Aplicar la 016 en producción
 
