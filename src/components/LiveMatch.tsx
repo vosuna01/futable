@@ -26,17 +26,13 @@ import {
   sides,
   type Waiting,
 } from "../domain/live";
-import { forecast } from "../domain/odds";
+import { liveForecast, MMR_ODDS_ENABLED } from "../domain/mmr-odds";
 import type { CoinMarket } from "../domain/coins";
-import {
-  defaultRules,
-  type Player,
-  type Snapshot,
-  type Team,
-} from "../domain/types";
+import type { Player, Snapshot, Team } from "../domain/types";
 import { teamNames } from "../domain/teams";
 import { Avatar, Modal } from "./ui";
 import { PlayerPicker } from "./PlayerPicker";
+import { LiveMmrBadge, useLiveMmr } from "./LiveMmr";
 
 const postNames = { defender: "Defensa", forward: "Delantero" } as const;
 /** Madrid on the left and Barça on the right, as on the score form. */
@@ -119,16 +115,12 @@ export function LiveMatch({
   // Any member of the league may close the day (migration 011); matches stay.
   const canClose = !!session;
   const invalid = state ? liveError(state, data.players) : null;
+  const mmrAtStake = useLiveMmr(data, state?.court);
 
   const odds = useMemo(
     () =>
       state?.court && activeSeason
-        ? forecast(
-            state,
-            data.players,
-            data.matches.filter((m) => m.season_id === activeSeason.id),
-            activeSeason ?? defaultRules,
-          )
+        ? liveForecast(state, data.players, data.matches, activeSeason)
         : null,
     [state, data.players, data.matches, activeSeason],
   );
@@ -337,8 +329,10 @@ export function LiveMatch({
                     ))}
                   </div>
                   <p className="rule-note">
-                    Probabilidad estimada según el historial. Solo se puede
-                    apostar con 0–0.
+                    {MMR_ODDS_ENABLED
+                      ? "Probabilidad según el MMR de cada pareja."
+                      : "Probabilidad estimada según el historial."}{" "}
+                    Solo se puede apostar con 0–0.
                   </p>
                 </div>
               )}
@@ -354,6 +348,7 @@ export function LiveMatch({
                     >
                       {state!.goals[team]}
                     </strong>
+                    <LiveMmrBadge preview={mmrAtStake?.[team]} />
                     {posts.map((post) => (
                       <PlayerChip
                         key={post}
@@ -670,6 +665,15 @@ export function LiveMatch({
   );
 }
 
+/**
+ * Random source for the opening lineup. End-to-end tests set
+ * `window.__futableArrivalLineup` to keep arrival order and stay deterministic.
+ */
+const lineupRandom = () =>
+  (window as { __futableArrivalLineup?: boolean }).__futableArrivalLineup
+    ? () => 0
+    : Math.random;
+
 export function StartEditor({
   queue,
   players,
@@ -683,10 +687,10 @@ export function StartEditor({
   onClose: () => void;
   onStart: (lineup: Lineup) => void;
 }) {
-  // The first four waiting are proposed in arrival order, with the posts they
+  // The first four waiting are split into random pairs, with the posts they
   // agreed while waiting; tapping two posts swaps whoever stands in them.
   const [slots, setSlots] = useState<string[]>(() => {
-    const proposed = proposedLineup(queue);
+    const proposed = proposedLineup(queue, lineupRandom());
     return [
       proposed.red.defender,
       proposed.red.forward,

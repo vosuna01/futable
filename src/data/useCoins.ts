@@ -10,7 +10,7 @@ import {
   type CoinsSnapshot,
   type CoinMarket,
 } from "../domain/coins";
-import { forecast } from "../domain/odds";
+import { liveForecast } from "../domain/mmr-odds";
 const empty = (): CoinsSnapshot => ({
   settings: coinDefaults,
   player_id: null,
@@ -244,10 +244,11 @@ export function useCoins(
           blue_pool: 0,
           own_bet: null,
           odds: (() => {
-            const f = forecast(
+            // Demo: mismo modelo que el pronóstico (MMR con su flag).
+            const f = liveForecast(
               session.state,
               data.players,
-              data.matches.filter((m) => m.season_id === season.id),
+              data.matches,
               season,
             )!;
             return { red: f.red.decimal, blue: f.blue.decimal };

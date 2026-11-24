@@ -1,4 +1,12 @@
 import { test, expect, type Page } from "@playwright/test";
+
+// The opening lineup is random; these tests rely on arrival order.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as { __futableArrivalLineup?: boolean }).__futableArrivalLineup =
+      true;
+  });
+});
 const names = [
   "Álvaro Martín",
   "Dani Romero",
@@ -305,12 +313,18 @@ test("suena al marcar un gol y otra vez al terminar la partida, y se puede silen
   await expect.poll(sounds).toEqual(["goal"]);
   // Muting is remembered on the tablet (the sound is still asked for, but silent).
   await page.getByRole("button", { name: "Silenciar sonidos" }).click();
-  await expect(page.getByRole("button", { name: "Activar sonidos" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Activar sonidos" }),
+  ).toBeVisible();
   // The winning goal plays the end-of-match sound instead of the goal one.
   await page.getByLabel(`Gol de ${names[0]}`, { exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "Fin de partida" })).toBeVisible();
+  await expect(
+    page.getByRole("dialog", { name: "Fin de partida" }),
+  ).toBeVisible();
   await expect.poll(sounds).toEqual(["goal", "final"]);
   await page.reload();
   await page.getByRole("button", { name: "Explorar demostración" }).click();
-  await expect(page.getByRole("button", { name: "Activar sonidos" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Activar sonidos" }),
+  ).toBeVisible();
 });

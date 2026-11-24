@@ -11,6 +11,10 @@ import {
 import type { Match, Player, Rules, Stats } from "../domain/types";
 import { Avatar, Empty, pct } from "./ui";
 import { matchesSearch } from "../domain/presentation";
+import type { MmrState } from "../domain/mmr";
+import type { Penalty } from "../domain/mmr-penalty";
+import { MmrRanking } from "./MmrRanking";
+const MMR_TAB = "MMR (beta)";
 export function RankTable({
   rows,
   onPlayer,
@@ -122,11 +126,20 @@ export function Rankings({
   matches,
   rules,
   onPlayer,
+  mmr = null,
+  mmrPenalties = null,
+  mmrMatches = [],
 }: {
   players: Player[];
   matches: Match[];
   rules: Rules;
   onPlayer: (id: string) => void;
+  /** Solo llega con MMR_ENABLED; sin él la pantalla queda como siempre. */
+  mmr?: MmrState | null;
+  /** Solo llega con PENALTY_ENABLED; solo afecta al MMR mostrado. */
+  mmrPenalties?: Map<string, Penalty> | null;
+  /** Todas las temporadas, para las cifras de la pestaña MMR. */
+  mmrMatches?: Match[];
 }) {
   const [tab, setTab] = useState("General"),
     [sort, setSort] = useState("raw"),
@@ -231,6 +244,7 @@ export function Rankings({
           "Completos",
           "Parejas",
           "Estadísticas",
+          ...(mmr ? [MMR_TAB] : []),
         ].map((t) => (
           <button
             role="tab"
@@ -243,7 +257,15 @@ export function Rankings({
           </button>
         ))}
       </div>
-      {tab === "Estadísticas" ? (
+      {tab === MMR_TAB && mmr ? (
+        <MmrRanking
+          mmr={mmr}
+          players={players}
+          onPlayer={onPlayer}
+          matches={mmrMatches}
+          penalties={mmrPenalties}
+        />
+      ) : tab === "Estadísticas" ? (
         <>
           <div className="awards-grid">
             {awards.map(([label, s, key]) => (
@@ -410,20 +432,22 @@ export function Rankings({
           )}
         </>
       )}
-      <div className="info-note">
-        <Info size={17} />
-        <p>
-          Porcentaje real = victorias / partidos. Arriba, quien lleva{" "}
-          {RANK_GAMES} partidas o más
-          {tab === "Completos"
-            ? " en cada posición"
-            : position
-              ? " en esta posición"
-              : ""}
-          ; debajo, el resto. Los goles son los marcados en partidas en directo
-          con goleador. Se ordena sin redondear.
-        </p>
-      </div>
+      {tab !== MMR_TAB && (
+        <div className="info-note">
+          <Info size={17} />
+          <p>
+            Porcentaje real = victorias / partidos. Arriba, quien lleva{" "}
+            {RANK_GAMES} partidas o más
+            {tab === "Completos"
+              ? " en cada posición"
+              : position
+                ? " en esta posición"
+                : ""}
+            ; debajo, el resto. Los goles son los marcados en partidas en
+            directo con goleador. Se ordena sin redondear.
+          </p>
+        </div>
+      )}
     </>
   );
 }

@@ -1,4 +1,12 @@
 import { test, expect, type Page } from "@playwright/test";
+
+// The opening lineup is random; these tests rely on arrival order.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as { __futableArrivalLineup?: boolean }).__futableArrivalLineup =
+      true;
+  });
+});
 async function demo(page: Page) {
   await page.goto("/");
   await page.getByRole("button", { name: "Explorar demostración" }).click();

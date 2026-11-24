@@ -1,0 +1,82 @@
+/* MMR (beta): solo se carga con la pestaña o los Δ del historial. */
+.mmr-mode {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mmr-value {
+  font-family: var(--font-mono);
+}
+/* El MMR es la cifra principal de la pestaña: más grande que el % real (17px). */
+.mmr-table .mmr-value {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--brand-dark);
+}
+@media (max-width: 700px) {
+  .mmr-table .mmr-value {
+    font-size: 19px;
+  }
+}
+.mmr-delta {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.mmr-delta.up {
+  color: var(--brand-primary-ink);
+}
+.mmr-delta.down {
+  color: #b42318;
+}
+.mmr-penalty {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  font-weight: 700;
+  color: #b42318;
+}
+.mmr-penalty-note {
+  display: block;
+  font-size: 0.72em;
+  color: var(--brand-body);
+  opacity: 0.75;
+  white-space: nowrap;
+}
+.live-mmr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  align-self: center;
+  gap: 2px 10px;
+  margin: 4px auto;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--brand-dark);
+  font-size: 13px;
+  line-height: 1.4;
+  width: fit-content;
+}
+.live-mmr > span:first-child {
+  font-family: var(--font-mono);
+  font-size: 0.75em;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+.live-mmr .mmr-delta {
+  font-size: 1em;
+}
+.live-mmr.live-mmr-wall {
+  align-self: flex-start;
+  margin: 0;
+  padding: calc(var(--u, 1vmin) * 0.6) calc(var(--u, 1vmin) * 1.6);
+  font-size: calc(var(--u, 1vmin) * 2.6);
+  line-height: 1.2;
+  gap: 0 calc(var(--u, 1vmin) * 1.6);
+}
+.result-team .mmr-delta {
+  margin-left: 4px;
+}

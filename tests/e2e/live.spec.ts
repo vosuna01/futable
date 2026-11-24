@@ -1,4 +1,12 @@
 import { test, expect, type Page } from "@playwright/test";
+
+// The opening lineup is random; these tests rely on arrival order.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as { __futableArrivalLineup?: boolean }).__futableArrivalLineup =
+      true;
+  });
+});
 const names = [
   "Álvaro Martín",
   "Dani Romero",

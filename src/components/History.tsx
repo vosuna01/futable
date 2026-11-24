@@ -4,14 +4,19 @@ import { calendarDate, newestFirst } from "../domain/presentation";
 import type { Match, Player, Season } from "../domain/types";
 import { date, Empty } from "./ui";
 import { teamNames } from "../domain/teams";
+import { formatDelta, matchDeltas, type MmrState } from "../domain/mmr";
+import "../mmr.css";
 export function Result({
   match,
   players,
   compact = false,
+  mmrDeltas,
 }: {
   match: Match;
   players: Player[];
   compact?: boolean;
+  /** Δ de MMR por jugador (beta); sin él no se muestra nada. */
+  mmrDeltas?: Map<string, number>;
 }) {
   return (
     <div
@@ -38,6 +43,14 @@ export function Result({
                     {players.find((x) => x.id === p.player_id)?.name ||
                       "Jugador"}
                     <small>{p.position === "defender" ? "DEF" : "DEL"}</small>
+                    {mmrDeltas?.has(p.player_id) && (
+                      <span
+                        className={`mmr-delta ${mmrDeltas.get(p.player_id)! >= 0 ? "up" : "down"}`}
+                        title="Cambio de MMR (beta)"
+                      >
+                        {formatDelta(mmrDeltas.get(p.player_id)!)}
+                      </span>
+                    )}
                   </span>
                 ))}
             </div>
@@ -60,6 +73,7 @@ export function History({
   admin,
   onEdit,
   onVoid,
+  mmr = null,
 }: {
   matches: Match[];
   players: Player[];
@@ -67,6 +81,7 @@ export function History({
   admin: boolean;
   onEdit: (m: Match) => void;
   onVoid: (m: Match) => void;
+  mmr?: MmrState | null;
 }) {
   const [player, setPlayer] = useState(""),
     [from, setFrom] = useState(""),
@@ -202,7 +217,11 @@ export function History({
       <div className="history-grid">
         {filtered.slice(0, limit).map((m) => (
           <article className="panel" key={m.id}>
-            <Result match={m} players={players} />
+            <Result
+              match={m}
+              players={players}
+              mmrDeltas={mmr ? matchDeltas(mmr, m.id) : undefined}
+            />
             <div className="match-footer">
               <small>
                 {seasons.find((s) => s.id === m.season_id)?.name}

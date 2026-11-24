@@ -185,10 +185,24 @@ export function queuePairs(
   }
   return pairs;
 }
-/** The opening lineup the queue proposes: Madrid first, then Barça. */
-export function proposedLineup(queue: Waiting[]): Lineup {
-  const red = entryPosts(queue[0], queue[1]);
-  const blue = entryPosts(queue[2], queue[3]);
+/**
+ * The opening lineup the queue proposes: the first four waiting are split into
+ * two random pairs, each on a random side. Within a pair the posts they agreed
+ * while waiting still apply. `random` returning 0 keeps arrival order
+ * (first + second for Madrid, third + fourth for Barça).
+ */
+export function proposedLineup(
+  queue: Waiting[],
+  random: () => number = Math.random,
+): Lineup {
+  const four = queue.slice(0, 4);
+  // The first player's partner is any of the other three, with equal odds.
+  const partner = 1 + Math.min(2, Math.floor(random() * 3));
+  const pairA = [four[0], four[partner]];
+  const pairB = four.filter((_, i) => i !== 0 && i !== partner);
+  const [first, second] = random() < 0.5 ? [pairA, pairB] : [pairB, pairA];
+  const red = entryPosts(first[0], first[1]);
+  const blue = entryPosts(second[0], second[1]);
   return {
     red: { defender: red.defender.id, forward: red.forward.id },
     blue: { defender: blue.defender.id, forward: blue.forward.id },

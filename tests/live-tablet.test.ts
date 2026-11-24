@@ -135,15 +135,48 @@ describe("Alineación de la cola", () => {
     ).toBeNull();
   });
 
-  it("propone la primera alineación con lo acordado: Madrid y luego Barça", () => {
+  it("sin azar propone el orden de llegada con lo acordado: Madrid y luego Barça", () => {
     const state = setPost(
       join(emptyState(), [1, 2, 3, 4].map(p)),
       p(3),
       "forward",
     );
-    expect(proposedLineup(state.queue)).toEqual({
+    expect(proposedLineup(state.queue, () => 0)).toEqual({
       red: { defender: p(1), forward: p(2) },
       blue: { defender: p(4), forward: p(3) },
     });
+  });
+
+  it("reparte a los cuatro primeros en parejas y lados al azar", () => {
+    const state = setPost(
+      join(emptyState(), [1, 2, 3, 4, 5].map(p)),
+      p(3),
+      "forward",
+    );
+    const seen = new Set<string>();
+    // Recorre todas las combinaciones del azar: compañero (3) × lado (2).
+    for (const a of [0, 0.34, 0.67, 0.99])
+      for (const b of [0, 0.99]) {
+        const draws = [a, b];
+        const lineup = proposedLineup(state.queue, () => draws.shift()!);
+        const ids = [
+          lineup.red.defender,
+          lineup.red.forward,
+          lineup.blue.defender,
+          lineup.blue.forward,
+        ];
+        // Siempre los cuatro primeros de la cola, nunca el quinto.
+        expect([...ids].sort()).toEqual([p(1), p(2), p(3), p(4)].sort());
+        // Quien pidió delantero sigue de delantero.
+        expect([lineup.red.forward, lineup.blue.forward]).toContain(p(3));
+        const pairOf1 = ids.slice(0, 2).includes(p(1))
+          ? ids.slice(0, 2)
+          : ids.slice(2);
+        seen.add(
+          `${pairOf1.find((x) => x !== p(1))}:${lineup.red.defender === p(1) || lineup.red.forward === p(1) ? "red" : "blue"}`,
+        );
+      }
+    // Las tres parejas posibles de p(1), en los dos lados.
+    expect(seen.size).toBe(6);
   });
 });

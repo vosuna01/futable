@@ -37,6 +37,7 @@ import { teamNames } from "../domain/teams";
 import { Avatar, Modal } from "./ui";
 import { StartEditor } from "./LiveMatch";
 import { PlayerPicker } from "./PlayerPicker";
+import { LiveMmrBadge, useLiveMmr } from "./LiveMmr";
 
 const postNames = { defender: "Defensa", forward: "Delantero" } as const;
 const shortPost = { defender: "DEF", forward: "DEL" } as const;
@@ -248,6 +249,7 @@ export function LiveTablet({
   };
 
   const court = state?.court ?? null;
+  const mmrAtStake = useLiveMmr(data, court);
   const editStale =
     !!editing &&
     (editing.session !== session?.id || editing.revision !== session?.revision);
@@ -433,6 +435,10 @@ export function LiveTablet({
                       {state.goals[team]}
                     </strong>
                   </div>
+                  <LiveMmrBadge
+                    preview={mmrAtStake?.[team]}
+                    className="live-mmr-wall"
+                  />
                   {posts.map((post) => {
                     const id = court[team][post].id;
                     const player = named(id);

@@ -50,6 +50,8 @@ import { TrophyCase } from "./components/TrophyCase";
 import { CoinsClub, CoinMarketPanel } from "./components/CoinsClub";
 import { SeasonCountdown } from "./components/SeasonCountdown";
 import { newestFirst } from "./domain/presentation";
+import { logMmrMode, MMR_ENABLED, recalculateMMR } from "./domain/mmr";
+import { PENALTY_ENABLED, regularityPenalties } from "./domain/mmr-penalty";
 import "./live.css";
 import "./tablet.css";
 const nav = [
@@ -213,6 +215,23 @@ export default function App() {
     : data.players.find((p) => p.account_id === league.session?.user.id);
   const allTime = seasonId === "all";
   const rules = allTime ? defaultRules : season || defaultRules;
+  // MMR beta: siempre sobre todas las temporadas. Un fallo nunca bloquea la app.
+  let mmr: ReturnType<typeof recalculateMMR> | null = null,
+    mmrPenalties: ReturnType<typeof regularityPenalties> | null = null;
+  if (MMR_ENABLED)
+    try {
+      mmr = recalculateMMR(data.players, data.matches);
+      logMmrMode(mmr);
+      // Solo para el MMR mostrado: no recibe ni modifica `mmr`.
+      if (PENALTY_ENABLED)
+        mmrPenalties = regularityPenalties(
+          data.players,
+          data.matches,
+          new Date(),
+        );
+    } catch (e) {
+      console.warn("[MMR beta] No se ha podido calcular:", e);
+    }
   const matches = data.matches
       .filter((m) => allTime || m.season_id === season?.id)
       .sort(newestFirst),
@@ -839,6 +858,9 @@ export default function App() {
               matches={matches}
               rules={rules}
               onPlayer={showPlayer}
+              mmr={mmr}
+              mmrPenalties={mmrPenalties}
+              mmrMatches={data.matches}
             />
           )}
           {page === "players" && (
@@ -865,6 +887,7 @@ export default function App() {
                 setVoidMatch(m);
                 setReason("");
               }}
+              mmr={mmr}
             />
           )}
           {page === "admin" && data.role === "admin" && (

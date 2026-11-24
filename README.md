@@ -105,6 +105,7 @@ La aplicación selecciona la primera membresía activa de la cuenta; esta versi�
 - [Desplegar en Vercel e instalar la PWA](docs/DESPLIEGUE.md)
 - [Roles y seguridad](docs/SEGURIDAD.md)
 - [Pruebas y verificación remota](docs/PRUEBAS.md)
+- [MMR (beta) y cuotas según el MMR](docs/MMR-CUOTAS.md) · migración 016 pendiente de revisión
 
 Referencias oficiales: [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [Realtime Postgres Changes](https://supabase.com/docs/guides/realtime/postgres-changes), [Vite](https://vite.dev/guide/), [Tailwind con Vite](https://tailwindcss.com/docs/installation/using-vite).
 

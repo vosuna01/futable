@@ -28,6 +28,12 @@ jobs:
       - run: pnpm build
         env:
           SITE_BASE_PATH: /futable/
+          # MMR (beta) visible en la web: pestaña, historial, directo y penalización.
+          VITE_MMR_ENABLED: "true"
+          VITE_MMR_PENALTY_ENABLED: "true"
+          # Pronóstico por MMR solo cuando se aplique la migración 016
+          # (si no, el porcentaje no cuadraría con las cuotas del servidor).
+          VITE_MMR_ODDS_ENABLED: "false"
       - run: pnpm test:auth
       - run: pnpm exec playwright test --config playwright.hosting.config.ts
       - uses: actions/upload-pages-artifact@v4
