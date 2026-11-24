@@ -7,17 +7,149 @@
 .mmr-value {
   font-family: var(--font-mono);
 }
-/* El MMR es la cifra principal de la pestaña: más grande que el % real (17px). */
-.mmr-table .mmr-value {
-  font-size: 24px;
+/* Clasificación MMR: el MMR es la cifra protagonista; el resto, secundario. */
+.mmr-board {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.mmr-row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #f0f1f5;
+}
+.mmr-row:last-child {
+  border-bottom: 0;
+}
+.mmr-row.leader-row {
+  background: linear-gradient(90deg, #1da0990c, transparent);
+  box-shadow: inset 3px 0 var(--brand-primary);
+}
+.mmr-row .rank-number {
+  font-size: 12px;
+}
+.mmr-player {
+  min-width: 0;
+}
+.mmr-player > span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.mmr-player strong {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mmr-player .mmr-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0;
+  color: #7b7c8c;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mmr-player .mmr-sub {
+  white-space: normal;
+}
+.mmr-sub .mmr-penalty {
+  font-size: inherit;
+}
+.mmr-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  line-height: 1.1;
+}
+.mmr-score .mmr-value {
+  font-size: 28px;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   color: var(--brand-dark);
 }
+.mmr-row.leader-row .mmr-value {
+  color: var(--brand-primary-ink);
+}
+.mmr-score small {
+  margin-top: 4px;
+  font-size: 11px;
+}
 @media (max-width: 700px) {
-  .mmr-table .mmr-value {
-    font-size: 19px;
+  .mmr-row {
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 12px 12px;
   }
+  .mmr-score .mmr-value {
+    font-size: 22px;
+  }
+  .mmr-player .mmr-sub {
+    font-size: 10px;
+  }
+}
+/* Ficha de jugador: tarjeta de MMR encima de las demás estadísticas. */
+.player-mmr-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 20px 24px;
+  border-left: 4px solid var(--brand-primary);
+}
+.player-mmr-card .eyebrow {
+  display: block;
+  margin-bottom: 6px;
+}
+.player-mmr-card .mmr-value {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--brand-dark);
+}
+.player-mmr-card p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #7b7c8c;
+}
+.player-mmr-position {
+  text-align: right;
+}
+.player-mmr-position strong {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--brand-primary-ink);
+}
+.player-mmr-position small {
+  font-size: 11px;
+  color: #7b7c8c;
+}
+@media (max-width: 700px) {
+  .player-mmr-card .mmr-value {
+    font-size: 36px;
+  }
+}
+/* Tarjetas de la plantilla: MMR destacado sobre el resto. */
+.player-card .player-card-mmr {
+  display: block;
+  margin: 2px 0 6px;
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--brand-dark);
+}
+.player-card .player-card-mmr small {
+  margin-left: 4px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: #7b7c8c;
 }
 .mmr-delta {
   font-family: var(--font-mono);

@@ -52,6 +52,12 @@ import { SeasonCountdown } from "./components/SeasonCountdown";
 import { newestFirst } from "./domain/presentation";
 import { logMmrMode, MMR_ENABLED, recalculateMMR } from "./domain/mmr";
 import { PENALTY_ENABLED, regularityPenalties } from "./domain/mmr-penalty";
+import { WhatsNew } from "./components/WhatsNew";
+import {
+  markUpdating,
+  markWhatsNewSeen,
+  shouldShowWhatsNew,
+} from "./whats-new";
 import "./live.css";
 import "./tablet.css";
 const nav = [
@@ -87,6 +93,8 @@ export default function App() {
     [trophyPlayerId, setTrophyPlayerId] = useState<string | null>(null),
     [sidebar, setSidebar] = useState(false),
     [update, setUpdate] = useState<ServiceWorkerRegistration | null>(null),
+    // «Novedades» una vez, después de pulsar «Actualizar aplicación».
+    [whatsNew, setWhatsNew] = useState(shouldShowWhatsNew),
     [recovery, setRecovery] = useState(passwordFlow),
     // `/?tablet` opens the wall-tablet scoreboard of the live match.
     [tablet, setTablet] = useState(() =>
@@ -480,11 +488,22 @@ export default function App() {
               <p>Hay una nueva versión disponible.</p>
               <button
                 className="text-button"
-                onClick={() => update.waiting?.postMessage("ACTIVATE_UPDATE")}
+                onClick={() => {
+                  markUpdating();
+                  update.waiting?.postMessage("ACTIVATE_UPDATE");
+                }}
               >
                 Actualizar aplicación
               </button>
             </div>
+          )}
+          {whatsNew && (
+            <WhatsNew
+              onClose={() => {
+                markWhatsNewSeen();
+                setWhatsNew(false);
+              }}
+            />
           )}
           <div className="season-selector">
             <span className="season-dot" />
@@ -871,6 +890,8 @@ export default function App() {
               selected={selected}
               onSelect={setSelected}
               onTrophyCase={setTrophyPlayerId}
+              mmr={mmr}
+              mmrPenalties={mmrPenalties}
             />
           )}
           {page === "history" && (

@@ -1,18 +1,15 @@
-import { FlaskConical, Info } from "lucide-react";
+import { FlaskConical, Info, Trophy } from "lucide-react";
 import { formatMmr, type MmrState } from "../domain/mmr";
-import {
-  displayedMmr,
-  PENALTY_CONFIG,
-  type Penalty,
-} from "../domain/mmr-penalty";
+import { PENALTY_CONFIG, type Penalty } from "../domain/mmr-penalty";
+import { mmrStandings } from "../domain/mmr-standings";
 import { ranking } from "../domain/rankings";
 import type { Match, Player } from "../domain/types";
 import { Avatar, Empty, pct } from "./ui";
 import "../mmr.css";
 
 /**
- * Pestaña «MMR (beta)»: no altera ninguna otra clasificación. Con
- * penalización, ordena y muestra el MMR mostrado; el interno solo se informa.
+ * Pestaña «MMR (beta)»: el MMR mostrado es la cifra protagonista y ordena la
+ * tabla; victorias, porcentaje y goles quedan como datos secundarios.
  */
 export function MmrRanking({
   mmr,
@@ -23,34 +20,14 @@ export function MmrRanking({
 }: {
   mmr: MmrState;
   players: Player[];
+  onPlayer: (id: string) => void;
   /** Todas las partidas de la liga, no solo las de la temporada elegida. */
   matches: Match[];
-  onPlayer: (id: string) => void;
   penalties?: Map<string, Penalty> | null;
 }) {
   // V/PJ, % real y goles con las mismas partidas que el MMR (todas las temporadas).
   const stats = new Map(ranking(players, matches).map((s) => [s.player.id, s]));
-  const rows = players
-    .map((player) => {
-      const data = mmr.player_mmr[player.id],
-        penalty = penalties?.get(player.id) ?? null;
-      return {
-        player,
-        data,
-        penalty,
-        stat: stats.get(player.id)!,
-        shown: data ? displayedMmr(data.mmr, penalty) : 0,
-      };
-    })
-    .filter(
-      (r) =>
-        r.data &&
-        (r.data.partidos_contados > 0 || r.data.mmr_source === "winrate"),
-    )
-    .sort(
-      (a, b) =>
-        b.shown - a.shown || a.player.name.localeCompare(b.player.name, "es"),
-    );
+  const rows = mmrStandings(mmr, players, penalties);
   return (
     <>
       <p className="ranking-summary mmr-mode">
@@ -63,69 +40,53 @@ export function MmrRanking({
             Aparecerá en cuanto haya partidas válidas.
           </Empty>
         ) : (
-          <div className="table-scroll">
-            <table className="ranking-table mmr-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>JUGADOR</th>
-                  <th>MMR</th>
-                  <th>V / PJ</th>
-                  <th>% REAL</th>
-                  {penalties && <th>OBSERVACIONES</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map(({ player, penalty, shown, stat }, i) => {
-                  return (
-                    <tr key={player.id}>
-                      <td>
-                        <span className="rank-number">
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-                      </td>
-                      <td>
-                        <button
-                          className="player-name"
-                          onClick={() => onPlayer(player.id)}
-                        >
-                          <Avatar player={player} size="small" />
-                          <span>{player.name}</span>
-                        </button>
-                      </td>
-                      <td>
-                        <strong className="mmr-value">
-                          {formatMmr(shown)}
-                        </strong>
-                      </td>
-                      <td>
-                        <strong>{stat.wins}</strong>
-                        <span className="muted"> / {stat.games}</span>
-                      </td>
-                      <td>
-                        <strong className="adjusted">{pct(stat.raw)}</strong>
-                        <small className="inline-raw">⚽ {stat.goals}</small>
-                        <div className="mini-bar">
-                          <i style={{ width: `${stat.raw}%` }} />
-                        </div>
-                      </td>
-                      {penalties && (
-                        <td>
-                          {penalty && penalty.penalty > 0 ? (
+          <ol className="mmr-board">
+            {rows.map(({ player, shown, penalty, position }) => {
+              const s = stats.get(player.id);
+              const i = position - 1;
+              return (
+                <li
+                  key={player.id}
+                  className={`mmr-row ${i === 0 ? "leader-row" : ""}`}
+                >
+                  <span
+                    className={`rank-number ${i < 3 ? `medal-${i}` : ""}`}
+                    aria-label={`Posición ${position}`}
+                  >
+                    {i === 0 ? (
+                      <Trophy size={16} />
+                    ) : (
+                      String(position).padStart(2, "0")
+                    )}
+                  </span>
+                  <button
+                    className="player-name mmr-player"
+                    onClick={() => onPlayer(player.id)}
+                  >
+                    <Avatar player={player} size="small" />
+                    <span>
+                      <strong>{player.name}</strong>
+                      {s && (
+                        <small className="mmr-sub">
+                          {s.wins} V / {s.games} PJ · {pct(s.raw)} · ⚽{" "}
+                          {s.goals}
+                          {penalty && penalty.penalty > 0 && (
                             <span className="mmr-penalty">
-                              −{penalty.penalty} por regularidad
+                              {" "}
+                              · −{penalty.penalty} por regularidad
                             </span>
-                          ) : (
-                            <span className="muted">—</span>
                           )}
-                        </td>
+                        </small>
                       )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                    </span>
+                  </button>
+                  <div className="mmr-score">
+                    <strong className="mmr-value">{formatMmr(shown)}</strong>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
         )}
       </div>
       <div className="info-note">
@@ -134,9 +95,10 @@ export function MmrRanking({
           Prueba de MMR (Elo por equipos): todos empiezan en 1000 y cada partida
           suma o resta según lo esperado frente al rival (K = 40 las 10 primeras
           partidas, 24 después). Se calcula con todas las temporadas y no cambia
-          el ranking oficial.
+          el ranking oficial. Debajo de cada nombre: victorias / partidos, %
+          real, goles y, si la hay, la penalización por regularidad.
           {penalties &&
-            ` Regularidad: se piden ${PENALTY_CONFIG.minGamesPerWeek} partidas por semana en los últimos ${PENALTY_CONFIG.windowWeeks * 7} días (proporcional desde la activación); cada una que falta resta ${PENALTY_CONFIG.pointsPerMissingGame} puntos al MMR mostrado, nunca al interno, y desaparece al volver a jugar.`}
+            ` Regularidad: se piden ${PENALTY_CONFIG.minGamesPerWeek} partidas por semana en los últimos ${PENALTY_CONFIG.windowWeeks * 7} días; cada una que falta resta ${PENALTY_CONFIG.pointsPerMissingGame} puntos al MMR mostrado y desaparece al volver a jugar.`}
         </p>
       </div>
     </>

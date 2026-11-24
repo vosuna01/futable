@@ -13,6 +13,10 @@ import type { Match, Player, Rules } from "../domain/types";
 import { Avatar, Empty, pct } from "./ui";
 import { Result } from "./History";
 import { matchesSearch, newestFirst } from "../domain/presentation";
+import { formatDelta, formatMmr, type MmrState } from "../domain/mmr";
+import type { Penalty } from "../domain/mmr-penalty";
+import { mmrStandings } from "../domain/mmr-standings";
+import "../mmr.css";
 export function Players({
   players,
   matches,
@@ -20,6 +24,8 @@ export function Players({
   selected,
   onSelect,
   onTrophyCase,
+  mmr = null,
+  mmrPenalties = null,
 }: {
   players: Player[];
   matches: Match[];
@@ -27,9 +33,14 @@ export function Players({
   selected: string | null;
   onSelect: (id: string | null) => void;
   onTrophyCase: (id: string) => void;
+  /** Solo llega con MMR_ENABLED; sin él la plantilla queda como siempre. */
+  mmr?: MmrState | null;
+  mmrPenalties?: Map<string, Penalty> | null;
 }) {
   const [query, setQuery] = useState("");
   const player = players.find((p) => p.id === selected);
+  const standings = mmr ? mmrStandings(mmr, players, mmrPenalties) : [];
+  const mmrOf = (id: string) => standings.find((r) => r.player.id === id);
   if (player) {
     const s = ranking([player], matches, rules)[0],
       d = ranking([player], matches, rules, "defender")[0],
@@ -78,6 +89,37 @@ export function Players({
         >
           <Trophy size={17} /> Ver vitrina
         </button>
+        {(() => {
+          const r = mmrOf(player.id);
+          if (!r) return null;
+          return (
+            <article className="panel player-mmr-card">
+              <div>
+                <span className="eyebrow">MMR</span>
+                <strong className="mmr-value">{formatMmr(r.shown)}</strong>
+                <p>
+                  {r.penalty && r.penalty.penalty > 0 ? (
+                    <span className="mmr-penalty">
+                      −{r.penalty.penalty} por regularidad
+                    </span>
+                  ) : r.lastDelta !== null ? (
+                    <span
+                      className={`mmr-delta ${r.lastDelta >= 0 ? "up" : "down"}`}
+                    >
+                      {formatDelta(r.lastDelta)} en su última partida
+                    </span>
+                  ) : null}
+                  {" · "}
+                  {r.games} partidas con MMR
+                </p>
+              </div>
+              <div className="player-mmr-position">
+                <strong>#{r.position}</strong>
+                <small>de {standings.length} en MMR</small>
+              </div>
+            </article>
+          );
+        })()}
         <div className="stats-strip">
           <div>
             <span>% REAL</span>
@@ -242,6 +284,12 @@ export function Players({
             <ArrowUpRight className="card-arrow" size={18} />
             <Avatar player={s.player} size="large" />
             <h3>{s.player.name}</h3>
+            {mmrOf(s.player.id) && (
+              <span className="player-card-mmr">
+                {formatMmr(mmrOf(s.player.id)!.shown)}
+                <small>MMR · #{mmrOf(s.player.id)!.position}</small>
+              </span>
+            )}
             <span className="muted small">
               {s.player.active ? "En activo" : "Inactivo"} ·{" "}
               {s.games === 0

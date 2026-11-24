@@ -41,6 +41,8 @@ git push origin main
 
 Antes de empezar, descarga los últimos cambios. Si alguien publica mientras estás trabajando, integra sus cambios antes de subir los tuyos; conserva las mejoras de ambos y evita forzar la subida. Las comprobaciones automáticas no imponen revisión previa. El workflow **Publicar FutABLE** actualiza GitHub Pages después de pasar sus comprobaciones.
 
+**Novedades.** Si el cambio se nota en la app, actualiza `src/whats-new.ts` antes de subirlo: cambia el `id` y reescribe los puntos (5 o 6 como mucho, que se lean en menos de un minuto). Quien pulse «Actualizar aplicación» verá esa ventana una sola vez. Si no cambias el `id`, no se muestra nada.
+
 ## Publicación
 
 La publicación compartida es **GitHub Pages**: https://vosuna01.github.io/futable/. Cada push a `main` ejecuta **Publicar FutABLE** y actualiza esa URL si pasan las comprobaciones. Todos los colaboradores con escritura pueden usar este flujo. Consulta [la guía](docs/GITHUB-PAGES.md).
@@ -52,4 +54,3 @@ Los cambios de base de datos se añaden como una nueva migración y se revisan a
 ## Alcance actual
 
 Aplicación móvil/PWA, perfiles, partidas, rankings, administración y sincronización. El display, el modo kiosco y las integraciones NFC/ESP32 siguen fuera de la versión implementada.
-

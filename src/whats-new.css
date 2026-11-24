@@ -1,0 +1,30 @@
+/* Ventana de novedades tras actualizar. */
+.whats-new {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.whats-new li {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+.whats-new-icon {
+  font-size: 22px;
+  line-height: 1.2;
+  text-align: center;
+}
+.whats-new strong {
+  display: block;
+  color: var(--brand-dark);
+  font-size: 14px;
+}
+.whats-new p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--brand-body);
+}
