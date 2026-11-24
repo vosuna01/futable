@@ -122,7 +122,7 @@ export function RankTable({
   );
 }
 export function Rankings({
-  players,
+  players: allPlayers,
   matches,
   rules,
   onPlayer,
@@ -144,6 +144,15 @@ export function Rankings({
   const [tab, setTab] = useState("General"),
     [sort, setSort] = useState("raw"),
     [query, setQuery] = useState("");
+  // Keep scoreboard accounts and inactive players out of standings only.
+  const scoreboardAccounts = new Set([
+    "070c7c3b-131b-4c57-8b24-bc5d8308ae6b",
+    "a3487dce-7833-4f38-8fae-30c21c610aa0",
+  ]);
+  const players = allPlayers.filter(
+    (p) => p.active && !scoreboardAccounts.has(p.account_id ?? ""),
+  );
+  const rankedIds = new Set(players.map((p) => p.id));
   const position =
     tab === "Defensas"
       ? "defender"
@@ -170,7 +179,9 @@ export function Rankings({
     sortedAll.filter((s) => s.qualified).map((s, i) => [s.player.id, i + 1]),
   );
   const sorted = sortedAll.filter((s) => matchesSearch(s.player.name, query));
-  const pairs = pairRanking(players, matches, rules),
+  const pairs = pairRanking(players, matches, rules).filter((p) =>
+    p.ids.every((id) => rankedIds.has(id)),
+  ),
     improved = improvement(players, matches, rules);
   const all = ranking(players, matches, rules);
   const awards = [
