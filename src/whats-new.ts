@@ -38,7 +38,10 @@ export const WHATS_NEW = {
 const UPDATED_KEY = "futable:updated";
 const SEEN_KEY = "futable:whats-new-seen";
 
-type Storage = Pick<globalThis.Storage, "getItem" | "setItem" | "removeItem">;
+type Storage = Pick<
+  globalThis.Storage,
+  "getItem" | "setItem" | "removeItem" | "key" | "length"
+>;
 const store = (): Storage | null => {
   try {
     return globalThis.localStorage ?? null;
@@ -56,18 +59,30 @@ export function markUpdating(storage: Storage | null = store()) {
   }
 }
 
+/** Quien ya usaba la app tiene una sesión de Supabase guardada. */
+function hasUsedApp(storage: Storage) {
+  for (let i = 0; i < storage.length; i++)
+    if (/^sb-.+-auth-token$/.test(storage.key(i) ?? "")) return true;
+  return false;
+}
+
 /**
- * ¿Hay que enseñar las novedades? Solo tras pulsar «Actualizar» y si estas
- * notas no se han visto ya. Una instalación nueva no las enseña.
+ * ¿Hay que enseñar las novedades? Si estas notas no se han visto y quien abre
+ * la app ya la usaba: tras pulsar «Actualizar» o al abrir una versión nueva
+ * (la PWA también se actualiza sola al cerrarla y volverla a abrir). Una
+ * visita nueva no las ve: se dan por vistas.
  */
 export function shouldShowWhatsNew(storage: Storage | null = store()) {
   try {
-    if (storage?.getItem(UPDATED_KEY) !== "1") return false;
+    if (!storage) return false;
     if (storage.getItem(SEEN_KEY) === WHATS_NEW.id) {
       storage.removeItem(UPDATED_KEY);
       return false;
     }
-    return true;
+    if (storage.getItem(UPDATED_KEY) === "1" || hasUsedApp(storage))
+      return true;
+    storage.setItem(SEEN_KEY, WHATS_NEW.id);
+    return false;
   } catch {
     return false;
   }

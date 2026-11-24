@@ -6,20 +6,33 @@ import {
   WHATS_NEW,
 } from "../src/whats-new";
 
-const memory = () => {
-  const m = new Map<string, string>();
+const memory = (initial: Record<string, string> = {}) => {
+  const m = new Map<string, string>(Object.entries(initial));
   return {
     getItem: (k: string) => m.get(k) ?? null,
     setItem: (k: string, v: string) => void m.set(k, v),
     removeItem: (k: string) => void m.delete(k),
+    key: (i: number) => [...m.keys()][i] ?? null,
+    get length() {
+      return m.size;
+    },
   };
 };
+const session = { "sb-foogrwxbycncnifbwlpe-auth-token": "{}" };
 
 describe("Novedades tras actualizar", () => {
-  it("una instalación nueva no las enseña", () => {
-    expect(shouldShowWhatsNew(memory())).toBe(false);
+  it("una visita nueva no las ve y quedan dadas por vistas", () => {
+    const s = memory();
+    expect(shouldShowWhatsNew(s)).toBe(false);
+    expect(s.getItem("futable:whats-new-seen")).toBe(WHATS_NEW.id);
   });
-  it("se enseñan una sola vez después de pulsar Actualizar", () => {
+  it("quien ya usaba la app las ve al abrir la versión nueva, sin pulsar nada", () => {
+    const s = memory(session);
+    expect(shouldShowWhatsNew(s)).toBe(true);
+    markWhatsNewSeen(s);
+    expect(shouldShowWhatsNew(s)).toBe(false);
+  });
+  it("tras pulsar Actualizar se enseñan una sola vez", () => {
     const s = memory();
     markUpdating(s);
     expect(shouldShowWhatsNew(s)).toBe(true);
@@ -28,6 +41,10 @@ describe("Novedades tras actualizar", () => {
     // Otra actualización sin notas nuevas tampoco las repite.
     markUpdating(s);
     expect(shouldShowWhatsNew(s)).toBe(false);
+  });
+  it("unas notas nuevas se enseñan aunque se vieran las anteriores", () => {
+    const s = memory({ ...session, "futable:whats-new-seen": "anteriores" });
+    expect(shouldShowWhatsNew(s)).toBe(true);
   });
   it("sin almacenamiento no falla", () => {
     expect(shouldShowWhatsNew(null)).toBe(false);
