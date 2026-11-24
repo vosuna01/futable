@@ -12,6 +12,7 @@ import type { Match, Player, Rules, Stats } from "../domain/types";
 import { Avatar, Empty, pct } from "./ui";
 import { matchesSearch } from "../domain/presentation";
 import type { MmrState } from "../domain/mmr";
+import { rankablePlayers } from "../domain/standings-players";
 import type { Penalty } from "../domain/mmr-penalty";
 import { MmrRanking } from "./MmrRanking";
 const MMR_TAB = "MMR (beta)";
@@ -145,13 +146,7 @@ export function Rankings({
     [sort, setSort] = useState("raw"),
     [query, setQuery] = useState("");
   // Keep scoreboard accounts and inactive players out of standings only.
-  const scoreboardAccounts = new Set([
-    "070c7c3b-131b-4c57-8b24-bc5d8308ae6b",
-    "a3487dce-7833-4f38-8fae-30c21c610aa0",
-  ]);
-  const players = allPlayers.filter(
-    (p) => p.active && !scoreboardAccounts.has(p.account_id ?? ""),
-  );
+  const players = rankablePlayers(allPlayers);
   const rankedIds = new Set(players.map((p) => p.id));
   const position =
     tab === "Defensas"
@@ -180,8 +175,8 @@ export function Rankings({
   );
   const sorted = sortedAll.filter((s) => matchesSearch(s.player.name, query));
   const pairs = pairRanking(players, matches, rules).filter((p) =>
-    p.ids.every((id) => rankedIds.has(id)),
-  ),
+      p.ids.every((id) => rankedIds.has(id)),
+    ),
     improved = improvement(players, matches, rules);
   const all = ranking(players, matches, rules);
   const awards = [

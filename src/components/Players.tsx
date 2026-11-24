@@ -16,6 +16,7 @@ import { matchesSearch, newestFirst } from "../domain/presentation";
 import { formatDelta, formatMmr, type MmrState } from "../domain/mmr";
 import type { Penalty } from "../domain/mmr-penalty";
 import { mmrStandings } from "../domain/mmr-standings";
+import { rankablePlayers } from "../domain/standings-players";
 import "../mmr.css";
 export function Players({
   players,
@@ -39,7 +40,10 @@ export function Players({
 }) {
   const [query, setQuery] = useState("");
   const player = players.find((p) => p.id === selected);
-  const standings = mmr ? mmrStandings(mmr, players, mmrPenalties) : [];
+  // Misma lista que la pestaña MMR, para que la posición coincida.
+  const standings = mmr
+    ? mmrStandings(mmr, rankablePlayers(players), mmrPenalties)
+    : [];
   const mmrOf = (id: string) => standings.find((r) => r.player.id === id);
   if (player) {
     const s = ranking([player], matches, rules)[0],
