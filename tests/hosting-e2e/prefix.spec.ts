@@ -15,9 +15,17 @@ test("el acceso, los recursos y la navegación funcionan bajo /futable/", async 
   );
   await page.getByRole("button", { name: "Explorar demostración" }).click();
   await expect(page.getByRole("heading", { name: /Hola,/ })).toBeVisible();
-  await expect(
-    page.getByAltText(/Ilustración de un futbolín/).first(),
-  ).toBeVisible();
+  // El emblema confirma que los recursos locales cargan bajo el prefijo.
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const img = document.querySelector<HTMLImageElement>(".brand-mark img");
+        if (!img) return "sin emblema";
+        const ok = img.complete && img.naturalWidth > 0;
+        return `${new URL(img.src).pathname}|${ok}`;
+      }),
+    )
+    .toBe("/futable/brand/liga-cordoba-logo.svg|true");
   await page.locator(".live-entry").click();
   await page.getByRole("button", { name: "Fitxo", exact: true }).click();
   await expect(page.locator(".live-queue")).toContainText("Álvaro Martín");

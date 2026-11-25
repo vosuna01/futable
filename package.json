@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:auth": "playwright test --config playwright.auth.config.ts",
+    "test:hosting": "playwright test --config playwright.hosting.config.ts",
     "test:pwa": "node scripts/verify-pwa.mjs",
     "test:online": "node scripts/verify-online.mjs"
   },
