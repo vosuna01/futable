@@ -10,10 +10,15 @@ import {
 } from "lucide-react";
 import { pairRanking, RANK_GAMES, ranking } from "../domain/rankings";
 import type { Match, Player, Rules } from "../domain/types";
-import { Avatar, Empty, pct } from "./ui";
+import { Avatar, Empty, pct, date } from "./ui";
 import { Result } from "./History";
 import { matchesSearch, newestFirst } from "../domain/presentation";
-import { formatDelta, formatMmr, type MmrState } from "../domain/mmr";
+import {
+  formatDelta,
+  formatMmr,
+  matchDeltas,
+  type MmrState,
+} from "../domain/mmr";
 import type { Penalty } from "../domain/mmr-penalty";
 import { mmrStandings } from "../domain/mmr-standings";
 import { rankablePlayers } from "../domain/standings-players";
@@ -250,7 +255,14 @@ export function Players({
         <div className="history-grid">
           {games.slice(0, 10).map((m) => (
             <article key={m.id} className="panel">
-              <Result match={m} players={players} />
+              <Result
+                match={m}
+                players={players}
+                mmrDeltas={mmr ? matchDeltas(mmr, m.id) : undefined}
+              />
+              <div className="match-footer">
+                <small>{date(m.played_at)}</small>
+              </div>
             </article>
           ))}
         </div>
@@ -263,11 +275,9 @@ export function Players({
   return (
     <>
       <div className="page-intro">
-        <span className="eyebrow">LOS PROTAGONISTAS</span>
         <h1>
           La plantilla<span>.</span>
         </h1>
-        <p>Parejas que cambian. Una liga que nos une.</p>
       </div>
       <label className="search player-search">
         <Search size={18} />

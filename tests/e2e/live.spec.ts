@@ -1,4 +1,20 @@
 import { test, expect, type Page } from "@playwright/test";
+/** El acceso al directo: tarjeta en Inicio, barra lateral o botón Jugar. */
+async function irADirecto(page: Page) {
+  const card = page.locator(".live-entry");
+  if (await card.count()) return card.click();
+  await page
+    .locator(".bottom-nav")
+    .getByRole("button", { name: "Ir a la partida en directo" })
+    .or(
+      page
+        .locator(".sidebar")
+        .getByRole("button", { name: "Partida en directo" }),
+    )
+    .filter({ visible: true })
+    .first()
+    .click();
+}
 
 // The opening lineup is random; these tests rely on arrival order.
 test.beforeEach(async ({ page }) => {
@@ -21,7 +37,7 @@ const barca = ".live-team.blue";
 async function signUp(page: Page, count = 5) {
   await page.goto("/");
   await page.getByRole("button", { name: "Explorar demostración" }).click();
-  await page.locator(".live-entry").click();
+  await irADirecto(page);
   await page
     .locator(".live-empty")
     .getByRole("button", { name: "Fitxo" })
@@ -79,7 +95,7 @@ test("ficha, arranca por orden de llegada y rota dejando a uno esperando", async
     "Victoria registrada sin marcador",
   );
 
-  await page.locator(".live-entry").click();
+  await irADirecto(page);
   await page.getByRole("button", { name: "Deshacer último resultado" }).click();
   await expect(page.locator(madrid)).toContainText(names[0]);
   await expect(page.locator(madrid)).toContainText(names[1]);
@@ -153,4 +169,45 @@ test("el pronóstico muestra probabilidades y dirige a las cuotas de coins", asy
     /^Cuota \d+\.\d{2}$/,
   );
   await expect(bet).toContainText("Solo se puede apostar con 0–0");
+});
+
+test("la sesión resume tus números y deja el resumen en Inicio", async ({
+  page,
+}) => {
+  await signUp(page, 4);
+  await start(page);
+  await page.getByRole("button", { name: "Gana Madrid", exact: true }).click();
+  await keepPosts(page);
+
+  await page.getByRole("button", { name: "Mi sesión actual" }).click();
+  const panel = page.getByRole("dialog").locator(".session-stats");
+  await expect(panel).toContainText(names[0]);
+  // Una partida jugada por los cuatro, y la tabla los lista a todos.
+  await expect(panel.locator(".session-table tbody tr")).toHaveCount(4);
+  await expect(panel.locator(".session-table tbody tr.is-me")).toHaveCount(1);
+  await expect(panel).toContainText("Tabla del día");
+  await page.keyboard.press("Escape");
+
+  // Al cerrar la sesión, Inicio enseña el resumen de la última.
+  await page
+    .getByRole("button", { name: "Cerrar sesión del día" })
+    .first()
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Cerrar sesión", exact: true })
+    .click();
+  await page
+    .locator(".bottom-nav")
+    .getByRole("button", { name: "Inicio" })
+    .or(page.locator(".sidebar").getByRole("button", { name: "Inicio" }))
+    .filter({ visible: true })
+    .first()
+    .click();
+  // En Inicio es un botón que abre el mismo panel en un pop-up.
+  await page.getByRole("button", { name: /Tu última sesión/ }).click();
+  const last = page.getByRole("dialog").locator(".session-stats");
+  await expect(last.locator(".session-table tbody tr")).toHaveCount(4);
+  await expect(last.locator(".session-league-pos")).toBeVisible();
+  await expect(last.locator(".session-figures")).toHaveCount(2);
 });

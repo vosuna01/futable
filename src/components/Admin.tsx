@@ -22,6 +22,7 @@ export function Admin({
   online = true,
   liveSession = false,
   onLive,
+  onNewMatch,
 }: {
   data: Snapshot;
   demo: boolean;
@@ -29,6 +30,8 @@ export function Admin({
   online?: boolean;
   liveSession?: boolean;
   onLive?: () => void;
+  /** Registro manual de una partida suelta; ya no está en Inicio. */
+  onNewMatch?: () => void;
 }) {
   const [dialog, setDialog] = useState<
       "player" | "account" | "season" | "rules" | "close" | null
@@ -141,6 +144,26 @@ export function Admin({
         </p>
       )}
       <div className="admin-grid">
+        {onNewMatch && (
+          <section className="panel admin-section">
+            <div className="panel-heading">
+              <h2>
+                <Plus size={18} /> Registrar una partida
+              </h2>
+              <button
+                className="text-button"
+                onClick={onNewMatch}
+                disabled={!online}
+              >
+                <Plus size={16} /> Nueva partida
+              </button>
+            </div>
+            <p className="muted small">
+              Las partidas se registran solas desde el directo y la tablet. Esto
+              es para apuntar una suelta a mano.
+            </p>
+          </section>
+        )}
         <section className="panel admin-section">
           <div className="panel-heading">
             <h2>

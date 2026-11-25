@@ -17,6 +17,7 @@ import {
 } from "../domain/live";
 import type { MatchInput, Position, Snapshot, Team } from "../domain/types";
 import { supabase } from "./supabase";
+import { lastDaySession } from "../domain/session-stats";
 
 export interface LiveFields {
   players?: string[];
@@ -53,6 +54,8 @@ export function useLiveSession({
   demoVoid: (id: string) => void;
 }) {
   const [session, setSession] = useState<LiveSession | null>(null);
+  /** Última sesión cerrada de la liga, para el resumen de Inicio. */
+  const [lastClosed, setLastClosed] = useState<LiveSession | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const scope = `${data?.league.id || ""}:${user}:${demo}`;
@@ -83,6 +86,16 @@ export function useLiveSession({
       setLoading(false);
       return;
     }
+    const closed = await supabase
+      .from("live_sessions")
+      .select("*")
+      .eq("league_id", data.league.id)
+      .eq("status", "closed")
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (requested !== currentScope.current || read !== reads.current) return;
+    if (!closed.error) setLastClosed(closed.data as LiveSession | null);
     const next = result.data as LiveSession | null;
     setSession((previous) =>
       previous &&
@@ -97,6 +110,16 @@ export function useLiveSession({
   }, [data?.league.id, demo, user, scope]);
   useEffect(() => {
     setSession(null);
+    // En demostración no hay sesiones guardadas: se enseña la última jornada.
+    setLastClosed(
+      demo && data
+        ? lastDaySession(
+            data.matches,
+            data.seasons.find((x) => x.status === "active")?.id ?? "",
+            data.league.id,
+          )
+        : null,
+    );
     setError("");
     setLoading(!demo && !!data && !!user);
     void refresh();
@@ -152,6 +175,8 @@ export function useLiveSession({
         revision: 1,
         last_match: null,
         last_before: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
     }
     const next: LiveSession = { ...before, revision: before.revision + 1 };
@@ -224,6 +249,7 @@ export function useLiveSession({
       next.last_match = null;
     }
     if (action === "close") next.status = "closed";
+    next.updated_at = new Date().toISOString();
     return next;
   };
 
@@ -248,6 +274,7 @@ export function useLiveSession({
     try {
       if (demo) {
         const next = demoApply(action, fields, before, season.id, operation);
+        if (next && next.status === "closed") setLastClosed(next);
         current.current = next?.status === "active" ? next : null;
         setSession(current.current);
       } else {
@@ -312,5 +339,5 @@ export function useLiveSession({
       locked.current = false;
     }
   };
-  return { session, loading, error, refresh, command };
+  return { session, lastClosed, loading, error, refresh, command };
 }

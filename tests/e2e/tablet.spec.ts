@@ -1,4 +1,20 @@
 import { test, expect, type Page } from "@playwright/test";
+/** El acceso al directo: tarjeta en Inicio, barra lateral o botón Jugar. */
+async function irADirecto(page: Page) {
+  const card = page.locator(".live-entry");
+  if (await card.count()) return card.click();
+  await page
+    .locator(".bottom-nav")
+    .getByRole("button", { name: "Ir a la partida en directo" })
+    .or(
+      page
+        .locator(".sidebar")
+        .getByRole("button", { name: "Partida en directo" }),
+    )
+    .filter({ visible: true })
+    .first()
+    .click();
+}
 
 // The opening lineup is random; these tests rely on arrival order.
 test.beforeEach(async ({ page }) => {
@@ -207,10 +223,8 @@ test("la tablet lleva una partida entera: goleadores, puestos, cola y resultado"
 test("se abre y se cierra desde la partida en directo", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Explorar demostración" }).click();
-  await page.locator(".live-entry").click();
-  await page
-    .getByRole("button", { name: "Abrir modo tablet de pared" })
-    .click();
+  await irADirecto(page);
+  await page.getByRole("button", { name: "Modo tablet de pared" }).click();
   await expect(page).toHaveURL(/\?tablet$/);
   await expect(page.locator(".tablet")).toBeVisible();
   await page.getByLabel("Salir del modo tablet").click();

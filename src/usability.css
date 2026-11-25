@@ -417,3 +417,42 @@ summary:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---- Limpieza de pantallas ---- */
+
+/* «Ver la clasificación completa» igual que «Ver historial completo»: dentro
+   del panel, con su relleno y su fondo, para que no toque los márgenes. */
+.ranking-more {
+  padding: 15px 20px;
+  background: #f1f5f9;
+  padding-top: 16px;
+}
+
+/* Las categorías se ven todas de una: se reparten en filas, sin deslizar. */
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  overflow-x: visible;
+}
+.tabs button {
+  white-space: normal;
+  text-align: center;
+  padding-inline: 8px;
+}
+@media (max-width: 560px) {
+  .tabs {
+    grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
+  }
+  .tabs button {
+    font-size: 10px;
+    padding: 9px 5px;
+  }
+}
+
+/* El acceso a la tablet pasa a ser un botón con cuerpo, no un enlace suelto. */
+.live-tablet-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}

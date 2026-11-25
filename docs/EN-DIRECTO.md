@@ -41,6 +41,16 @@ El cálculo vive en `src/domain/odds.ts`. Para cada equipo toma el porcentaje aj
 
 El reparto se convierte en cuota con un margen del 8 %, que es lo que hace que las dos no sumen 100 %. Ningún equipo baja del 5 % ni sube del 95 %: la casa nunca da nada por seguro. Con pocas partidas de esos cuatro, la caja avisa de que la cuota es casi una moneda al aire.
 
+## Tus números de la sesión
+
+Durante la sesión, el botón **«Mi sesión actual»** abre un resumen con tus partidas jugadas, ganadas y perdidas, tus goles, tu MMR actual, tu puesto en la clasificación MMR y el MMR que llevas ganado o perdido hoy. Debajo va la tabla del día con todos los que han jugado, ordenada por victorias.
+
+Al cerrar la sesión, ese mismo resumen aparece en **Inicio** como «Tu última sesión», hasta que se abra una nueva.
+
+Las partidas de una sesión **se deducen por fecha**: son las válidas de la temporada jugadas entre que se abrió y se cerró. La base de datos no guarda a qué sesión pertenece cada partida, así que una registrada a mano mientras la sesión estaba abierta también cuenta. El cálculo vive en `src/domain/session-stats.ts` y no toca la base de datos.
+
+La columna de goles usa los goleadores acreditados (`match_scorers`, migración 014). Un gol apuntado sin decir quién lo marcó suma al marcador pero no a nadie.
+
 ## Datos y permisos
 
 El estado vive en `live_sessions` (migración `006_live_sessions.sql`), una fila activa por liga, con `state` en JSON:

@@ -1,0 +1,199 @@
+.session-stats {
+  display: grid;
+  gap: 13px;
+}
+.session-mine {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #f4f1fb;
+  border: 1px solid #d6d2ea;
+}
+.session-mine > div {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+.session-mine strong {
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.session-mine small {
+  font-size: 11px;
+  color: #5b5280;
+}
+.session-league-pos {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  padding: 5px 11px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #d6d2ea;
+  flex-shrink: 0;
+}
+.session-league-pos b {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  line-height: 1.1;
+  color: #4b3f7d;
+  letter-spacing: -0.04em;
+}
+.session-league-pos small {
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.session-figures {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.session-figures.mmr {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.session-figures > div {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 3px;
+  padding: 10px 4px;
+  border-radius: 13px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  min-width: 0;
+}
+.session-figures dt {
+  font-size: 8.5px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.3;
+}
+.session-figures dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.session-figure-delta.up dd {
+  color: #1d7a4c;
+}
+.session-figure-delta.down dd {
+  color: #b83e45;
+}
+.session-table-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 4px;
+}
+.session-table-heading h3 {
+  font-size: 15px;
+  margin: 0;
+}
+.session-table-heading span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.session-table-scroll {
+  overflow-x: auto;
+  margin: 0 -4px;
+  padding: 0 4px;
+}
+.session-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.session-table th,
+.session-table td {
+  padding: 8px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.session-table thead th {
+  font-size: 8.5px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+.session-table tbody th {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  font-weight: 600;
+  min-width: 0;
+}
+.session-table tbody th span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.session-table td:first-child {
+  font-family: var(--font-mono);
+  color: var(--muted);
+  width: 24px;
+  padding-inline: 2px;
+}
+.session-table tbody tr.is-me {
+  background: #f4f1fb;
+}
+.session-table .mmr-delta {
+  margin-left: 4px;
+  font-size: 10px;
+}
+.session-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+@media (max-width: 560px) {
+  .session-figures dd {
+    font-size: 18px;
+  }
+  .session-figures > div {
+    padding: 9px 3px;
+  }
+  .session-table th,
+  .session-table td {
+    padding: 7px 4px;
+  }
+  /* El nombre manda: en pantalla estrecha el avatar estorba más que ayuda. */
+  .session-table tbody th .avatar {
+    display: none;
+  }
+}
+
+/* La tarjeta de partida ya no lleva banner; solo se avisa si está anulada. */
+.match-void {
+  align-self: flex-start;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #fdeaec;
+  color: #b83e45;
+  margin-bottom: 9px;
+}
+.match-footer small {
+  color: var(--muted);
+}

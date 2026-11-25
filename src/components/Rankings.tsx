@@ -212,11 +212,9 @@ export function Rankings({
   return (
     <>
       <div className="page-intro">
-        <span className="eyebrow">EL RENDIMIENTO MARCA LA DIFERENCIA</span>
         <h1>
           Clasificaciones<span>.</span>
         </h1>
-        <p>Las victorias importan. El contexto, también.</p>
       </div>
       <div
         className="tabs"

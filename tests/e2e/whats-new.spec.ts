@@ -12,7 +12,7 @@ test("tras actualizar enseña las novedades una sola vez", async ({ page }) => {
   await page.getByRole("button", { name: "Explorar demostración" }).click();
   const dialog = page.getByRole("dialog", { name: "Novedades de FutABLE" });
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByText("Llega el MMR (beta)")).toBeVisible();
+  await expect(dialog.getByText("Mi sesión actual")).toBeVisible();
   await dialog.getByRole("button", { name: "¡Entendido!" }).click();
   await expect(dialog).toBeHidden();
   await page.reload();

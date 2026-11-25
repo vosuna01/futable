@@ -1,4 +1,16 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
+/** El registro manual vive ahora en Administración, no en Inicio. */
+async function abrirNuevaPartida(page: Page) {
+  const link = page
+    .locator(".sidebar")
+    .getByRole("button", { name: "Administración" });
+  if (!(await link.isVisible()))
+    await page.getByRole("button", { name: "Abrir menú" }).click();
+  await link.click();
+  await page
+    .getByRole("button", { name: "Nueva partida", exact: true })
+    .click();
+}
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Explorar demostración" }).click();
@@ -76,11 +88,7 @@ test("registra desde móvil, confirma y reconstruye los rankings", async ({
   isMobile,
 }) => {
   const before = await page.locator(".stats-strip>div").first().innerText();
-  await page
-    .getByRole("button", { name: "Nueva partida", exact: true })
-    .filter({ visible: true })
-    .first()
-    .click();
+  await abrirNuevaPartida(page);
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: "Repetir últimos equipos" }).click();
@@ -92,6 +100,11 @@ test("registra desde móvil, confirma y reconstruye los rankings", async ({
   await dialog.getByRole("button", { name: "Confirmar y guardar" }).click();
   await expect(dialog).not.toBeVisible();
   await expect(page.getByRole("status")).toContainText("demostración");
+  // El formulario vive en Administración; la tira de cifras está en Inicio.
+  await page
+    .locator(isMobile ? ".bottom-nav" : ".sidebar")
+    .getByRole("button", { name: "Inicio", exact: true })
+    .click();
   expect(await page.locator(".stats-strip>div").first().innerText()).not.toBe(
     before,
   );
@@ -110,11 +123,7 @@ test("registra desde móvil, confirma y reconstruye los rankings", async ({
 test("permite tres goles y un marcador personalizado, y bloquea empates", async ({
   page,
 }) => {
-  await page
-    .getByRole("button", { name: "Nueva partida", exact: true })
-    .filter({ visible: true })
-    .first()
-    .click();
+  await abrirNuevaPartida(page);
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("button", { name: "Repetir últimos equipos" }).click();
   await dialog.getByRole("button", { name: "A 3 goles", exact: true }).click();
@@ -131,7 +140,9 @@ test("permite tres goles y un marcador personalizado, y bloquea empates", async 
 test("separa provisionales, muestra perfiles y no ofrece display", async ({
   page,
 }) => {
-  await page.getByRole("button", { name: "Ver todos", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Ver la clasificación completa" })
+    .click();
   await expect(
     page.getByRole("tab", { name: "General", exact: true }),
   ).toBeVisible();
@@ -153,13 +164,16 @@ test("sin conexión no confirma una partida ni desborda el viewport", async ({
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBeTruthy();
+  const admin = page
+    .locator(".sidebar")
+    .getByRole("button", { name: "Administración" });
+  if (!(await admin.isVisible()))
+    await page.getByRole("button", { name: "Abrir menú" }).click();
+  await admin.click();
   await context.setOffline(true);
   await expect(page.getByText("Sin conexión. Se muestran")).toBeVisible();
   await expect(
-    page
-      .getByRole("button", { name: "Nueva partida", exact: true })
-      .filter({ visible: true })
-      .first(),
+    page.getByRole("button", { name: "Nueva partida", exact: true }),
   ).toBeDisabled();
   await context.setOffline(false);
 });
@@ -202,12 +216,7 @@ for (const winner of ["Barça", "Madrid"] as const) {
   test(
     "rey de la pista mantiene a " + winner + " y deja elegir nuevos rivales",
     async ({ page }) => {
-      const open = () =>
-        page
-          .getByRole("button", { name: "Nueva partida", exact: true })
-          .filter({ visible: true })
-          .first()
-          .click();
+      const open = () => abrirNuevaPartida(page);
       await open();
       const dialog = page.getByRole("dialog");
       await dialog

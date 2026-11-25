@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import {
   ArrowLeftRight,
+  BarChart3,
   CheckCircle2,
   Clock,
   Minus,
@@ -33,6 +34,9 @@ import { teamNames } from "../domain/teams";
 import { Avatar, Modal } from "./ui";
 import { PlayerPicker } from "./PlayerPicker";
 import { LiveMmrBadge, useLiveMmr } from "./LiveMmr";
+import { SessionStats } from "./SessionStats";
+import type { MmrState } from "../domain/mmr";
+import type { Penalty } from "../domain/mmr-penalty";
 
 const postNames = { defender: "Defensa", forward: "Delantero" } as const;
 /** Madrid on the left and Barça on the right, as on the score form. */
@@ -75,6 +79,8 @@ export function LiveMatch({
   onTablet,
   betting,
   market,
+  mmr = null,
+  mmrPenalties = null,
 }: {
   live: ReturnType<typeof useLiveSession>;
   data: Snapshot;
@@ -84,6 +90,8 @@ export function LiveMatch({
   onTablet?: () => void;
   betting?: ReactNode;
   market?: CoinMarket | null;
+  mmr?: MmrState | null;
+  mmrPenalties?: Map<string, Penalty> | null;
 }) {
   const { session } = live;
   const state: LiveState | null = session?.state ?? null;
@@ -95,7 +103,8 @@ export function LiveMatch({
     [draftTarget, setDraftTarget] = useState(3),
     [starting, setStarting] = useState(false),
     [closing, setClosing] = useState(false),
-    [sorting, setSorting] = useState<Team | null>(null);
+    [sorting, setSorting] = useState<Team | null>(null),
+    [showStats, setShowStats] = useState(false);
   const lock = useRef(false),
     attempt = useRef<{ key: string; id: string } | null>(null);
   const named = (id: string) => data.players.find((p) => p.id === id);
@@ -194,14 +203,12 @@ export function LiveMatch({
     <section className="live-match" aria-label="Partida en directo">
       <div className="live-heading">
         <div>
-          <span className="eyebrow">LA MÁQUINA MANDA</span>
           <h1>
             <Radio /> Partida en directo<span>.</span>
           </h1>
-          <p>Fíchate, espera tu turno y entra cuando toque.</p>
           {onTablet && (
-            <button className="text-button live-tablet-link" onClick={onTablet}>
-              <Tablet size={16} /> Abrir modo tablet de pared
+            <button className="secondary live-tablet-link" onClick={onTablet}>
+              <Tablet size={17} /> Modo tablet de pared
             </button>
           )}
         </div>
@@ -284,6 +291,13 @@ export function LiveMatch({
                   : "Toca Fitxo para entrar en la cola"}
             </span>
           </div>
+
+          <button
+            className="secondary session-trigger"
+            onClick={() => setShowStats(true)}
+          >
+            <BarChart3 size={17} /> Mi sesión actual
+          </button>
 
           <div className="live-session-tools">
             <span>
@@ -641,6 +655,19 @@ export function LiveMatch({
           </form>
         </Modal>
       )}
+      {showStats && session && (
+        <Modal title="Mi sesión actual" onClose={() => setShowStats(false)}>
+          <SessionStats
+            session={session}
+            data={data}
+            me={me}
+            mmr={mmr}
+            mmrPenalties={mmrPenalties}
+            live
+          />
+        </Modal>
+      )}
+
       {closing && (
         <Modal title="Cerrar sesión" onClose={() => setClosing(false)}>
           <p>

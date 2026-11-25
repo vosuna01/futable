@@ -27,8 +27,8 @@ import { latestValidMatch } from "./domain/teams";
 import { Auth } from "./components/Auth";
 import {
   Avatar,
+  date,
   Empty,
-  LinkButton,
   Logo,
   Modal,
   pct,
@@ -43,6 +43,7 @@ import { FoosballVisual } from "./components/FoosballVisual";
 import { InstallHelp } from "./components/InstallHelp";
 import { MyProfile } from "./components/MyProfile";
 import { LiveMatch } from "./components/LiveMatch";
+import { SessionStats } from "./components/SessionStats";
 import { useLiveSession } from "./data/useLiveSession";
 import { LiveTablet } from "./components/LiveTablet";
 import { useCoins } from "./data/useCoins";
@@ -50,7 +51,12 @@ import { TrophyCase } from "./components/TrophyCase";
 import { CoinsClub, CoinMarketPanel } from "./components/CoinsClub";
 import { SeasonCountdown } from "./components/SeasonCountdown";
 import { newestFirst } from "./domain/presentation";
-import { logMmrMode, MMR_ENABLED, recalculateMMR } from "./domain/mmr";
+import {
+  logMmrMode,
+  matchDeltas,
+  MMR_ENABLED,
+  recalculateMMR,
+} from "./domain/mmr";
 import { PENALTY_ENABLED, regularityPenalties } from "./domain/mmr-penalty";
 import { WhatsNew } from "./components/WhatsNew";
 import {
@@ -99,7 +105,8 @@ export default function App() {
     // `/?tablet` opens the wall-tablet scoreboard of the live match.
     [tablet, setTablet] = useState(() =>
       new URLSearchParams(location.search).has("tablet"),
-    );
+    ),
+    [lastSession, setLastSession] = useState(false);
   const coins = useCoins(data, liveMatch.session, demo, liveUser, seasonId);
   const openTablet = (on: boolean) => {
     setTablet(on);
@@ -315,6 +322,17 @@ export default function App() {
               {page === key && <i />}
             </button>
           ))}
+          {(active || liveMatch.session) && (
+            <button
+              className={page === "live" ? "active" : ""}
+              aria-current={page === "live" ? "page" : undefined}
+              onClick={() => navigate("live")}
+            >
+              <Swords size={19} />
+              Partida en directo
+              {page === "live" && <i />}
+            </button>
+          )}
           {data.role === "admin" && (
             <>
               <span className="nav-separator" />
@@ -535,11 +553,8 @@ export default function App() {
             (page === "home" || page === "club") && (
               <SeasonCountdown date={season.ends_at} />
             )}
-          {(active || liveMatch.session) && page !== "live" && (
-            <button
-              className={`live-entry ${page === "home" ? "" : "compact"}`}
-              onClick={() => navigate("live")}
-            >
+          {(active || liveMatch.session) && page === "home" && (
+            <button className="live-entry" onClick={() => navigate("live")}>
               <Swords size={20} />
               <span>
                 <strong>Partida en directo</strong>
@@ -564,6 +579,8 @@ export default function App() {
               user={liveUser}
               online={online}
               onTablet={() => openTablet(true)}
+              mmr={mmr}
+              mmrPenalties={mmrPenalties}
               market={coins.snapshot?.market}
               betting={
                 <details className="coin-live-drawer">
@@ -580,24 +597,26 @@ export default function App() {
             <>
               <div className="home-heading">
                 <div>
-                  <span className="eyebrow">
-                    ABLE HUMAN MOTION · LA LIGA DE LA OFICINA
-                  </span>
                   <h1>
                     {ownPlayer
                       ? `Hola, ${ownPlayer.name.split(" ")[0]}.`
                       : "Tu liga, al día."}
                   </h1>
-                  <p>Un buen día para jugar en equipo.</p>
                 </div>
-                <button
-                  className="primary"
-                  onClick={newMatch}
-                  disabled={!online}
-                >
-                  <Plus size={19} /> Nueva partida
-                </button>
               </div>
+              {!liveMatch.session && liveMatch.lastClosed && (
+                <button
+                  className="secondary session-trigger"
+                  onClick={() => setLastSession(true)}
+                >
+                  <BarChart3 size={17} /> Tu última sesión ·{" "}
+                  {date(
+                    liveMatch.lastClosed.updated_at ||
+                      liveMatch.lastClosed.created_at ||
+                      "",
+                  )}
+                </button>
+              )}
               {ownPlayer && ownStats && (
                 <section className="personal-season" aria-label="Tu temporada">
                   <button
@@ -654,45 +673,6 @@ export default function App() {
                 </section>
               )}
               <div className="hero-grid">
-                <section className="hero-card">
-                  <div className="hero-copy">
-                    <span className="live-pill">
-                      <i />
-                      {valid.length
-                        ? "LA TEMPORADA ESTÁ VIVA"
-                        : "TODO ESTÁ POR JUGAR"}
-                    </span>
-                    <h2>
-                      La pausa que
-                      <br />
-                      <em>nos pone en juego.</em>
-                    </h2>
-                    <p>
-                      Cuatro compañeros, dos equipos.
-                      <br />Y una buena excusa para volver a encontrarnos.
-                    </p>
-                    <button
-                      onClick={() => navigate("rankings")}
-                      className="hero-link"
-                    >
-                      Así va la liga <ArrowRight size={17} />
-                    </button>
-                  </div>
-                  <FoosballVisual />
-                  <div className="hero-club-tag">
-                    <img
-                      src={appUrl("brand/liga-cordoba-logo.svg")}
-                      alt=""
-                      width="30"
-                      height="30"
-                    />
-                    <span>
-                      HUMAN MOTION.
-                      <br />
-                      <strong>TEAM EMOTION.</strong>
-                    </span>
-                  </div>
-                </section>
                 <section className="panel leader-card">
                   <div className="card-kicker">
                     <span className="eyebrow">EN LO MÁS ALTO</span>
@@ -765,66 +745,7 @@ export default function App() {
                   </strong>
                 </div>
               </div>
-              <div className="dashboard-grid">
-                <div>
-                  <SectionTitle title="La clasificación">
-                    <LinkButton onClick={() => navigate("rankings")}>
-                      Ver todos
-                    </LinkButton>
-                  </SectionTitle>
-                  <div className="panel">
-                    <div className="panel-subtitle">
-                      <span className="chip gold-chip">GENERAL</span>
-                      <span>El porcentaje real decide.</span>
-                    </div>
-                    <RankTable
-                      rows={rows.filter((x) => x.games > 0).slice(0, 5)}
-                      compact
-                      onPlayer={showPlayer}
-                    />
-                  </div>
-                  <p className="ranking-caption">
-                    Mínimo {RANK_GAMES} partidos para entrar en competición.
-                    Cada resultado cuenta.
-                  </p>
-                </div>
-                <div>
-                  <SectionTitle title="La última partida">
-                    <span className="chip">
-                      {last ? "FINAL" : "POR ESTRENAR"}
-                    </span>
-                  </SectionTitle>
-                  <div className="panel latest-result">
-                    {last ? (
-                      <Result match={last} players={data.players} />
-                    ) : (
-                      <Empty />
-                    )}
-                    <button
-                      className="leader-profile"
-                      onClick={() => navigate("history")}
-                    >
-                      Ver historial completo
-                      <ArrowRight size={16} />
-                    </button>
-                  </div>
-                  <div className="next-match-card">
-                    <span>¿REVANCHA?</span>
-                    <strong>La siguiente la decides tú.</strong>
-                    <button
-                      onClick={newMatch}
-                      aria-label="Registrar una nueva partida"
-                    >
-                      <Plus size={21} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <SectionTitle title="Cada posición, su especialista">
-                <LinkButton onClick={() => navigate("rankings")}>
-                  Todos los rankings
-                </LinkButton>
-              </SectionTitle>
+              <SectionTitle title="Cada posición, su especialista" />
               <div className="specialist-grid">
                 {[
                   [defender, "El muro de la liga", "Mejor defensa", Shield],
@@ -868,6 +789,50 @@ export default function App() {
                   </div>
                   <strong>{pair ? pct(pair.raw) : "—"}</strong>
                 </article>
+              </div>
+              <div className="dashboard-grid">
+                <div>
+                  <SectionTitle title="La clasificación" />
+                  <div className="panel">
+                    <div className="panel-subtitle">
+                      <span className="chip gold-chip">GENERAL</span>
+                      <span>El porcentaje real decide.</span>
+                    </div>
+                    <RankTable
+                      rows={rows.filter((x) => x.games > 0).slice(0, 5)}
+                      compact
+                      onPlayer={showPlayer}
+                    />
+                    <button
+                      className="leader-profile ranking-more"
+                      onClick={() => navigate("rankings")}
+                    >
+                      Ver la clasificación completa
+                      <ArrowRight size={16} />
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <SectionTitle title="La última partida" />
+                  <div className="panel latest-result">
+                    {last ? (
+                      <Result
+                        match={last}
+                        players={data.players}
+                        mmrDeltas={mmr ? matchDeltas(mmr, last.id) : undefined}
+                      />
+                    ) : (
+                      <Empty />
+                    )}
+                    <button
+                      className="leader-profile"
+                      onClick={() => navigate("history")}
+                    >
+                      Ver historial completo
+                      <ArrowRight size={16} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </>
           )}
@@ -919,20 +884,9 @@ export default function App() {
               online={online}
               liveSession={!!liveMatch.session}
               onLive={() => navigate("live")}
+              onNewMatch={newMatch}
             />
           )}
-          <footer className="content-footer">
-            <span>
-              FUTABLE <i /> HECHO PARA COMPARTIR EL JUEGO
-            </span>
-            <span>
-              {demo
-                ? "Datos de demostración"
-                : synced
-                  ? `Última consulta · ${synced.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}`
-                  : "Sin sincronizar"}
-            </span>
-          </footer>
         </main>
       </div>
       <nav className="bottom-nav">
@@ -1049,6 +1003,17 @@ export default function App() {
           >
             {voidBusy ? "Anulando…" : "Confirmar anulación"}
           </button>
+        </Modal>
+      )}
+      {lastSession && liveMatch.lastClosed && (
+        <Modal title="Tu última sesión" onClose={() => setLastSession(false)}>
+          <SessionStats
+            session={liveMatch.lastClosed}
+            data={data}
+            me={ownPlayer}
+            mmr={mmr}
+            mmrPenalties={mmrPenalties}
+          />
         </Modal>
       )}
       {help && (

@@ -4,33 +4,38 @@
  * reescribe los puntos (máximo 5-6, que se lean en menos de un minuto).
  */
 export const WHATS_NEW = {
-  id: "2026-11-24-mmr",
+  id: "2026-11-25-sesion",
   title: "Novedades de FutABLE",
   items: [
     {
-      icon: "🏆",
-      title: "Llega el MMR (beta)",
-      text: "Nueva pestaña en Clasificaciones. Cada partida suma o resta según lo fuerte que fuera el rival. Lo verás también en tu ficha de jugador y en el historial.",
+      icon: "📊",
+      title: "Mi sesión actual",
+      text: "Botón en la partida en directo con tus partidas, victorias, derrotas, goles y el MMR que llevas ganado hoy, más la tabla del día.",
     },
     {
-      icon: "📅",
-      title: "Premio a la regularidad",
-      text: "Se piden 40 partidas en los últimos 28 días. Cada una que falte resta 2 puntos al MMR que se muestra. Vuelve a jugar y se recupera.",
+      icon: "🕑",
+      title: "Tu última sesión",
+      text: "Al cerrar la sesión, el mismo resumen queda en Inicio hasta que empiece otra.",
     },
     {
-      icon: "⚡",
-      title: "MMR en juego en directo",
-      text: "Antes de cada partida verás cuánto MMR gana o pierde cada equipo, también en la tablet.",
+      icon: "📈",
+      title: "MMR en tu ficha",
+      text: "El MMR de cada partida ya aparece también en tu perfil y en la última partida de Inicio, no solo en el historial.",
     },
     {
-      icon: "💰",
-      title: "Cuotas según el MMR",
-      text: "El pronóstico y las cuotas de las coins salen ahora del MMR. Las apuestas ya hechas no cambian.",
+      icon: "🧹",
+      title: "Pantallas más limpias",
+      text: "Menos texto de relleno en Inicio, Clasificaciones, Jugadores, Historial y el directo.",
     },
     {
-      icon: "🎲",
-      title: "Equipos al azar",
-      text: "En la primera partida de la sesión, los cuatro primeros de la cola se reparten al azar.",
+      icon: "🗂️",
+      title: "Categorías a la vista",
+      text: "En Clasificaciones ya no hay que deslizar: se ven todas de una.",
+    },
+    {
+      icon: "✍️",
+      title: "Registrar a mano",
+      text: "Apuntar una partida suelta pasa a Administración. Lo normal sigue siendo el directo.",
     },
   ],
 } as const;

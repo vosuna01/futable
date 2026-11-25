@@ -47,6 +47,10 @@ export interface LiveSession {
   revision: number;
   last_match: string | null;
   last_before: LiveState | null;
+  /** Momento en que se abrió; acota las partidas de la sesión. */
+  created_at?: string;
+  /** Último cambio; al cerrarla, el final de la sesión. */
+  updated_at?: string;
 }
 export type Lineup = Record<Team, { defender: string; forward: string }>;
 

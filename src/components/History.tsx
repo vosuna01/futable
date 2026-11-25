@@ -22,14 +22,7 @@ export function Result({
     <div
       className={`match-result ${compact ? "compact" : ""} ${match.status === "void" ? "void" : ""}`}
     >
-      <div className="match-meta">
-        <span>{date(match.played_at)}</span>
-        <span>
-          {match.status === "void"
-            ? "ANULADA"
-            : `FINAL · GANA ${teamNames[match.winner].toUpperCase()}`}
-        </span>
-      </div>
+      {match.status === "void" && <span className="match-void">ANULADA</span>}
       <div className="match-teams">
         {(["blue", "red"] as const).map((team, i) => (
           <div className={`result-team ${team}`} key={team}>
@@ -117,11 +110,9 @@ export function History({
   return (
     <>
       <div className="page-intro">
-        <span className="eyebrow">CADA PARTIDA CUENTA</span>
         <h1>
           El historial<span>.</span>
         </h1>
-        <p>Resultados, equipos y todas las historias de la liga.</p>
       </div>
       <div className="history-filters">
         <label className="search">
@@ -224,6 +215,7 @@ export function History({
             />
             <div className="match-footer">
               <small>
+                {date(m.played_at)} ·{" "}
                 {seasons.find((s) => s.id === m.season_id)?.name}
                 {m.status === "valid" && m.revision > 1 ? " · Corregida" : ""}
               </small>

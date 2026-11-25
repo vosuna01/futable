@@ -1,4 +1,20 @@
 import { test, expect, type Page } from "@playwright/test";
+/** El acceso al directo: tarjeta en Inicio, barra lateral o botón Jugar. */
+async function irADirecto(page: Page) {
+  const card = page.locator(".live-entry");
+  if (await card.count()) return card.click();
+  await page
+    .locator(".bottom-nav")
+    .getByRole("button", { name: "Ir a la partida en directo" })
+    .or(
+      page
+        .locator(".sidebar")
+        .getByRole("button", { name: "Partida en directo" }),
+    )
+    .filter({ visible: true })
+    .first()
+    .click();
+}
 
 // The opening lineup is random; these tests rely on arrival order.
 test.beforeEach(async ({ page }) => {
@@ -52,7 +68,7 @@ test("coins: apuesta como espectador, reparto, deshacer y palmarés sin historia
     `cuota ${price.toFixed(2)}`,
   );
   await expect(page.locator(".coin-ticket")).toContainText(`${payout} coins`);
-  await page.locator(".live-entry").click();
+  await irADirecto(page);
   await page.getByRole("button", { name: "Gana Madrid", exact: true }).click();
   await page
     .getByRole("dialog")
@@ -66,7 +82,7 @@ test("coins: apuesta como espectador, reparto, deshacer y palmarés sin historia
   await expect(page.locator(".coin-ledger").first()).toContainText(
     "Premio de apuesta",
   );
-  await page.locator(".live-entry").click();
+  await irADirecto(page);
   await page.getByRole("button", { name: "Deshacer último resultado" }).click();
   await club(page);
   await expect(page.locator(".coin-wallet strong")).toHaveText("100");

@@ -1,4 +1,32 @@
 import { test, expect, type Page } from "@playwright/test";
+/** El acceso al directo: tarjeta en Inicio, barra lateral o botón Jugar. */
+async function irADirecto(page: Page) {
+  const card = page.locator(".live-entry");
+  if (await card.count()) return card.click();
+  await page
+    .locator(".bottom-nav")
+    .getByRole("button", { name: "Ir a la partida en directo" })
+    .or(
+      page
+        .locator(".sidebar")
+        .getByRole("button", { name: "Partida en directo" }),
+    )
+    .filter({ visible: true })
+    .first()
+    .click();
+}
+/** El registro manual vive ahora en Administración, no en Inicio. */
+async function abrirNuevaPartida(page: Page) {
+  const link = page
+    .locator(".sidebar")
+    .getByRole("button", { name: "Administración" });
+  if (!(await link.isVisible()))
+    await page.getByRole("button", { name: "Abrir menú" }).click();
+  await link.click();
+  await page
+    .getByRole("button", { name: "Nueva partida", exact: true })
+    .click();
+}
 
 // The opening lineup is random; these tests rely on arrival order.
 test.beforeEach(async ({ page }) => {
@@ -98,7 +126,7 @@ test("busca al fichar y cambia los goles desde el directo móvil", async ({
     await page
       .getByRole("button", { name: "Ir a la partida en directo" })
       .click();
-  else await page.locator(".live-entry").click();
+  else await irADirecto(page);
   await page
     .locator(".live-empty")
     .getByRole("button", { name: "Fitxo" })
@@ -207,11 +235,7 @@ test("mantiene el registro manual accesible en una tablet pequeña", async ({
 }) => {
   await page.setViewportSize({ width: 853, height: 533 });
   await demo(page);
-  await page
-    .getByRole("button", { name: "Nueva partida", exact: true })
-    .filter({ visible: true })
-    .first()
-    .click();
+  await abrirNuevaPartida(page);
   await expect(
     page.getByRole("dialog", { name: "Nueva partida" }),
   ).toBeVisible();
