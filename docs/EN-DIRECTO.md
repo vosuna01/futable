@@ -15,6 +15,14 @@ A cuántos goles se juega lo marca la temporada, pero desde la tablet se puede f
 5. **Rotación.** Los ganadores conservan equipo y posición. Los dos perdedores van al final de la cola y entran los dos primeros que estén esperando. Al guardar, un pop-up con los colores del equipo afectado confirma el resultado, deja repartir los puestos de quienes entran y ofrece cerrar la sesión del día.
 6. **Cerrar.** Cualquier miembro de la liga la cierra al acabar el día (desde la migración 011; antes solo quien la abrió o un administrador). Se vacían pista y cola; las partidas guardadas se conservan.
 
+## Serie al mejor de N (migración 017)
+
+Al empezar se elige el **modo**: *Normal* (el ganador se queda y los perdedores vuelven a la cola) o *Al mejor de 3, 5 o 7*, y los **goles por partida**. Las parejas salen al azar entre los cuatro primeros de la cola («Sortear otra vez» las vuelve a repartir) y se pueden retocar tocando dos puestos.
+
+En una serie juegan siempre los mismos cuatro: cada partida se guarda como una más (cuenta para la clasificación y el MMR), el marcador vuelve a 0 y la serie suma una victoria a quien gana. La primera pareja que llega a la mayoría (2 de 3, 3 de 5, 4 de 7) gana la serie; entonces la pista queda vacía, los cuatro vuelven a la cola y la tablet muestra quién la ganó. «Deshacer» devuelve la serie al marcador anterior.
+
+En `state`: `series = {best_of, wins: {blue, red}}` mientras dura y `last_series = {best_of, wins, winner, court, round}` cuando acaba (se borra al empezar otra). Sin `series` en `start`, todo funciona exactamente como antes.
+
 ## Orden de la cola
 
 La cola tiene dos grupos. **Delante, quien todavía no ha jugado ninguna partida de la sesión**, por orden de llegada; detrás, todos los demás. Así, si alguien ficha cuando ya se han jugado partidas, entra antes que quien acaba de perder, aunque llegue más tarde.

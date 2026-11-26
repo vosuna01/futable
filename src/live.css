@@ -583,3 +583,34 @@ div.live-slot {
     border-radius: 11px;
   }
 }
+
+/* Start dialog: normal match or best-of series, and goals per game. */
+.start-options {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0 4px;
+}
+.start-options .eyebrow {
+  display: block;
+  margin-bottom: 6px;
+}
+.start-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.start-chips button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1.5px solid #d9dbe4;
+  border-radius: 999px;
+  background: #fff;
+  color: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.start-chips button.selected {
+  border-color: var(--brand-primary, #1da099);
+  background: var(--brand-primary, #1da099);
+  color: #fff;
+}

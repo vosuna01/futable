@@ -9,6 +9,7 @@ import {
   Plus,
   Radio,
   Target,
+  Trophy,
   Undo2,
   UserPlus,
   Volume2,
@@ -30,6 +31,8 @@ import {
   liveError,
   posts,
   queuePairs,
+  seriesToWin,
+  winsSeries,
   type LiveState,
 } from "../domain/live";
 import type { Player, Position, Snapshot, Team } from "../domain/types";
@@ -127,6 +130,10 @@ export function LiveTablet({
     key: number;
     team: Team;
     player: string | null;
+    /** Goals in a row by the same scorer (x2, x3…). */
+    streak: number;
+    /** That team's goals in this match, this one included. */
+    teamGoals: number;
   } | null>(null);
   const seen = useRef<{ match: string; count: number } | null>(null);
   const matchKey = session && state ? `${session.id}:${state.round}` : "";
@@ -137,9 +144,17 @@ export function LiveTablet({
     // First reading, another match or a goal taken back: nothing to celebrate.
     if (!before || before.match !== matchKey || count <= before.count) return;
     const goal = log[count - 1];
-    setCheer({ key: Date.now(), team: goal.team, player: goal.player });
+    const streak = goalStreak(log);
+    const teamGoals = log.filter((g) => g.team === goal.team).length;
+    setCheer({
+      key: Date.now(),
+      team: goal.team,
+      player: goal.player,
+      streak,
+      teamGoals,
+    });
     // The winning goal gets the end-of-match sound instead.
-    if (!finished) playGoal();
+    if (!finished) playGoal(cheerLevel(streak, teamGoals));
   }, [matchKey, log.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // End of match: a whistle and a victory chord, once each time a team reaches
@@ -149,8 +164,10 @@ export function LiveTablet({
     const before = ended.current;
     ended.current = { match: matchKey, finished };
     if (before && before.match === matchKey && !before.finished && finished)
-      playFinal();
-  }, [matchKey, finished]);
+      playFinal(
+        !!state && state.goals[finished === "red" ? "blue" : "red"] === 0,
+      );
+  }, [matchKey, finished]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sound: browsers only allow it after a tap, so the first touch unlocks it.
   const [sound, setSound] = useState(soundEnabled);
@@ -173,7 +190,11 @@ export function LiveTablet({
   };
   useEffect(() => {
     if (!cheer) return;
-    const timer = setTimeout(() => setCheer(null), 2600);
+    // Bigger celebrations last a little longer.
+    const timer = setTimeout(
+      () => setCheer(null),
+      2600 + 500 * (cheerLevel(cheer.streak, cheer.teamGoals) - 1),
+    );
     return () => clearTimeout(timer);
   }, [cheer]);
 
@@ -312,6 +333,16 @@ export function LiveTablet({
           >
             <Target size={20} /> A {target} goles
           </button>
+        )}
+        {state?.series && (
+          <span
+            className="tablet-series"
+            aria-label={`Serie al mejor de ${state.series.best_of}: Madrid ${state.series.wins.red}, Barça ${state.series.wins.blue}`}
+          >
+            <Trophy size={18} /> Serie · Madrid <b>{state.series.wins.red}</b>–
+            <b>{state.series.wins.blue}</b> Barça · al mejor de{" "}
+            {state.series.best_of}
+          </span>
         )}
         <span className={`connection ${online ? "" : "offline"}`}>
           <i />
@@ -505,6 +536,28 @@ export function LiveTablet({
             </main>
           ) : (
             <div className="tablet-empty">
+              {state.last_series && (
+                <p className="tablet-last-series">
+                  🏆 {teamNames[state.last_series.winner]} gana la serie{" "}
+                  {state.last_series.wins[state.last_series.winner]}–
+                  {
+                    state.last_series.wins[
+                      state.last_series.winner === "red" ? "blue" : "red"
+                    ]
+                  }{" "}
+                  ·{" "}
+                  {posts
+                    .map(
+                      (p) =>
+                        named(
+                          state.last_series!.court[state.last_series!.winner][p]
+                            .id,
+                        )?.name,
+                    )
+                    .filter(Boolean)
+                    .join(" y ")}
+                </p>
+              )}
               <h1>
                 {state.queue.length >= 4
                   ? "Ya sois cuatro."
@@ -708,6 +761,8 @@ export function LiveTablet({
           key={cheer.key}
           team={cheer.team}
           player={cheer.player ? named(cheer.player) : undefined}
+          streak={cheer.streak}
+          teamGoals={cheer.teamGoals}
         />
       )}
       {finished && state?.court && !confirm && (
@@ -718,8 +773,27 @@ export function LiveTablet({
           aria-label="Fin de partida"
         >
           <div className="tablet-final-card">
-            <span className="tablet-final-kicker">FIN DE PARTIDA</span>
-            <h2>🏆 Gana {teamNames[finished]}</h2>
+            <span className="tablet-final-kicker">
+              {state.series
+                ? winsSeries(state, finished)
+                  ? "FIN DE LA SERIE"
+                  : `PARTIDA ${state.series.wins.blue + state.series.wins.red + 1} · AL MEJOR DE ${state.series.best_of}`
+                : "FIN DE PARTIDA"}
+            </span>
+            <h2>
+              🏆 Gana {teamNames[finished]}
+              {state.series && winsSeries(state, finished) && " la serie"}
+            </h2>
+            {state.series && (
+              <p className="tablet-final-series">
+                Serie: Madrid{" "}
+                <b>{state.series.wins.red + (finished === "red" ? 1 : 0)}</b> –{" "}
+                <b>{state.series.wins.blue + (finished === "blue" ? 1 : 0)}</b>{" "}
+                Barça
+                {!winsSeries(state, finished) &&
+                  ` · gana quien llegue a ${seriesToWin(state.series.best_of)}`}
+              </p>
+            )}
             <div className="tablet-final-faces">
               {posts.map((post) => {
                 const player = named(state.court![finished][post].id);
@@ -737,6 +811,17 @@ export function LiveTablet({
             <p className="tablet-final-score" aria-label="Resultado">
               Madrid <b>{state.goals.red}</b> · <b>{state.goals.blue}</b> Barça
             </p>
+            <LosersCorner
+              team={finished === "red" ? "blue" : "red"}
+              losers={posts.map((post) =>
+                named(
+                  state.court![finished === "red" ? "blue" : "red"][post].id,
+                ),
+              )}
+              scored={state.goals[finished === "red" ? "blue" : "red"]}
+              conceded={state.goals[finished]}
+              seed={matchKey}
+            />
             <div className="tablet-final-actions">
               <button
                 className="tablet-final-back"
@@ -760,8 +845,9 @@ export function LiveTablet({
               </button>
             </div>
             <p className="tablet-final-note">
-              «Volver atrás» quita el último gol, por si se pulsó dos veces o no
-              valía.
+              También se confirma pulsando en la mesa el botón de gol de
+              cualquier jugador del {teamNames[finished]}. «Volver atrás» quita
+              el último gol, por si se pulsó dos veces o no valía.
             </p>
           </div>
         </div>
@@ -802,9 +888,17 @@ export function LiveTablet({
           players={data.players}
           busy={busy}
           onClose={() => setStarting(false)}
-          onStart={(lineup) => {
+          target={target}
+          onStart={async (lineup, { bestOf, goals }) => {
             setStarting(false);
-            void run("start", { lineup }, "Partida en marcha.");
+            if (goals !== target) await run("target", { goals });
+            await run(
+              "start",
+              { lineup, ...(bestOf ? { series: { best_of: bestOf } } : {}) },
+              bestOf
+                ? `Serie al mejor de ${bestOf} en marcha.`
+                : "Partida en marcha.",
+            );
           }}
         />
       )}
@@ -856,25 +950,165 @@ export function LiveTablet({
   );
 }
 
-/** A short goal celebration with the scorer's face; it never blocks a tap. */
-function GoalCheer({ team, player }: { team: Team; player?: Player }) {
+/**
+ * Goals in a row by the latest scorer: the same player, or the same team when
+ * the goal has no scorer. 2 = doblete, 3 = hat-trick…
+ */
+function goalStreak(log: { team: Team; player: string | null }[]) {
+  const last = log[log.length - 1];
+  if (!last) return 0;
+  let streak = 1;
+  for (let i = log.length - 2; i >= 0; i--) {
+    const g = log[i];
+    const same = last.player
+      ? g.player === last.player
+      : !g.player && g.team === last.team;
+    if (!same) break;
+    streak++;
+  }
+  return streak;
+}
+
+/** 1 to 4: how wild the celebration gets (streak first, then the team's goals). */
+function cheerLevel(streak: number, teamGoals: number) {
+  const byGoals = teamGoals >= 5 ? 3 : teamGoals >= 3 ? 2 : 1;
+  return Math.min(4, Math.max(streak, byGoals));
+}
+
+const streakTitles = [
+  "¡GOOOL!",
+  "¡GOOOL!",
+  "¡DOBLETE!",
+  "¡HAT-TRICK!",
+  "¡IMPARABLE!",
+];
+const cheerEmojis = ["⚽", "🔥", "💥", "🚀", "🐐"];
+
+/** A goal celebration with the scorer's face; it never blocks a tap. */
+function GoalCheer({
+  team,
+  player,
+  streak = 1,
+  teamGoals = 1,
+}: {
+  team: Team;
+  player?: Player;
+  streak?: number;
+  teamGoals?: number;
+}) {
+  const level = cheerLevel(streak, teamGoals);
+  const title = streakTitles[Math.min(streak, streakTitles.length - 1)];
+  const pieces = 12 * level;
   return (
-    <div className={`tablet-cheer ${team}`} role="status" aria-live="polite">
+    <div
+      className={`tablet-cheer ${team} lvl-${level}`}
+      role="status"
+      aria-live="polite"
+    >
       <div className="tablet-cheer-burst" aria-hidden="true">
-        {Array.from({ length: 12 }, (_, i) => (
-          <i key={i} style={{ "--i": i } as CSSProperties} />
+        {Array.from({ length: pieces }, (_, i) => (
+          <i
+            key={i}
+            style={
+              { "--i": i, "--a": `${(360 / pieces) * i}deg` } as CSSProperties
+            }
+          />
         ))}
       </div>
+      {level > 1 && (
+        <div className="tablet-cheer-rain" aria-hidden="true">
+          {Array.from({ length: 6 * level }, (_, i) => (
+            <span
+              key={i}
+              style={
+                {
+                  "--x": `${(i * 37) % 100}%`,
+                  "--d": `${((i * 13) % 90) / 100}s`,
+                } as CSSProperties
+              }
+            >
+              {cheerEmojis[(i + level) % cheerEmojis.length]}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="tablet-cheer-face">
         <Avatar
           player={player || { name: teamNames[team], avatar_url: null }}
           size="large"
         />
+        {streak > 1 && (
+          <b className="tablet-cheer-multi" aria-label={`${streak} seguidos`}>
+            x{streak}
+          </b>
+        )}
       </div>
-      <strong className="tablet-cheer-title">¡GOOOL!</strong>
+      <strong className="tablet-cheer-title">{title}</strong>
       <span className="tablet-cheer-name">
         {player ? player.name : `Gol del ${teamNames[team]}`}
+        {teamGoals > 1 && (
+          <small className="tablet-cheer-count">
+            {" "}
+            · {teamGoals}º del {teamNames[team]}
+          </small>
+        )}
       </span>
+    </div>
+  );
+}
+
+const taunts = [
+  "A la cola, campeones 🪑",
+  "Pagáis la ronda ☕",
+  "Os han pintado la cara 🎨",
+  "Volved cuando sepáis jugar 🍼",
+  "Eso no ha sido un partido, ha sido un paseo 🚶",
+  "Mañana más (o no) 🙃",
+];
+
+/** The losers, in grey and in tears, with a taunt. 0 goals = ¡ZAPATERO! */
+function LosersCorner({
+  team,
+  losers,
+  scored,
+  conceded,
+  seed,
+}: {
+  team: Team;
+  losers: (Player | undefined)[];
+  scored: number;
+  conceded: number;
+  seed: string;
+}) {
+  // Same taunt for the whole end screen of a match (no flicker on re-render).
+  let h = 0;
+  for (const c of seed) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const shutout = scored === 0 && conceded > 0;
+  return (
+    <div
+      className={`tablet-losers ${team}`}
+      aria-label={`Pierde ${teamNames[team]}`}
+    >
+      {shutout && <span className="tablet-zapatero">¡ZAPATERO!</span>}
+      <div className="tablet-losers-faces">
+        {losers.map((player, i) => (
+          <figure key={i}>
+            <Avatar
+              player={player || { name: "?", avatar_url: null }}
+              size="small"
+            />
+            <span className="tablet-tear" aria-hidden="true">
+              😭
+            </span>
+            <figcaption>{player?.name || "?"}</figcaption>
+          </figure>
+        ))}
+      </div>
+      <p className="tablet-taunt">
+        {shutout
+          ? `El ${teamNames[team]} se va sin marcar: ¡por debajo de la mesa! 🐢`
+          : taunts[h % taunts.length]}
+      </p>
     </div>
   );
 }

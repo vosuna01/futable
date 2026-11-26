@@ -82,6 +82,8 @@ test("búsqueda sin tildes, resultados vacíos y navegación de rankings por tec
 }) => {
   await demo(page);
   await nav(page, /^(Rankings|Clasificaciones)$/);
+  // La clasificación principal es la de MMR; el buscador está en «General».
+  await page.getByRole("tab", { name: "General", exact: true }).click();
   await page.getByLabel("Buscar en ranking").fill("ALVARO");
   await expect(page.locator(".ranking-table .player-name")).toHaveCount(1);
   await expect(page.locator(".ranking-table")).toContainText("Álvaro Martín");

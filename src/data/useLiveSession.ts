@@ -13,6 +13,7 @@ import {
   scoreGoal,
   setPost,
   setTarget,
+  seriesResult,
   startCourt,
 } from "../domain/live";
 import type { MatchInput, Position, Snapshot, Team } from "../domain/types";
@@ -34,6 +35,8 @@ export interface LiveFields {
   expected_revision?: number;
   /** `target`: goals to win for the rest of the session (migration 010). */
   goals?: number;
+  /** `start`: play a best-of series with the same four (migration 017). */
+  series?: { best_of: number };
 }
 /** Actions that only exist once migration 008 is applied. */
 const needs008 = new Set(["prefer"]);
@@ -187,7 +190,11 @@ export function useLiveSession({
       next.last_before = null;
     }
     if (action === "start")
-      next.state = startCourt(before.state, fields.lineup!);
+      next.state = startCourt(
+        before.state,
+        fields.lineup!,
+        fields.series?.best_of,
+      );
     if (action === "assign")
       next.state = assignPosts(
         before.state,
@@ -222,7 +229,9 @@ export function useLiveSession({
       next.state = setPost(before.state, fields.player!, fields.post ?? null);
     if (action === "result") {
       const board = boardScore(before.state, fields.winner!);
-      next.state = rotate(before.state, fields.winner!, Math.random());
+      next.state = before.state.series
+        ? seriesResult(before.state, fields.winner!)
+        : rotate(before.state, fields.winner!, Math.random());
       next.last_before = before.state;
       next.last_match = crypto.randomUUID();
       demoMatch(

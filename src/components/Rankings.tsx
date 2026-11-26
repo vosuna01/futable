@@ -15,7 +15,8 @@ import type { MmrState } from "../domain/mmr";
 import { rankablePlayers } from "../domain/standings-players";
 import type { Penalty } from "../domain/mmr-penalty";
 import { MmrRanking } from "./MmrRanking";
-const MMR_TAB = "MMR (beta)";
+/** Clasificación principal: la primera pestaña y la que se abre al entrar. */
+const MMR_TAB = "MMR";
 export function RankTable({
   rows,
   onPlayer,
@@ -142,9 +143,11 @@ export function Rankings({
   /** Todas las temporadas, para las cifras de la pestaña MMR. */
   mmrMatches?: Match[];
 }) {
-  const [tab, setTab] = useState("General"),
+  // Sin elegir pestaña, se abre la de MMR (si está activo); si no, General.
+  const [chosen, setTab] = useState<string | null>(null),
     [sort, setSort] = useState("raw"),
     [query, setQuery] = useState("");
+  const tab = chosen ?? (mmr ? MMR_TAB : "General");
   // Keep scoreboard accounts and inactive players out of standings only.
   const players = rankablePlayers(allPlayers);
   const rankedIds = new Set(players.map((p) => p.id));
@@ -242,13 +245,13 @@ export function Rankings({
         }}
       >
         {[
+          ...(mmr ? [MMR_TAB] : []),
           "General",
           "Defensas",
           "Delanteros",
           "Completos",
           "Parejas",
           "Estadísticas",
-          ...(mmr ? [MMR_TAB] : []),
         ].map((t) => (
           <button
             role="tab"
@@ -268,6 +271,7 @@ export function Rankings({
           onPlayer={onPlayer}
           matches={mmrMatches}
           penalties={mmrPenalties}
+          general={ranking(players, matches, rules)}
         />
       ) : tab === "Estadísticas" ? (
         <>

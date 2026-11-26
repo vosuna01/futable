@@ -24,6 +24,8 @@ import {
   playedBy,
   posts,
   proposedLineup,
+  SERIES_LENGTHS,
+  seriesToWin,
   sides,
   type Waiting,
 } from "../domain/live";
@@ -304,6 +306,14 @@ export function LiveMatch({
               <Target size={16} />
               Partidas a{" "}
               <b>{state?.target ?? activeSeason?.target ?? 3} goles</b>
+              {state?.series && (
+                <>
+                  {" "}
+                  · Serie Madrid <b>{state.series.wins.red}</b>–
+                  <b>{state.series.wins.blue}</b> Barça (al mejor de{" "}
+                  {state.series.best_of})
+                </>
+              )}
             </span>
             <button
               className="text-button"
@@ -584,7 +594,16 @@ export function LiveMatch({
           players={data.players}
           busy={busy}
           onClose={() => setStarting(false)}
-          onStart={(lineup) => void run("start", { lineup })}
+          target={state?.target ?? activeSeason?.target ?? 3}
+          onStart={async (lineup, { bestOf, goals }) => {
+            // Goals first (a session setting), then the start itself.
+            if (goals !== (state?.target ?? activeSeason?.target ?? 3))
+              await run("target", { goals });
+            await run("start", {
+              lineup,
+              ...(bestOf ? { series: { best_of: bestOf } } : {}),
+            });
+          }}
         />
       )}
 
@@ -701,19 +720,32 @@ const lineupRandom = () =>
     ? () => 0
     : Math.random;
 
+/** How the next match is played: normal (winner stays) or a best-of series. */
+export interface StartOptions {
+  /** 3, 5 or 7 for «al mejor de N»; null = normal match with the queue. */
+  bestOf: number | null;
+  /** Goals to win each game (the session's setting, migration 010). */
+  goals: number;
+}
+
 export function StartEditor({
   queue,
   players,
   busy,
   onClose,
   onStart,
+  target = 3,
 }: {
   queue: Waiting[];
   players: Player[];
   busy: boolean;
   onClose: () => void;
-  onStart: (lineup: Lineup) => void;
+  onStart: (lineup: Lineup, options: StartOptions) => void;
+  /** Goals to win right now, preselected. */
+  target?: number;
 }) {
+  const [bestOf, setBestOf] = useState<number | null>(null);
+  const [goals, setGoals] = useState(target);
   // The first four waiting are split into random pairs, with the posts they
   // agreed while waiting; tapping two posts swaps whoever stands in them.
   const [slots, setSlots] = useState<string[]>(() => {
@@ -737,10 +769,32 @@ export function StartEditor({
     setPicked(null);
   };
   const ready = new Set(slots).size === 4 && slots.every(Boolean);
+  const reshuffle = () => {
+    const proposed = proposedLineup(queue, lineupRandom());
+    setSlots([
+      proposed.red.defender,
+      proposed.red.forward,
+      proposed.blue.defender,
+      proposed.blue.forward,
+    ]);
+    setPicked(null);
+  };
+  const goalChoices = Array.from(new Set([3, 5, 7, 10, target])).sort(
+    (a, b) => a - b,
+  );
   return (
     <Modal title="Empezar partida" onClose={onClose}>
       <p className="rule-note">
-        Propuesta por orden de llegada. Toca dos puestos para intercambiarlos.
+        Parejas al azar entre los cuatro primeros de la cola. Toca dos puestos
+        para intercambiarlos.{" "}
+        <button
+          type="button"
+          className="text-button"
+          disabled={busy}
+          onClick={reshuffle}
+        >
+          Sortear otra vez
+        </button>
       </p>
       <div className="live-pitch">
         {shown.map((team) => (
@@ -765,6 +819,47 @@ export function StartEditor({
           </div>
         ))}
       </div>
+      <div className="start-options">
+        <div role="group" aria-label="Modo de juego">
+          <span className="eyebrow">Modo</span>
+          <div className="start-chips">
+            {[null, ...SERIES_LENGTHS].map((n) => (
+              <button
+                key={n ?? "normal"}
+                type="button"
+                className={bestOf === n ? "selected" : ""}
+                aria-pressed={bestOf === n}
+                disabled={busy}
+                onClick={() => setBestOf(n)}
+              >
+                {n ? `Al mejor de ${n}` : "Normal"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div role="group" aria-label="Goles por partida">
+          <span className="eyebrow">Goles por partida</span>
+          <div className="start-chips">
+            {goalChoices.map((n) => (
+              <button
+                key={n}
+                type="button"
+                className={goals === n ? "selected" : ""}
+                aria-pressed={goals === n}
+                disabled={busy}
+                onClick={() => setGoals(n)}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="rule-note">
+          {bestOf
+            ? `Juegan estos cuatro hasta que una pareja gane ${seriesToWin(bestOf)} partidas, a ${goals} goles cada una. Cada partida cuenta en la clasificación; al acabar, los cuatro vuelven a la cola.`
+            : `Partida a ${goals} goles. El ganador se queda y los perdedores vuelven a la cola.`}
+        </p>
+      </div>
       <div className="modal-actions">
         <button className="text-button" onClick={onClose}>
           Cancelar
@@ -773,13 +868,16 @@ export function StartEditor({
           className="primary"
           disabled={!ready || busy}
           onClick={() =>
-            onStart({
-              red: { defender: slots[0], forward: slots[1] },
-              blue: { defender: slots[2], forward: slots[3] },
-            })
+            onStart(
+              {
+                red: { defender: slots[0], forward: slots[1] },
+                blue: { defender: slots[2], forward: slots[3] },
+              },
+              { bestOf, goals },
+            )
           }
         >
-          Empezar
+          {bestOf ? `Empezar serie (al mejor de ${bestOf})` : "Empezar"}
         </button>
       </div>
     </Modal>

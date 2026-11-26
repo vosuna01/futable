@@ -36,6 +36,31 @@ export interface LiveState {
   /** Matches each player has played this session, kept across leaving the queue. */
   played: Record<string, number>;
   queue: Waiting[];
+  /** Best-of series in play (migration 017): the same four until a pair wins it. */
+  series?: Series;
+  /** The series that just ended, for the screens; cleared by the next start. */
+  last_series?: SeriesResult;
+}
+/** «Al mejor de N»: games won by each pair so far. */
+export interface Series {
+  best_of: number;
+  wins: Record<Team, number>;
+}
+export interface SeriesResult extends Series {
+  winner: Team;
+  court: { blue: Side; red: Side };
+  round: number;
+}
+/** Series lengths the server accepts. */
+export const SERIES_LENGTHS = [3, 5, 7] as const;
+/** Games needed to win a best-of-N series. */
+export const seriesToWin = (bestOf: number) => Math.floor(bestOf / 2) + 1;
+/** True when this result would win the series in play. */
+export function winsSeries(state: LiveState, winner: Team) {
+  return (
+    !!state.series &&
+    state.series.wins[winner] + 1 >= seriesToWin(state.series.best_of)
+  );
 }
 export interface LiveSession {
   id: string;
@@ -331,8 +356,20 @@ export function rotate(
     queue: queue.slice(2),
   };
 }
-/** Builds the opening court from four players already waiting in the queue. */
-export function startCourt(state: LiveState, lineup: Lineup): LiveState {
+/**
+ * Builds the opening court from four players already waiting in the queue.
+ * With `bestOf` (3, 5 or 7) it opens a series: the same four play every game.
+ */
+export function startCourt(
+  state: LiveState,
+  lineup: Lineup,
+  bestOf?: number,
+): LiveState {
+  if (
+    bestOf !== undefined &&
+    !(SERIES_LENGTHS as readonly number[]).includes(bestOf)
+  )
+    throw new Error("Serie inválida: al mejor de 3, 5 o 7");
   if (state.court) throw new Error("Ya hay una partida en juego.");
   const picked = sides.flatMap((team) => posts.map((p) => lineup[team][p]));
   if (picked.some((id) => !id) || new Set(picked).size !== 4)
@@ -363,12 +400,57 @@ export function startCourt(state: LiveState, lineup: Lineup): LiveState {
       forward: { id: lineup.red.forward, waited: waitOf(lineup.red.forward) },
     },
   };
+  // A new start always forgets the previous series, as the server does.
+  const { series: _old, last_series: _shown, ...rest } = state;
+  void _old;
+  void _shown;
   return {
-    ...state,
+    ...rest,
     court,
     goals: noGoals(),
     goal_log: [],
     queue: state.queue.filter((w) => !picked.includes(w.id)),
+    ...(bestOf ? { series: { best_of: bestOf, wins: noGoals() } } : {}),
+  };
+}
+
+/**
+ * Result of one game of a series (migration 017): the same four stay on, the
+ * board resets and, once a pair reaches best_of/2+1 wins, the series ends and
+ * the four go back to the queue with an empty court.
+ */
+export function seriesResult(state: LiveState, winner: Team): LiveState {
+  if (!state.court || !state.series)
+    throw new Error("No hay ninguna serie en juego.");
+  const loser: Team = winner === "blue" ? "red" : "blue";
+  const round = state.round + 1;
+  const played = { ...state.played };
+  for (const id of courtIds(state)) played[id] = (played[id] ?? 0) + 1;
+  const wins = {
+    ...state.series.wins,
+    [winner]: state.series.wins[winner] + 1,
+  };
+  const base = { ...state, round, goals: noGoals(), goal_log: [], played };
+  if (wins[winner] < seriesToWin(state.series.best_of))
+    return { ...base, series: { ...state.series, wins } };
+  const back = (team: Team) =>
+    posts.map((post) => ({ id: state.court![team][post].id, since: round }));
+  const { series: _done, ...rest } = base;
+  void _done;
+  return {
+    ...rest,
+    court: null,
+    last_series: {
+      best_of: state.series.best_of,
+      wins,
+      winner,
+      court: state.court,
+      round,
+    },
+    queue: prioritise(
+      [...state.queue, ...back(winner), ...back(loser)],
+      played,
+    ),
   };
 }
 /** Swaps the two posts of one side; used right after a rotation. */

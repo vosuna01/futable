@@ -85,7 +85,11 @@ function tone(
 
 /** Band-passed noise swell: a short "crowd" roar. */
 function roar(c: AudioContext, out: AudioNode, start: number, length: number) {
-  const buffer = c.createBuffer(1, Math.floor(c.sampleRate * length), c.sampleRate);
+  const buffer = c.createBuffer(
+    1,
+    Math.floor(c.sampleRate * length),
+    c.sampleRate,
+  );
   const data = buffer.getChannelData(0);
   for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
   const noise = c.createBufferSource();
@@ -104,7 +108,12 @@ function roar(c: AudioContext, out: AudioNode, start: number, length: number) {
 }
 
 /** Referee-style whistle blast with a little trill. */
-function whistle(c: AudioContext, out: AudioNode, start: number, length: number) {
+function whistle(
+  c: AudioContext,
+  out: AudioNode,
+  start: number,
+  length: number,
+) {
   const osc = c.createOscillator();
   const trill = c.createOscillator();
   const depth = c.createGain();
@@ -125,8 +134,11 @@ function whistle(c: AudioContext, out: AudioNode, start: number, length: number)
   trill.stop(start + length + 0.02);
 }
 
-/** Goal: quick rising fanfare over a crowd roar (~1.3 s). */
-export function playGoal() {
+/**
+ * Goal: quick rising fanfare over a crowd roar. `level` 1–4 (doblete,
+ * hat-trick…) adds notes, a longer roar and a final trill.
+ */
+export function playGoal(level = 1) {
   announce("goal");
   const c = ready();
   if (!c) return;
@@ -135,19 +147,77 @@ export function playGoal() {
     out.gain.value = 0.9;
     out.connect(c.destination);
     const t = c.currentTime + 0.02;
-    roar(c, out, t, 1.3);
-    [523.25, 659.25, 783.99].forEach((f, i) =>
+    const lvl = Math.max(1, Math.min(4, level));
+    roar(c, out, t, 1.3 + 0.5 * (lvl - 1));
+    // Each level climbs one note higher before the top chord.
+    const scale = [523.25, 659.25, 783.99, 880, 987.77, 1174.66];
+    const steps = scale.slice(0, 2 + lvl);
+    steps.forEach((f, i) =>
       tone(c, out, f, t + i * 0.09, 0.16, "square", 0.12),
     );
-    tone(c, out, 1046.5, t + 0.27, 0.55, "square", 0.14);
-    tone(c, out, 1318.5, t + 0.27, 0.55, "triangle", 0.1);
+    const top = t + steps.length * 0.09;
+    tone(c, out, 1046.5, top, 0.55, "square", 0.14);
+    tone(c, out, 1318.5, top, 0.55, "triangle", 0.1);
+    if (lvl >= 3)
+      for (let i = 0; i < 6; i++)
+        tone(
+          c,
+          out,
+          i % 2 ? 1568 : 1318.5,
+          top + 0.6 + i * 0.07,
+          0.08,
+          "square",
+          0.08,
+        );
   } catch {
     // Sound is a bonus: never break the scoreboard for it.
   }
 }
 
-/** End of match: three whistle blasts and a victory chord (~2.6 s). */
-export function playFinal() {
+/** Descending "wah wah wah wahhh" for whoever lost. */
+function sadTrombone(
+  c: AudioContext,
+  out: AudioNode,
+  start: number,
+  long: boolean,
+) {
+  const notes = [311.13, 293.66, 277.18, 261.63];
+  notes.forEach((f, i) => {
+    const last = i === notes.length - 1;
+    const at = start + i * 0.42;
+    const length = last ? (long ? 1.4 : 0.9) : 0.36;
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(f, at);
+    if (last) {
+      // The final note wobbles, like a real trombone slide.
+      const wob = c.createOscillator();
+      const depth = c.createGain();
+      wob.frequency.value = 6;
+      depth.gain.value = 6;
+      wob.connect(depth).connect(osc.frequency);
+      wob.start(at);
+      wob.stop(at + length + 0.02);
+    }
+    const soft = c.createBiquadFilter();
+    soft.type = "lowpass";
+    soft.frequency.value = 1200;
+    gain.gain.setValueAtTime(0.0001, at);
+    gain.gain.exponentialRampToValueAtTime(0.12, at + 0.04);
+    gain.gain.setValueAtTime(0.12, at + length - 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + length);
+    osc.connect(soft).connect(gain).connect(out);
+    osc.start(at);
+    osc.stop(at + length + 0.02);
+  });
+}
+
+/**
+ * End of match: three whistle blasts, a victory chord and a sad trombone for
+ * the losers (~4.5 s). `shutout` = the losers did not score: longer trombone.
+ */
+export function playFinal(shutout = false) {
   announce("final");
   const c = ready();
   if (!c) return;
@@ -164,6 +234,7 @@ export function playFinal() {
       tone(c, out, f, chord, 1.2, "triangle", 0.12),
     );
     roar(c, out, chord, 1.2);
+    sadTrombone(c, out, chord + 1.4, shutout);
   } catch {
     // Sound is a bonus: never break the scoreboard for it.
   }

@@ -342,3 +342,84 @@ test("suena al marcar un gol y otra vez al terminar la partida, y se puede silen
     page.getByRole("button", { name: "Activar sonidos" }),
   ).toBeVisible();
 });
+
+test("celebra el doblete con x2 y humilla al perdedor que no marca (zapatero)", async ({
+  page,
+}) => {
+  await openTablet(page);
+  await page.getByRole("button", { name: "Empezar partida" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Empezar", exact: true })
+    .click();
+  await page.getByRole("button", { name: /Partidas a \d+ goles/ }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "3", exact: true })
+    .click();
+  const cheer = page.locator(".tablet-cheer");
+  await page.getByLabel(`Gol de ${names[0]}`, { exact: true }).click();
+  await expect(cheer).toContainText("¡GOOOL!");
+  await expect(cheer.locator(".tablet-cheer-multi")).toHaveCount(0);
+  // The same scorer again: doblete with an x2 badge.
+  await page.getByLabel(`Gol de ${names[0]}`, { exact: true }).click();
+  await expect(cheer).toContainText("¡DOBLETE!");
+  await expect(cheer.locator(".tablet-cheer-multi")).toHaveText("x2");
+  // Third in a row wins 3-0: the end screen mocks the losers.
+  await page.getByLabel(`Gol de ${names[0]}`, { exact: true }).click();
+  const end = page.getByRole("dialog", { name: "Fin de partida" });
+  const losers = end.getByLabel("Pierde Barça");
+  await expect(losers).toContainText("¡ZAPATERO!");
+  await expect(losers).toContainText("por debajo de la mesa");
+  await expect(end).toContainText("botón de gol");
+});
+
+test("juega una serie al mejor de 3 con los mismos cuatro y celebra al ganador", async ({
+  page,
+}) => {
+  await openTablet(page);
+  await page.getByRole("button", { name: "Empezar partida" }).click();
+  const start = page.getByRole("dialog");
+  await start.getByRole("button", { name: "Al mejor de 3" }).click();
+  await start
+    .getByRole("group", { name: "Goles por partida" })
+    .getByRole("button", { name: "3", exact: true })
+    .click();
+  await start
+    .getByRole("button", { name: "Empezar serie (al mejor de 3)" })
+    .click();
+  await expect(page.locator(".tablet-series")).toContainText(
+    "Madrid 0–0 Barça",
+  );
+  const end = page.getByRole("dialog", { name: "Fin de partida" });
+  for (let game = 1; game <= 2; game++) {
+    for (let i = 0; i < 3; i++)
+      await page.getByLabel(`Gol de ${names[0]}`, { exact: true }).click();
+    if (game === 1) {
+      await expect(end).toContainText("PARTIDA 1 · AL MEJOR DE 3");
+      await expect(end).toContainText("gana quien llegue a 2");
+    } else {
+      await expect(end).toContainText("FIN DE LA SERIE");
+      await expect(end).toContainText("Gana Madrid la serie");
+    }
+    await end.getByRole("button", { name: "Confirmar" }).click();
+    await expect(end).not.toBeVisible();
+    if (game === 1) {
+      // Same four on court, board back to zero.
+      await expect(page.locator(".tablet-series")).toContainText(
+        "Madrid 1–0 Barça",
+      );
+      await expect(
+        page.getByLabel(`Gol de ${names[0]}`, { exact: true }),
+      ).toBeVisible();
+      await expect(page.getByLabel("Goles Madrid")).toHaveText("0");
+    }
+  }
+  // Series over: the four are back in the queue and the winners are shown.
+  await expect(page.locator(".tablet-last-series")).toContainText(
+    "Madrid gana la serie 2–0",
+  );
+  await expect(
+    page.getByRole("button", { name: "Empezar partida" }),
+  ).toBeEnabled();
+});
