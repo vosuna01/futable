@@ -2,6 +2,10 @@
 
 Activada el 31 de octubre de 2026 con Supabase PostgreSQL, Auth y Realtime.
 
+Actualización del 27 de noviembre de 2026: publicadas Liga Mediodía, Copa Afterwork, estreno de temporada, vestuario y celebraciones (`c8023e4`). Aplicadas en producción, después de la 017, las migraciones `20261127131231_competitions_mmr_reset.sql` y `20261127132615_character_shop.sql`. Activación administrativa explícita tras un ensayo revertido y la publicación en Pages: T1 cerrada con 416 partidas válidas congeladas y nueve premios publicados según sus reglas originales; T2 activa, todos en 1000 MMR y cero partidas nuevas. Se conservaron los 425 registros de la liga (incluidas anulaciones) y los saldos antiguos. Sin sesiones ni mercados pendientes al activar.
+
+Los 12 personajes están en `character_assets` de Supabase y solo pueden leerlos miembros autenticados; no se publicaron imágenes personales en GitHub. La tienda contiene seis accesorios, con compras comprobadas en servidor e inventario persistente. Ver [reglas y operación de T2](TEMPORADA-2.md). Comprobados en producción los permisos de lectura, el catálogo y el MMR. Verificación local: 245 pruebas de dominio/PostgreSQL, 22 escenarios móvil/escritorio, 16 de autenticación y cuatro de hosting/PWA; compilación y publicación Pages correctas. El cierre no se repite: la RPC comprueba la activación previa y la huella de resultados.
+
 Actualización del 5 de noviembre de 2026: migración 005 aplicada y sesión continua de rey de la pista activada. Cola compartida de parejas, victoria con un toque, marcador opcional real (goles nulos), rotación atómica y deshacer con anulación y restauración de cola. Sin revancha automática. Consulta [la guía de uso](REY-DE-LA-PISTA.md).
 
 Verificación de esta actualización: TypeScript, 64 pruebas de dominio/PostgreSQL y 24 pruebas de navegador en móvil/escritorio. RPC online comprobada en transacción revertida: rotación, idempotencia, victoria sin marcador, deshacer, pausa sin rivales y cierre. Las 58 partidas existentes se conservaron y no quedaron sesiones ni datos de prueba nuevos.
