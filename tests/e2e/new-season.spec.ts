@@ -19,6 +19,9 @@ async function setup(page: Page) {
   data.seasons = [next, old];
   data.league.competitions_enabled = true;
   data.players[0].account_id = user;
+  for (const p of data.players.slice(0, 3))
+    p.avatar_url =
+      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="32" height="32"%3E%3Crect width="32" height="32" fill="%231da099"/%3E%3C/svg%3E';
   data.loadouts = {};
   let seen = false,
     balance = 100;
@@ -151,6 +154,12 @@ test("first opening shows recap, explains reset and remembers dismissal", async 
   await dialog.getByLabel("Escena siguiente").click();
   await expect(dialog).toContainText("de 1000.");
   await dialog.getByLabel("Escena siguiente").click();
+  await expect(
+    dialog.getByRole("button", {
+      name: `Ver personaje de ${state.data.players[0].name}`,
+    }),
+  ).toBeVisible();
+  await dialog.getByLabel("Escena siguiente").click();
   await dialog
     .getByRole("button", { name: "Entrar en la nueva temporada" })
     .click();
@@ -160,6 +169,93 @@ test("first opening shows recap, explains reset and remembers dismissal", async 
   await expect(
     page.getByRole("button", { name: /Ver cierre e intro/ }),
   ).toBeVisible();
+  await expect(dialog).not.toBeVisible();
+});
+
+test("wardrobe filters, collection and slots keep a coherent preview", async ({
+  page,
+}) => {
+  await setup(page);
+  await page.goto("/");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Saltar", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Club", exact: true })
+    .filter({ visible: true })
+    .first()
+    .click();
+  await page.getByRole("button", { name: /Vestuario · Personalizar/ }).click();
+  await page.getByRole("button", { name: /Mi colección/ }).click();
+  await expect(page.locator(".wardrobe-empty")).toContainText(
+    "Tu colección empieza aquí",
+  );
+  await page.getByRole("button", { name: /Explorar la tienda/ }).click();
+  await expect(page.locator(".shop-item")).toHaveCount(6);
+  await page.getByRole("button", { name: "Cabeza", exact: true }).click();
+  await expect(page.locator(".shop-item")).toHaveCount(2);
+  await page
+    .locator(".shop-item")
+    .filter({ hasText: "Gorra ABLE" })
+    .getByRole("button", { name: "Probar", exact: true })
+    .click();
+  await page
+    .locator(".shop-item")
+    .filter({ hasText: "Corona del Rey" })
+    .getByRole("button", { name: "Probar", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Quitar Corona del Rey", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Quitar Gorra ABLE", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.locator(".shop-item").filter({ hasText: "Corona del Rey" }),
+  ).toContainText("Te faltan 50 coins");
+  await page.getByRole("button", { name: "Ampliar personaje" }).click();
+  await expect(page.getByRole("dialog")).toContainText("Vista previa");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Cerrar", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Volver a mi conjunto", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Quitar Corona del Rey", exact: true }),
+  ).toHaveCount(0);
+});
+
+test("reduced motion keeps every scene visible and allows choosing a player", async ({
+  page,
+}) => {
+  const state = await setup(page);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const dialog = page.getByRole("dialog");
+  await expect(
+    dialog.getByRole("button", { name: "Animar", exact: true }),
+  ).toBeVisible();
+  await dialog.getByRole("button", { name: "Ir a escena 2: El podio" }).click();
+  await expect(dialog.locator(".premiere-scene")).toHaveCSS("opacity", "1");
+  await expect(dialog.locator(".premiere-plinth")).toBeVisible();
+  await dialog
+    .getByRole("button", { name: "Ir a escena 5: El equipo" })
+    .click();
+  await dialog
+    .getByRole("button", {
+      name: `Ver personaje de ${state.data.players[1].name}`,
+    })
+    .click();
+  await expect(dialog.locator(".premiere-cast-name")).toContainText(
+    state.data.players[1].name,
+  );
+  expect(await dialog.evaluate((el) => el.scrollWidth <= innerWidth)).toBe(
+    true,
+  );
+  await dialog.getByRole("button", { name: "Saltar", exact: true }).click();
   await expect(dialog).not.toBeVisible();
 });
 test("shop previews, confirms purchase and equips without reducing coins score", async ({

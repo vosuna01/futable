@@ -16,6 +16,8 @@ Cada competición tiene su propio bolsillo de coins, sin transferencias. Los sal
 
 La tienda vende seis accesorios: Gafas Pro (40), Gol Estelar (60), Gorra ABLE (80), Aura ABLE (100), Base de Oro (120) y Corona del Rey (150). Permite probar, confirmar la compra y guardar el conjunto. Solo se gasta un bolsillo activo; la compra es única y el inventario se conserva entre temporadas. Uno por categoría: cabeza, cara, efecto y base. Ningún accesorio mejora el MMR.
 
+El vestuario dispone de probador fijo, vista ampliada, poses normal/gol/victoria, filtros por categoría y colección personal. Los cuatro huecos del conjunto permiten quitar piezas y volver al conjunto guardado. Los accesorios se muestran con su propio encuadre y la compra confirma el bolsillo y saldo restante; si faltan coins se indica cuánto. La vista previa se conserva después de comprar.
+
 Para que comprar no penalice el premio «Ludópata», su puntuación es saldo disponible más coins gastadas en accesorios. Las apuestas sí afectan a esa puntuación. El servidor comprueba precios, saldo, propiedad e identificadores de operación para evitar cobros duplicados.
 
 La Liga entrega podio por MMR, premios de posición y pareja, Bota de Oro, Guante de Oro y Ludópata. Bota/Guante se normalizan a partidos equivalentes de 3 goles (3 × goles / suma de objetivos), con 10 partidas válidas y 3 días. Bota necesita autoría completa de goles; Guante solo cuenta exposición como defensa con marcador conocido. La Copa publica sus campeones de final y Ludópata de Copa.
@@ -23,6 +25,8 @@ La Liga entrega podio por MMR, premios de posición y pareja, Bota de Oro, Guant
 ## Estreno y personajes
 
 La primera apertura autenticada tras el cierre muestra estadísticas de T1, podio oficial, referencia del MMR anterior, resultados personales y presentación del reinicio y de los jugadores. Se puede pausar, avanzar, saltar y repetir. Sonido opcional y respeto a movimiento reducido. El visto se guarda por cuenta y temporada; un fallo al guardarlo permite volver a verlo.
+
+La versión 2 de la intro usa seis escenas a pantalla completa: balance de la liga, podio, resumen personal, reinicio del MMR, presentación del equipo y novedades. Tiene progreso y salto directo de escena; pausar conserva el tiempo transcurrido. La presentación permite elegir cualquier jugador. Se registra como versión 2 para que quienes vieron la primera intro puedan ver la nueva una vez. Las expresiones faciales se mezclan suavemente y los accesorios acompañan el movimiento del cuerpo.
 
 Los 12 personajes existentes mantienen las piernas juntas, expresiones faciales y movimiento corporal. Las celebraciones distinguen goles totales del goleador y rachas consecutivas, y desaparecen al deshacer. Los accesorios aparecen en ficha, intro y celebraciones.
 

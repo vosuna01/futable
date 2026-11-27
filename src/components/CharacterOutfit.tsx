@@ -2,14 +2,16 @@ import { useId } from "react";
 import type { Player } from "../domain/types";
 import { PlayerCharacter } from "./PlayerCharacter";
 import type { CharacterMood } from "../domain/characters";
-export function AccessoryArt({ items }: { items: string[] }) {
+export function AccessoryArt({
+  items,
+  viewBox = "0 0 272 512",
+}: {
+  items: string[];
+  viewBox?: string;
+}) {
   const id = useId().replaceAll(":", "");
   return (
-    <svg
-      className="character-accessories"
-      viewBox="0 0 272 512"
-      aria-hidden="true"
-    >
+    <svg className="character-accessories" viewBox={viewBox} aria-hidden="true">
       <defs>
         <linearGradient id={id + "gold"} x1="0" y1="0" x2="1" y2="1">
           <stop stopColor="#fff2bd" />
@@ -120,9 +122,12 @@ export function CharacterOutfit({
   animate?: boolean;
 }) {
   return (
-    <span className="character-outfit">
-      <PlayerCharacter {...{ player, mood, animate }} />
-      <AccessoryArt items={items} />
+    <span className="character-outfit" data-mood={mood} data-animate={animate}>
+      {items.includes("gold-base") && <AccessoryArt items={["gold-base"]} />}
+      <span className="character-rig">
+        <PlayerCharacter {...{ player, mood, animate }} />
+        <AccessoryArt items={items.filter((id) => id !== "gold-base")} />
+      </span>
     </span>
   );
 }

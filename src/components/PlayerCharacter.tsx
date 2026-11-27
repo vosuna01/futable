@@ -81,6 +81,9 @@ function CharacterCanvas({
       previous = 0,
       elapsed = 0,
       lastDraw = -100,
+      expression = -1,
+      fromExpression = 0,
+      expressionAt = 0,
       onScreen = true,
       image: HTMLImageElement | undefined;
     const media = matchMedia("(prefers-reduced-motion: reduce)");
@@ -101,11 +104,14 @@ function CharacterCanvas({
         ),
         cw = image.naturalWidth / 3,
         ch = image.naturalHeight / 2,
-        sx = (frame % 3) * cw,
-        sy = Math.floor(frame / 3) * ch,
         s = cw / 512,
         head = asset.head,
         moves = animate && !media.matches;
+      if (expression !== frame) {
+        fromExpression = expression < 0 ? frame : expression;
+        expression = frame;
+        expressionAt = elapsed;
+      }
       ctx.clearRect(0, 0, 272, 512);
       ctx.save();
       ctx.translate(
@@ -129,17 +135,27 @@ function CharacterCanvas({
       ctx.translate(136, head);
       ctx.rotate(moves ? Math.sin(elapsed / 340) * 0.018 : 0);
       ctx.translate(-136, -head);
-      ctx.drawImage(
-        image,
-        sx + 120 * s,
-        sy,
-        272 * s,
-        (head + 4) * s,
-        0,
-        0,
-        272,
-        head + 4,
-      );
+      const drawHead = (cell: number) =>
+        ctx.drawImage(
+          image!,
+          (cell % 3) * cw + 120 * s,
+          Math.floor(cell / 3) * ch,
+          272 * s,
+          (head + 4) * s,
+          0,
+          0,
+          272,
+          head + 4,
+        );
+      // Keep the silhouette opaque while expressions blend, including quick blinks.
+      const blend = moves
+        ? Math.min(1, (elapsed - expressionAt) / (frame === 1 ? 65 : 120))
+        : 1;
+      if (blend < 1 && fromExpression !== expression) {
+        drawHead(fromExpression);
+        ctx.globalAlpha = blend;
+      }
+      drawHead(expression);
       ctx.restore();
       ctx.restore();
     };
