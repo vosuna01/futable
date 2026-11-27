@@ -38,6 +38,8 @@ export interface MmrHistoryRow {
   mmr_despues: number;
 }
 export interface MmrState {
+  includeUnplayed?: boolean;
+  eligibility?: Record<string, boolean>;
   player_mmr: Record<string, PlayerMmr>;
   mmr_history: MmrHistoryRow[];
   mode: "A" | "B";

@@ -1,0 +1,67 @@
+.player-character {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  isolation: isolate;
+}
+.profile-character {
+  display: block;
+  width: 85px;
+  height: 155px;
+  flex-shrink: 0;
+  margin-block: -15px;
+}
+.character-studio {
+  text-align: center;
+}
+.character-studio-stage {
+  height: min(42svh, 310px);
+  padding: 10px;
+  background: radial-gradient(ellipse at 50% 80%, #8ce5c549, transparent 65%);
+  border-radius: 20px;
+}
+.character-studio > strong {
+  display: block;
+  margin-top: 12px;
+  font-size: 23px;
+}
+.character-studio > p {
+  font-size: 12px;
+  color: var(--muted, #52655f);
+}
+.character-studio-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+.character-studio-actions button {
+  min-height: 44px;
+}
+.player-character canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 9px #0004);
+}
+.character-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.player-character.fallback .avatar,
+.character-placeholder .avatar {
+  width: min(100%, 110px);
+  height: auto;
+  aspect-ratio: 1;
+  box-shadow: 0 0 0 4px #fff2;
+}

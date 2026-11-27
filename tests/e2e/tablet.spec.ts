@@ -364,7 +364,7 @@ test("celebra el doblete con x2 y humilla al perdedor que no marca (zapatero)", 
   // The same scorer again: doblete with an x2 badge.
   await page.getByLabel(`Gol de ${names[0]}`, { exact: true }).click();
   await expect(cheer).toContainText("¡DOBLETE!");
-  await expect(cheer.locator(".tablet-cheer-multi")).toHaveText("x2");
+  await expect(cheer.locator(".tablet-cheer-multi")).toHaveText("x2 seguidos");
   // Third in a row wins 3-0: the end screen mocks the losers.
   await page.getByLabel(`Gol de ${names[0]}`, { exact: true }).click();
   const end = page.getByRole("dialog", { name: "Fin de partida" });

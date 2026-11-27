@@ -11,6 +11,8 @@ export interface Player {
   active: boolean;
 }
 export interface Rules {
+  minimum_days?: number;
+  rating_epoch?: string | null;
   minimum: number;
   prior_wins: number;
   prior_games: number;
@@ -18,6 +20,15 @@ export interface Rules {
   target: number;
 }
 export interface Season extends Rules {
+  competition_kind?: "league" | "cup";
+  parent_season_id?: string | null;
+  cup_result?: {
+    winner: Team;
+    players: string[];
+    match_id: string;
+    series_id?: string | null;
+    wins: Record<Team, number>;
+  } | null;
   id: string;
   league_id: string;
   name: string;
@@ -32,6 +43,11 @@ export interface Participant {
   position: Position;
 }
 export interface Match {
+  goal_target?: number | null;
+  live_session_id?: string | null;
+  series_id?: string | null;
+  series_decider?: boolean;
+  is_cup_final?: boolean;
   id: string;
   league_id: string;
   season_id: string;
@@ -74,7 +90,8 @@ export interface Audit {
   after_data: unknown;
 }
 export interface Snapshot {
-  league: { id: string; name: string };
+  loadouts?: Record<string, string[]>;
+  league: { id: string; name: string; competitions_enabled?: boolean };
   players: Player[];
   seasons: Season[];
   matches: Match[];

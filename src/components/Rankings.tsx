@@ -22,11 +22,13 @@ export function RankTable({
   onPlayer,
   compact = false,
   positions,
+  minimumDays,
 }: {
   rows: Stats[];
   onPlayer: (id: string) => void;
   compact?: boolean;
   positions?: Map<string, number>;
+  minimumDays?: number;
 }) {
   if (!rows.length) return <Empty />;
   const qualified = rows.filter((r) => r.qualified),
@@ -115,7 +117,11 @@ export function RankTable({
         <>
           <div className="provisional-label">
             <span>EN CLASIFICACIÓN</span>
-            <small>Menos de {RANK_GAMES} partidas jugadas</small>
+            <small>
+              {minimumDays
+                ? `Necesitas ${minimumDays} días distintos`
+                : `Menos de ${RANK_GAMES} partidas jugadas`}
+            </small>
           </div>
           {render(provisional, true)}
         </>
@@ -417,6 +423,7 @@ export function Rankings({
                 rows={sorted}
                 onPlayer={onPlayer}
                 positions={positions}
+                minimumDays={rules.minimum_days}
               />
             )}
           </div>

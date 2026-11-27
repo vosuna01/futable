@@ -1,6 +1,7 @@
 import type { Match, Season, Snapshot, Team } from "./types";
 import type { LiveSession } from "./live";
 import { pairRanking, ranking } from "./rankings";
+import { competitionAwards } from "./competition-awards";
 export interface CoinSettings {
   enabled: boolean;
   initial: number;
@@ -8,6 +9,7 @@ export interface CoinSettings {
   max_stake: number;
 }
 export interface Wallet {
+  score?: number;
   id: string;
   player_id: string;
   balance: number;
@@ -94,6 +96,8 @@ export function awardSuggestions(
         : { ...match, scorers: source?.scorers };
     }) ?? seasonMatches;
   const rules = frozen?.rules ?? season;
+  if (rules.rating_epoch)
+    return competitionAwards(data, { ...season, ...rules }, matches, standings);
   const overall = ranking(data.players, matches, rules);
   const general = overall.filter((r) => r.qualified);
   const result: Award[] = general.slice(0, 3).map((r, i) => ({
@@ -165,7 +169,11 @@ export function awardSuggestions(
     result.push({
       title: coinChampionTitle,
       players: standings
-        .filter((w) => w.balance === standings[0].balance)
+        .filter(
+          (w) =>
+            (w.score ?? w.balance) ===
+            (standings[0].score ?? standings[0].balance),
+        )
         .map((w) => w.player_id),
     });
   return result;

@@ -7,7 +7,8 @@ import {
   type TeamPreview,
 } from "../domain/mmr";
 import type { LiveState } from "../domain/live";
-import type { Snapshot, Team } from "../domain/types";
+import type { Snapshot, Team, Season } from "../domain/types";
+import { competitionMmr } from "../domain/competitions";
 import "../mmr.css";
 
 /**
@@ -17,15 +18,18 @@ import "../mmr.css";
 export function useLiveMmr(
   data: Snapshot,
   court: LiveState["court"] | undefined,
+  season?: Season,
 ): Record<Team, TeamPreview> | null {
   const mmr = useMemo(() => {
     if (!MMR_ENABLED) return null;
     try {
-      return recalculateMMR(data.players, data.matches);
+      return season?.rating_epoch
+        ? competitionMmr(data, season)
+        : recalculateMMR(data.players, data.matches);
     } catch {
       return null;
     }
-  }, [data.players, data.matches]);
+  }, [data.players, data.matches, season?.id]);
   const ids = court
     ? [
         court.blue.defender.id,

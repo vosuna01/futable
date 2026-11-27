@@ -45,10 +45,19 @@ export function sessionWindow(
 export function sessionMatches(
   session: Pick<
     LiveSession,
-    "created_at" | "updated_at" | "status" | "season_id"
+    | "created_at"
+    | "updated_at"
+    | "status"
+    | "season_id"
+    | "context_version"
+    | "id"
   >,
   matches: Match[],
 ): Match[] {
+  if (session.context_version === 2)
+    return matches.filter(
+      (m) => m.status === "valid" && m.live_session_id === session.id,
+    );
   const { from, to } = sessionWindow(session);
   if (!from) return [];
   return matches.filter(

@@ -20,6 +20,7 @@ const reasons: Record<string, string> = {
   win: "Premio por victoria · ajuste",
   stake: "Apuesta registrada",
   payout: "Premio de apuesta · ajuste",
+  shop: "Compra de accesorio",
   refund: "Devolución · ajuste",
 };
 export function CoinMarketPanel({
@@ -332,12 +333,14 @@ function SettingsForm({
   );
 }
 export function CoinsClub({
+  onShop,
   coins,
   data,
   online,
   demo,
 }: {
   coins: CoinsController;
+  onShop?: () => void;
   data: Snapshot;
   online: boolean;
   demo: boolean;
@@ -369,6 +372,11 @@ export function CoinsClub({
         <h1>
           Club FutABLE<span>La pista se gana. La historia se guarda.</span>
         </h1>
+        {onShop && (
+          <button className="secondary" onClick={onShop}>
+            Vestuario · Personalizar con coins ↗
+          </button>
+        )}
         <div className="coin-tabs">
           <button
             aria-pressed={tab === "coins"}
@@ -456,7 +464,7 @@ export function CoinsClub({
                         {w.name}
                         {w.player_id === s.player_id && <small> Tú</small>}
                       </strong>
-                      <b>{amounts.format(w.balance)}</b>
+                      <b>{amounts.format(w.score ?? w.balance)}</b>
                     </li>
                   ))}
                 </ol>

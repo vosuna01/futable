@@ -33,7 +33,9 @@ export function mmrStandings(
       const data = mmr.player_mmr[player.id];
       if (
         !data ||
-        (data.partidos_contados === 0 && data.mmr_source !== "winrate")
+        (!mmr.includeUnplayed &&
+          data.partidos_contados === 0 &&
+          data.mmr_source !== "winrate")
       )
         return [];
       const penalty = penalties?.get(player.id) ?? null;
@@ -51,7 +53,13 @@ export function mmrStandings(
     })
     .sort(
       (a, b) =>
-        b.shown - a.shown || a.player.name.localeCompare(b.player.name, "es"),
+        Number(mmr.eligibility?.[b.player.id] ?? true) -
+          Number(mmr.eligibility?.[a.player.id] ?? true) ||
+        b.shown - a.shown ||
+        a.player.name.localeCompare(b.player.name, "es"),
     )
-    .map((row, i) => ({ ...row, position: i + 1 }));
+    .map((row, i) => ({
+      ...row,
+      position: mmr.eligibility?.[row.player.id] === false ? 0 : i + 1,
+    }));
 }

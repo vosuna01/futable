@@ -40,6 +40,7 @@ import { SessionStats } from "./SessionStats";
 import type { MmrState } from "../domain/mmr";
 import type { Penalty } from "../domain/mmr-penalty";
 
+import { ratingMatches } from "../domain/competitions";
 const postNames = { defender: "Defensa", forward: "Delantero" } as const;
 /** Madrid on the left and Barça on the right, as on the score form. */
 const shown = ["red", "blue"] as const;
@@ -110,7 +111,10 @@ export function LiveMatch({
   const lock = useRef(false),
     attempt = useRef<{ key: string; id: string } | null>(null);
   const named = (id: string) => data.players.find((p) => p.id === id);
-  const activeSeason = data.seasons.find((s) => s.status === "active");
+  const activeSeason =
+    data.seasons.find((s) => s.id === session?.season_id) ??
+    data.seasons.find((s) => s.status === "active");
+  const cup = activeSeason?.competition_kind === "cup";
   const sameSeason = !session || session.season_id === activeSeason?.id;
   const onCourt = state?.court
     ? sides.flatMap((t) => posts.map((p) => state.court![t][p].id))
@@ -126,12 +130,17 @@ export function LiveMatch({
   // Any member of the league may close the day (migration 011); matches stay.
   const canClose = !!session;
   const invalid = state ? liveError(state, data.players) : null;
-  const mmrAtStake = useLiveMmr(data, state?.court);
+  const mmrAtStake = useLiveMmr(data, state?.court, activeSeason);
 
   const odds = useMemo(
     () =>
       state?.court && activeSeason
-        ? liveForecast(state, data.players, data.matches, activeSeason)
+        ? liveForecast(
+            state,
+            data.players,
+            ratingMatches(data, activeSeason, true),
+            activeSeason,
+          )
         : null,
     [state, data.players, data.matches, activeSeason],
   );
@@ -245,6 +254,15 @@ export function LiveMatch({
         </p>
       )}
 
+      {activeSeason?.rating_epoch && (
+        <p className="competition-context">
+          {cup ? activeSeason.name : "Liga Mediodía"} ·{" "}
+          {cup
+            ? "Los resultados no cambian el MMR de Liga"
+            : "MMR de Liga · inicio en 1000"}
+          {state?.cup_final ? " · FINAL DE COPA" : ""}
+        </p>
+      )}
       {live.loading ? (
         <p>Buscando una sesión abierta…</p>
       ) : !session ? (
@@ -592,16 +610,19 @@ export function LiveMatch({
         <StartEditor
           queue={state.queue}
           players={data.players}
+          competition={activeSeason}
+          canFinal={data.role === "admin"}
           busy={busy}
           onClose={() => setStarting(false)}
           target={state?.target ?? activeSeason?.target ?? 3}
-          onStart={async (lineup, { bestOf, goals }) => {
+          onStart={async (lineup, { bestOf, goals, isFinal }) => {
             // Goals first (a session setting), then the start itself.
             if (goals !== (state?.target ?? activeSeason?.target ?? 3))
               await run("target", { goals });
             await run("start", {
               lineup,
               ...(bestOf ? { series: { best_of: bestOf } } : {}),
+              ...(isFinal ? { is_final: true } : {}),
             });
           }}
         />
@@ -726,6 +747,7 @@ export interface StartOptions {
   bestOf: number | null;
   /** Goals to win each game (the session's setting, migration 010). */
   goals: number;
+  isFinal?: boolean;
 }
 
 export function StartEditor({
@@ -735,6 +757,8 @@ export function StartEditor({
   onClose,
   onStart,
   target = 3,
+  competition,
+  canFinal = false,
 }: {
   queue: Waiting[];
   players: Player[];
@@ -743,7 +767,12 @@ export function StartEditor({
   onStart: (lineup: Lineup, options: StartOptions) => void;
   /** Goals to win right now, preselected. */
   target?: number;
+  competition?: import("../domain/types").Season;
+  canFinal?: boolean;
 }) {
+  const [isFinal, setIsFinal] = useState(false);
+  const tennisAllowed =
+    !competition?.rating_epoch || competition.competition_kind === "cup";
   const [bestOf, setBestOf] = useState<number | null>(null);
   const [goals, setGoals] = useState(target);
   // The first four waiting are split into random pairs, with the posts they
@@ -779,7 +808,7 @@ export function StartEditor({
     ]);
     setPicked(null);
   };
-  const goalChoices = Array.from(new Set([3, 5, 7, 10, target])).sort(
+  const goalChoices = Array.from(new Set([2, 3, 4, 5, 6, 7, 10, target])).sort(
     (a, b) => a - b,
   );
   return (
@@ -796,6 +825,16 @@ export function StartEditor({
           Sortear otra vez
         </button>
       </p>
+      {competition?.competition_kind === "cup" && canFinal && (
+        <label className="competition-final-toggle">
+          <input
+            type="checkbox"
+            checked={isFinal}
+            onChange={(e) => setIsFinal(e.target.checked)}
+          />
+          Este encuentro es la final de Copa
+        </label>
+      )}
       <div className="live-pitch">
         {shown.map((team) => (
           <div key={team} className={`live-side ${team}`}>
@@ -819,11 +858,35 @@ export function StartEditor({
           </div>
         ))}
       </div>
+      {isFinal && (
+        <div className="competition-finalists">
+          {slots.map((id, index) => (
+            <label key={index}>
+              {index < 2 ? "Madrid" : "Barça"} ·{" "}
+              {index % 2 ? "Delantero" : "Defensa"}
+              <select
+                value={id}
+                onChange={(e) =>
+                  setSlots((s) =>
+                    s.map((p, i) => (i === index ? e.target.value : p)),
+                  )
+                }
+              >
+                {queue.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {named(p.id)?.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+        </div>
+      )}
       <div className="start-options">
         <div role="group" aria-label="Modo de juego">
           <span className="eyebrow">Modo</span>
           <div className="start-chips">
-            {[null, ...SERIES_LENGTHS].map((n) => (
+            {[null, ...(tennisAllowed ? SERIES_LENGTHS : [])].map((n) => (
               <button
                 key={n ?? "normal"}
                 type="button"
@@ -873,7 +936,7 @@ export function StartEditor({
                 red: { defender: slots[0], forward: slots[1] },
                 blue: { defender: slots[2], forward: slots[3] },
               },
-              { bestOf, goals },
+              { bestOf, goals, isFinal },
             )
           }
         >

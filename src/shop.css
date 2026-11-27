@@ -1,0 +1,261 @@
+.character-outfit {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  isolation: isolate;
+}
+.character-accessories {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.shop-layout {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+.shop-model {
+  position: sticky;
+  top: 90px;
+  text-align: center;
+  padding: 22px;
+}
+.shop-character {
+  width: 180px;
+  height: 339px;
+  margin: 0 auto 15px;
+  background: radial-gradient(ellipse at 50% 75%, #b0ca6230, transparent 65%);
+  border-radius: 18px;
+}
+.shop-model > h2 {
+  font-size: 20px;
+}
+.shop-model > small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin: 8px 0 18px;
+}
+.shop-wallet {
+  padding: 13px;
+  background: #1da0990d;
+  border: 1px solid #1da09930;
+  border-radius: 12px;
+}
+.shop-wallet > span {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+}
+.shop-wallet strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 28px;
+  color: var(--brand-dark);
+  margin-top: 7px;
+}
+.shop-wallet small {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+}
+.shop-model > p {
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin: 15px 0;
+}
+.shop-model > button {
+  width: 100%;
+  margin-top: 7px;
+  min-height: 44px;
+}
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.shop-item {
+  padding: 18px;
+  min-width: 0;
+}
+.shop-item.trying {
+  border-color: #1da099;
+}
+.shop-item-art {
+  height: 115px;
+  background: linear-gradient(140deg, #f0f6f3, #f1f0f7);
+  border-radius: 12px;
+  position: relative;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+.shop-item-art .character-accessories {
+  height: 260px;
+  width: 138px;
+  left: 50%;
+  translate: -50% 0;
+  top: 20px;
+}
+.shop-item[data-item="aura"] .shop-item-art svg {
+  top: -50px;
+}
+.shop-item[data-item="aura"] .shop-item-art svg {
+  height: 160px;
+  top: -20px;
+}
+.shop-item[data-item="spark"] .shop-item-art svg {
+  height: 200px;
+  top: -25px;
+}
+.shop-item[data-item="gold-base"] .shop-item-art svg {
+  top: -190px;
+}
+.shop-item h3 {
+  font-size: 14px;
+  margin: 8px 0;
+}
+.shop-item > p {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.7;
+  min-height: 36px;
+  margin-bottom: 12px;
+}
+.shop-item > strong {
+  display: block;
+  font-size: 12px;
+  color: var(--brand-primary-ink);
+  margin-bottom: 14px;
+}
+.shop-item > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.shop-item button {
+  font-size: 10px;
+  min-height: 42px;
+  padding: 10px 12px;
+}
+.shop-item .eyebrow {
+  font-size: 8px;
+}
+.shop-owned {
+  font-size: 10px;
+  color: #127b76;
+}
+.accessory-aura {
+  animation: accessory-glow 2.5s ease-in-out infinite alternate;
+}
+.accessory-spark {
+  animation: accessory-glow 1.5s ease-in-out infinite alternate;
+}
+@keyframes accessory-glow {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (max-width: 1100px) {
+  .shop-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .shop-layout {
+    grid-template-columns: 230px minmax(0, 1fr);
+  }
+}
+@media (max-width: 700px) {
+  .shop-layout {
+    display: block;
+  }
+  .shop-model {
+    position: relative;
+    top: 0;
+    margin-bottom: 18px;
+  }
+  .shop-character {
+    width: 140px;
+    height: 264px;
+  }
+  .shop-grid {
+    gap: 10px;
+  }
+  .shop-item {
+    padding: 13px;
+  }
+  .shop-item-art {
+    height: 95px;
+  }
+  .shop-item h3 {
+    font-size: 13px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .accessory-aura,
+  .accessory-spark {
+    animation: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .shop-model {
+    position: sticky;
+    top: 74px;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 7px 12px;
+    padding: 14px;
+    box-shadow: 0 8px 25px #21193c0d;
+  }
+  .shop-character {
+    grid-column: 1;
+    grid-row: 1/6;
+    width: 88px;
+    height: 166px;
+    margin: 0;
+    align-self: center;
+  }
+  .shop-model > h2 {
+    font-size: 15px;
+    grid-column: 2;
+  }
+  .shop-model > small,
+  .shop-model > p {
+    display: none;
+  }
+  .shop-wallet {
+    grid-column: 2;
+    padding: 7px;
+  }
+  .shop-wallet strong {
+    font-size: 21px;
+    margin-top: 4px;
+  }
+  .shop-model > button {
+    grid-column: 2;
+    margin: 0;
+    min-height: 34px;
+    padding: 7px;
+    font-size: 10px;
+  }
+  .shop-model > .text-button {
+    min-height: 27px;
+    padding: 4px;
+  }
+  .shop-item-art {
+    height: 95px;
+  }
+  .shop-item-art:has(.accessory-aura) {
+    overflow: hidden;
+  }
+}

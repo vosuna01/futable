@@ -1,0 +1,300 @@
+.modal:has(.season-premiere) {
+  width: min(920px, 96vw);
+  max-width: 920px;
+}
+.season-premiere {
+  background:
+    radial-gradient(ellipse at 75% 70%, #1da09933, transparent 65%), #21193c;
+  color: #fff9e9;
+  border-radius: 17px;
+  padding: 24px 30px;
+  min-height: 510px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.premiere-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #b0ca62;
+}
+.premiere-scene {
+  flex: 1;
+  animation: premiere-enter 0.6s both;
+  padding-top: 24px;
+}
+.modal .premiere-scene h2 {
+  color: #fff9e9;
+  font-size: clamp(32px, 5vw, 65px);
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+  margin: 0 0 20px;
+  font-weight: 900;
+}
+.modal .premiere-scene h2 em {
+  color: #96ead2;
+  font-style: italic;
+}
+.modal .premiere-scene p {
+  font-size: 12px;
+  color: #cbd8da;
+  line-height: 1.8;
+}
+.premiere-numbers {
+  display: flex;
+  gap: 35px;
+  justify-content: center;
+  margin: 35px 0;
+}
+.premiere-numbers b {
+  font-size: 42px;
+  color: #e8d58e;
+  line-height: 1.3;
+}
+.premiere-numbers small {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #d6e3df;
+  font-weight: 400;
+}
+.premiere-podium {
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  gap: 25px;
+}
+.premiere-podium article {
+  flex: 1;
+  max-width: 190px;
+  text-align: center;
+  position: relative;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e2cc84;
+}
+.premiere-podium article:nth-child(1) {
+  order: 2;
+}
+.premiere-podium article:nth-child(2) {
+  order: 1;
+}
+.premiere-podium article:nth-child(3) {
+  order: 3;
+}
+.premiere-podium article > span {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  color: #e8d58e;
+  font-weight: 900;
+}
+.premiere-podium article > div {
+  height: 180px;
+}
+.premiere-podium article:first-child > div {
+  height: 200px;
+}
+.premiere-podium b,
+.premiere-podium small {
+  display: block;
+}
+.premiere-podium b {
+  font-size: 14px;
+  margin-top: 10px;
+}
+.premiere-podium small {
+  font-size: 8px;
+  color: #cbd8da;
+  margin-top: 6px;
+}
+.premiere-scene .premiere-fine {
+  font-size: 9px;
+  text-align: center;
+  margin-top: 15px;
+}
+.premiere-personal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+}
+.premiere-personal > div:first-child {
+  height: 230px;
+  width: 122px;
+}
+.premiere-personal .premiere-numbers {
+  flex-wrap: wrap;
+  gap: 22px;
+  max-width: 300px;
+  text-align: center;
+}
+.premiere-cast {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 15px;
+}
+.premiere-cast article {
+  width: 28%;
+  max-width: 160px;
+  text-align: center;
+}
+.premiere-cast article > div {
+  height: 220px;
+}
+.premiere-cast b,
+.premiere-cast small {
+  display: block;
+}
+.premiere-cast b {
+  font-size: 13px;
+  margin-top: 10px;
+}
+.premiere-cast small {
+  color: #e8d58e;
+  font-size: 11px;
+  margin-top: 6px;
+}
+.premiere-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid #ffffff22;
+}
+.premiere-controls button {
+  border: 1px solid #ffffff44;
+  min-height: 40px;
+  border-radius: 7px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 10px;
+  background: #ffffff09;
+}
+.premiere-controls > span {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: #cbd8da;
+  margin-right: auto;
+}
+.premiere-scene ul {
+  padding-left: 18px;
+  color: #cbd8da;
+  font-size: 13px;
+  line-height: 2.3;
+  margin-bottom: 22px;
+}
+.premiere-scene > .text-button {
+  color: #cbd8da;
+  margin-left: 15px;
+}
+.premiere-replay {
+  font-size: 11px;
+  margin: 0 0 14px;
+}
+@keyframes premiere-enter {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 600px) {
+  .season-premiere {
+    padding: 20px 17px;
+    min-height: 520px;
+  }
+  .modal .premiere-scene h2 {
+    font-size: 39px;
+  }
+  .modal .premiere-scene p {
+    font-size: 11px;
+  }
+  .premiere-numbers {
+    gap: 20px;
+    margin-top: 30px;
+  }
+  .premiere-numbers b {
+    font-size: 32px;
+  }
+  .premiere-numbers small {
+    font-size: 8px;
+  }
+  .premiere-podium {
+    gap: 9px;
+  }
+  .premiere-podium article > div {
+    height: 150px;
+  }
+  .premiere-podium article:first-child > div {
+    height: 170px;
+  }
+  .premiere-podium b {
+    font-size: 11px;
+  }
+  .premiere-podium small {
+    font-size: 7px;
+  }
+  .premiere-podium article > span {
+    right: 4px;
+  }
+  .premiere-cast {
+    gap: 8px;
+  }
+  .premiere-cast article > div {
+    height: 175px;
+  }
+  .premiere-personal {
+    gap: 15px;
+  }
+  .premiere-personal .premiere-numbers {
+    max-width: 150px;
+    gap: 18px;
+  }
+  .premiere-personal > div:first-child {
+    height: 220px;
+    width: 117px;
+  }
+  .premiere-cast b {
+    font-size: 10px;
+  }
+  .premiere-controls {
+    gap: 5px;
+  }
+  .premiere-controls button {
+    padding: 8px;
+    font-size: 9px;
+  }
+  .premiere-controls > span {
+    width: 100%;
+  }
+  .premiere-scene ul {
+    font-size: 11px;
+    line-height: 2;
+  }
+  .premiere-scene > .text-button {
+    margin: 12px 0 0;
+    display: block;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .premiere-scene {
+    animation: none;
+  }
+}
+
+.modal .premiere-scene .premiere-fine {
+  color: #cbd8da;
+  font-size: 10px;
+  line-height: 1.7;
+}
+.modal .premiere-scene .premiere-fine + .premiere-fine {
+  color: #aebdbf;
+}

@@ -10,6 +10,7 @@ import {
   type CoinsSnapshot,
   type CoinMarket,
 } from "../domain/coins";
+import { ratingMatches } from "../domain/competitions";
 import { liveForecast } from "../domain/mmr-odds";
 const empty = (): CoinsSnapshot => ({
   settings: coinDefaults,
@@ -248,7 +249,7 @@ export function useCoins(
             const f = liveForecast(
               session.state,
               data.players,
-              data.matches,
+              ratingMatches(data, season, true),
               season,
             )!;
             return { red: f.red.decimal, blue: f.blue.decimal };

@@ -1,3 +1,5 @@
+import { mmrStandings } from "./domain/mmr-standings";
+import { rankablePlayers } from "./domain/standings-players";
 import { appUrl } from "./domain/app-url";
 import { useEffect, useState } from "react";
 import {
@@ -12,6 +14,7 @@ import {
   Plus,
   RefreshCw,
   Settings,
+  ShoppingBag,
   Shield,
   Swords,
   Trophy,
@@ -66,19 +69,31 @@ import {
 } from "./whats-new";
 import "./live.css";
 import "./tablet.css";
+import {
+  activeLeague,
+  contextFirst,
+  competitionMmr,
+  ratingMatches,
+} from "./domain/competitions";
+import { CompetitionPanel } from "./components/CompetitionPanel";
+import { SeasonPremiere } from "./components/SeasonPremiere";
+import { Shop } from "./components/Shop";
 const nav = [
   ["home", "Inicio", Home],
   ["rankings", "Clasificaciones", BarChart3],
   ["players", "Jugadores", Users],
   ["history", "Historial", Activity],
   ["club", "Club", Trophy],
+  ["shop", "Tienda", ShoppingBag],
 ] as const;
 export default function App() {
   const league = useLeague();
   const { data, demo, online, synced, live } = league;
   const liveUser = demo ? "demo" : league.session?.user.id || "";
+  const [seasonId, setSeasonId] = useState("");
+  const scopedData = contextFirst(data, seasonId);
   const liveMatch = useLiveSession({
-    data,
+    data: scopedData,
     demo,
     user: liveUser,
     refreshLeague: league.refresh,
@@ -86,7 +101,6 @@ export default function App() {
     demoVoid: league.demoVoid,
   });
   const [page, setPage] = useState("home"),
-    [seasonId, setSeasonId] = useState(""),
     [selected, setSelected] = useState<string | null>(null),
     [matchForm, setMatchForm] = useState(false),
     [edit, setEdit] = useState<Match | undefined>(),
@@ -107,7 +121,15 @@ export default function App() {
       new URLSearchParams(location.search).has("tablet"),
     ),
     [lastSession, setLastSession] = useState(false);
-  const coins = useCoins(data, liveMatch.session, demo, liveUser, seasonId);
+  const coins = useCoins(
+    scopedData,
+    liveMatch.session,
+    demo,
+    liveUser,
+    page === "live" || tablet
+      ? liveMatch.session?.season_id || seasonId
+      : seasonId,
+  );
   const openTablet = (on: boolean) => {
     setTablet(on);
     history.replaceState(null, "", on ? `${appUrl()}?tablet` : appUrl());
@@ -156,6 +178,12 @@ export default function App() {
     const timer = setTimeout(() => setNotice(""), 6500);
     return () => clearTimeout(timer);
   }, [notice]);
+  useEffect(() => {
+    if (data && activeLeague(data)?.rating_epoch) {
+      setWhatsNew(false);
+      markWhatsNewSeen();
+    }
+  }, [data?.league.id, data?.seasons]);
   const navigate = (p: string) => {
     setPage(p);
     setSelected(null);
@@ -215,14 +243,14 @@ export default function App() {
     return (
       <LiveTablet
         live={liveMatch}
-        data={data}
+        data={scopedData!}
         demo={demo}
         user={liveUser}
         online={online}
         onExit={() => openTablet(false)}
       />
     );
-  const active = data.seasons.find((s) => s.status === "active"),
+  const active = activeLeague(data),
     season =
       data.seasons.find((s) => s.id === seasonId) || active || data.seasons[0];
   const ownPlayer = demo
@@ -235,10 +263,12 @@ export default function App() {
     mmrPenalties: ReturnType<typeof regularityPenalties> | null = null;
   if (MMR_ENABLED)
     try {
-      mmr = recalculateMMR(data.players, data.matches);
+      mmr = data.league.competitions_enabled
+        ? competitionMmr(data, season, allTime)
+        : recalculateMMR(data.players, data.matches);
       logMmrMode(mmr);
       // Solo para el MMR mostrado: no recibe ni modifica `mmr`.
-      if (PENALTY_ENABLED)
+      if (PENALTY_ENABLED && !season?.rating_epoch)
         mmrPenalties = regularityPenalties(
           data.players,
           data.matches,
@@ -252,7 +282,14 @@ export default function App() {
       .sort(newestFirst),
     valid = matches.filter((m) => m.status === "valid"),
     rows = ranking(data.players, matches, rules),
-    competitive = rows.filter((r) => r.qualified),
+    competitive = rows
+      .filter((r) => r.qualified)
+      .sort((a, b) =>
+        season?.rating_epoch && mmr
+          ? (mmr.player_mmr[b.player.id]?.mmr ?? 1000) -
+            (mmr.player_mmr[a.player.id]?.mmr ?? 1000)
+          : 0,
+      ),
     defender = ranking(data.players, matches, rules, "defender").find(
       (r) => r.qualified,
     ),
@@ -523,6 +560,24 @@ export default function App() {
               }}
             />
           )}
+          {data.league.competitions_enabled && (
+            <CompetitionPanel
+              data={data}
+              selected={season}
+              session={liveMatch.session}
+              onSelect={setSeasonId}
+              refresh={league.refresh}
+              demo={demo}
+            />
+          )}
+          {data.league.competitions_enabled && !demo && (
+            <SeasonPremiere
+              data={data}
+              user={liveUser}
+              honours={coins.snapshot?.honours}
+              onShop={() => navigate("shop")}
+            />
+          )}
           <div className="season-selector">
             <span className="season-dot" />
             <select
@@ -532,6 +587,7 @@ export default function App() {
             >
               {data.seasons.map((s) => (
                 <option key={s.id} value={s.id}>
+                  {s.competition_kind === "cup" ? "🏆 " : ""}
                   {s.name}
                   {s.status === "closed" ? " · Cerrada" : ""}
                 </option>
@@ -574,7 +630,7 @@ export default function App() {
           {page === "live" && (
             <LiveMatch
               live={liveMatch}
-              data={data}
+              data={scopedData!}
               me={ownPlayer}
               user={liveUser}
               online={online}
@@ -590,8 +646,26 @@ export default function App() {
               }
             />
           )}
+          {page === "shop" && (
+            <Shop
+              me={ownPlayer}
+              data={data}
+              season={season}
+              demo={demo}
+              refreshCoins={async () => {
+                await coins.refresh();
+                await league.refresh();
+              }}
+            />
+          )}
           {page === "club" && (
-            <CoinsClub coins={coins} data={data} online={online} demo={demo} />
+            <CoinsClub
+              coins={coins}
+              data={data}
+              online={online}
+              demo={demo}
+              onShop={() => navigate("shop")}
+            />
           )}
           {page === "home" && (
             <>
@@ -690,8 +764,17 @@ export default function App() {
                       </span>
                       <div className="leader-stats">
                         <div>
-                          <strong>{pct(competitive[0].raw)}</strong>
-                          <small>% REAL</small>
+                          <strong>
+                            {season?.rating_epoch
+                              ? Math.round(
+                                  mmr?.player_mmr[competitive[0].player.id]
+                                    ?.mmr ?? 1000,
+                                )
+                              : pct(competitive[0].raw)}
+                          </strong>
+                          <small>
+                            {season?.rating_epoch ? "MMR DE LIGA" : "% REAL"}
+                          </small>
                         </div>
                         <div>
                           <strong>
@@ -711,7 +794,9 @@ export default function App() {
                     </>
                   ) : (
                     <Empty title="El liderato te espera">
-                      Se necesitan {RANK_GAMES} partidos para competir.
+                      {season?.rating_epoch
+                        ? `Juega en ${season.minimum_days ?? 3} días distintos para clasificarte.`
+                        : `Se necesitan ${RANK_GAMES} partidos para competir.`}
                     </Empty>
                   )}
                 </section>
@@ -796,13 +881,45 @@ export default function App() {
                   <div className="panel">
                     <div className="panel-subtitle">
                       <span className="chip gold-chip">GENERAL</span>
-                      <span>El porcentaje real decide.</span>
+                      <span>
+                        {season?.rating_epoch
+                          ? "El MMR decide; 3 días para clasificarte."
+                          : "El porcentaje real decide."}
+                      </span>
                     </div>
-                    <RankTable
-                      rows={rows.filter((x) => x.games > 0).slice(0, 5)}
-                      compact
-                      onPlayer={showPlayer}
-                    />
+                    {season?.rating_epoch && mmr ? (
+                      <ol className="home-mmr-list">
+                        {mmrStandings(mmr, rankablePlayers(data.players))
+                          .slice(0, 5)
+                          .map((r) => (
+                            <li key={r.player.id}>
+                              <button
+                                className="player-name"
+                                onClick={() => showPlayer(r.player.id)}
+                              >
+                                <Avatar player={r.player} size="small" />
+                                <span>
+                                  {r.player.name}
+                                  <small>
+                                    {r.position
+                                      ? `${r.position}º`
+                                      : "Provisional"}
+                                  </small>
+                                </span>
+                              </button>
+                              <strong>
+                                {Math.round(r.internal)} <small>MMR</small>
+                              </strong>
+                            </li>
+                          ))}
+                      </ol>
+                    ) : (
+                      <RankTable
+                        rows={rows.filter((x) => x.games > 0).slice(0, 5)}
+                        compact
+                        onPlayer={showPlayer}
+                      />
+                    )}
                     <button
                       className="leader-profile ranking-more"
                       onClick={() => navigate("rankings")}
@@ -844,7 +961,7 @@ export default function App() {
               onPlayer={showPlayer}
               mmr={mmr}
               mmrPenalties={mmrPenalties}
-              mmrMatches={data.matches}
+              mmrMatches={ratingMatches(data, season, allTime)}
             />
           )}
           {page === "players" && (
@@ -852,6 +969,7 @@ export default function App() {
               players={data.players}
               matches={matches}
               rules={rules}
+              loadouts={data.loadouts}
               selected={selected}
               onSelect={setSelected}
               onTrophyCase={setTrophyPlayerId}
@@ -890,18 +1008,20 @@ export default function App() {
         </main>
       </div>
       <nav className="bottom-nav">
-        {nav.map(([key, label, Icon], i) => (
-          <button
-            key={key}
-            className={page === key ? "active" : ""}
-            aria-current={page === key ? "page" : undefined}
-            onClick={() => navigate(key)}
-          >
-            {i === 2 && <span className="nav-gap" />}
-            <Icon size={21} />
-            <span>{i === 1 ? "Rankings" : label}</span>
-          </button>
-        ))}
+        {nav
+          .filter(([key]) => key !== "shop")
+          .map(([key, label, Icon], i) => (
+            <button
+              key={key}
+              className={page === key ? "active" : ""}
+              aria-current={page === key ? "page" : undefined}
+              onClick={() => navigate(key)}
+            >
+              {i === 2 && <span className="nav-gap" />}
+              <Icon size={21} />
+              <span>{i === 1 ? "Rankings" : label}</span>
+            </button>
+          ))}
         <button
           className={`mobile-add ${page === "live" ? "selected" : ""}`}
           onClick={() => navigate("live")}
@@ -1021,21 +1141,50 @@ export default function App() {
           title="El mérito está en cómo juegas"
           onClose={() => setHelp(false)}
         >
-          <p>
-            La clasificación ordena por porcentaje real de victorias y separa a
-            quien ya tiene muestra suficiente.
-          </p>
-          <div className="help-formula">Victorias ÷ Partidos × 100</div>
-          <p>
-            Arriba aparece quien lleva {RANK_GAMES} partidos o más; debajo, el
-            resto. Defensa y delantero cuentan solo las partidas en esa
-            posición. El jugador completo necesita {RANK_GAMES} en cada una.
-          </p>
-          <p>
-            Se desempata por partidos, victorias y nombre, sin redondear los
-            valores. Las parejas necesitan {rules.pair_minimum} partidas
-            conjuntas, con independencia de sus posiciones.
-          </p>
+          {season?.rating_epoch ? (
+            <>
+              <p>
+                La Liga se decide por MMR: todos empiezan en 1000, y cada
+                resultado suma o resta según el nivel del rival. Se necesitan 3
+                días distintos para tener puesto oficial, sin descuento por
+                volumen.
+              </p>
+              <div className="help-formula">
+                MMR nuevo = MMR anterior + K × (resultado − probabilidad)
+              </div>
+              <p>
+                K vale 40 en las primeras 10 partidas de cada jugador y 24
+                después. La Copa Afterwork tiene final y campeones propios;
+                admite tenis al mejor de 3, 5 o 7. El MMR general incluye Liga y
+                Copas para calcular las cuotas, pero la clasificación de Liga
+                solo cuenta Liga.
+              </p>
+              <p>
+                Las coins de cada competición van separadas. Las apuestas solo
+                están abiertas en el 0–0. En Club puedes ir al vestuario: probar
+                accesorios, comprarlos y guardar el conjunto. Son cosméticos y
+                se conservan entre temporadas.
+              </p>
+            </>
+          ) : (
+            <>
+              <p>
+                La clasificación ordena por porcentaje real de victorias y
+                separa a quien ya tiene muestra suficiente.
+              </p>
+              <div className="help-formula">Victorias ÷ Partidos × 100</div>
+              <p>
+                Arriba aparece quien lleva {RANK_GAMES} partidos o más; debajo,
+                el resto. Defensa y delantero cuentan solo las partidas en esa
+                posición. El jugador completo necesita {RANK_GAMES} en cada una.
+              </p>
+              <p>
+                Se desempata por partidos, victorias y nombre, sin redondear los
+                valores. Las parejas necesitan {rules.pair_minimum} partidas
+                conjuntas, con independencia de sus posiciones.
+              </p>
+            </>
+          )}
           <h3>Llévala en el móvil</h3>
           <p>
             El botón de ayuda de la cabecera explica cómo instalar FutABLE en

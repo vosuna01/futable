@@ -1,0 +1,145 @@
+.competition-panel {
+  padding: 17px 19px;
+  margin: 0 0 18px;
+  background: var(--panel, #f8fafc);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 14px;
+}
+.competition-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.competition-actions > strong {
+  font-size: 11px;
+  color: var(--brand-dark);
+  margin-right: 8px;
+}
+.competition-actions button {
+  font-size: 11px;
+  min-height: 42px;
+}
+.competition-panel > p,
+.competition-panel > small {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.7;
+  display: block;
+  margin-top: 12px;
+}
+.competition-panel details {
+  margin-top: 12px;
+  font-size: 11px;
+}
+.competition-panel summary {
+  cursor: pointer;
+  color: var(--brand-primary-ink);
+  min-height: 30px;
+  padding-top: 5px;
+}
+.competition-panel ol {
+  max-height: 220px;
+  overflow: auto;
+  padding: 10px 0 0;
+  list-style: none;
+}
+.competition-panel li {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 8px 4px;
+  border-top: 1px solid var(--line);
+}
+.competition-panel details p {
+  font-size: 10px;
+  line-height: 1.7;
+  margin: 8px 0;
+}
+.competition-winners {
+  padding: 14px;
+  background: #b0ca6222;
+  border-radius: 10px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 13px;
+  font-size: 12px;
+}
+.competition-context {
+  padding: 11px 17px;
+  border: 1px solid #b0ca6266;
+  border-radius: 10px;
+  background: #b0ca621c;
+  color: inherit;
+  font-size: 11px;
+  margin: 10px 0;
+  line-height: 1.6;
+}
+.competition-final-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin: 15px 0;
+}
+.competition-final-toggle input {
+  width: 19px;
+  height: 19px;
+  accent-color: #1da099;
+}
+.competition-finalists {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 15px 0;
+}
+.competition-finalists label {
+  font-size: 10px;
+}
+.competition-finalists select {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 7px;
+}
+@media (max-width: 600px) {
+  .competition-panel {
+    padding: 13px;
+  }
+  .competition-winners {
+    align-items: start;
+    flex-direction: column;
+  }
+  .competition-actions > strong {
+    width: 100%;
+  }
+}
+
+.home-mmr-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.home-mmr-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-top: 1px solid var(--line);
+}
+.home-mmr-list small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 400;
+}
+.home-mmr-list strong {
+  font-family: var(--font-mono);
+  text-align: right;
+  color: var(--brand-dark);
+}

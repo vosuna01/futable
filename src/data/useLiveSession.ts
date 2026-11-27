@@ -21,6 +21,7 @@ import { supabase } from "./supabase";
 import { lastDaySession } from "../domain/session-stats";
 
 export interface LiveFields {
+  is_final?: boolean;
   players?: string[];
   player?: string;
   lineup?: Lineup;
@@ -271,13 +272,15 @@ export function useLiveSession({
       throw new Error("Espera a que termine la operación anterior.");
     if (!navigator.onLine)
       throw new Error("Sin conexión. No se ha confirmado ningún resultado.");
+    const before = current.current;
     const season = data?.seasons.find((s) =>
       action === "close"
         ? s.id === current.current?.season_id
-        : s.status === "active",
+        : before?.season_id
+          ? s.id === before.season_id
+          : s.status === "active",
     );
     if (!data || !season) throw new Error("No hay temporada activa.");
-    const before = current.current;
     const requested = scope;
     locked.current = true;
     try {

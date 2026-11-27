@@ -175,6 +175,16 @@ export function useLeague() {
         },
         () => void refresh(),
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "character_loadouts",
+          filter: `league_id=eq.${data.league.id}`,
+        },
+        () => void refresh(),
+      )
       .subscribe((status) => {
         if (status !== "SUBSCRIBED") setLive(false);
         if (status === "SUBSCRIBED") void refresh();

@@ -22,6 +22,8 @@ export interface Side {
   forward: Slot;
 }
 export interface LiveState {
+  cup_final?: boolean;
+  series_id?: string;
   round: number;
   court: { blue: Side; red: Side } | null;
   /** Goals of the match being played; everyone watching sees the same board. */
@@ -63,6 +65,7 @@ export function winsSeries(state: LiveState, winner: Team) {
   );
 }
 export interface LiveSession {
+  context_version?: number;
   id: string;
   league_id: string;
   season_id: string;

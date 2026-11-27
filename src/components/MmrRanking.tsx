@@ -60,13 +60,17 @@ export function MmrRanking({
                   className={`mmr-row ${i === 0 ? "leader-row" : ""}`}
                 >
                   <span
-                    className={`rank-number ${i < 3 ? `medal-${i}` : ""}`}
-                    aria-label={`Posición ${position}`}
+                    className={`rank-number ${i >= 0 && i < 3 ? `medal-${i}` : ""}`}
+                    aria-label={
+                      position ? `Posición ${position}` : "Provisional"
+                    }
                   >
                     {i === 0 ? (
                       <Trophy size={16} />
-                    ) : (
+                    ) : position ? (
                       String(position).padStart(2, "0")
+                    ) : (
+                      "—"
                     )}
                   </span>
                   <button
@@ -78,6 +82,9 @@ export function MmrRanking({
                       <strong>{player.name}</strong>
                       {s && (
                         <small className="mmr-sub">
+                          {mmr.eligibility?.[player.id] === false
+                            ? "Provisional · "
+                            : ""}
                           {s.wins} V / {s.games} PJ · {pct(s.raw)} · ⚽{" "}
                           {s.goals}
                           {penalty && penalty.penalty > 0 && (
@@ -109,12 +116,15 @@ export function MmrRanking({
         <p>
           MMR (Elo por equipos), la clasificación principal: todos empiezan en
           1000 y cada partida suma o resta según lo esperado frente al rival (K
-          = 40 las 10 primeras partidas, 24 después). Se calcula con todas las
-          temporadas y no cambia el porcentaje. La columna «%» es el porcentaje
-          real de la temporada, con su puesto en la pestaña General y la
-          diferencia con el puesto por MMR (▲ sube en %, ▼ baja; «—» si aún no
-          llega al mínimo de partidas). Debajo de cada nombre: victorias /
-          partidos, % real, goles y, si la hay, la penalización por regularidad.
+          = 40 las 10 primeras partidas, 24 después).{" "}
+          {mmr.includeUnplayed
+            ? "En esta etapa parte de 1000; la Liga solo cuenta resultados de Liga. Necesitas 3 días distintos para clasificarte, sin descuento por volumen."
+            : "Se calcula con todas las temporadas anteriores y no cambia el porcentaje."}{" "}
+          La columna «%» es el porcentaje real de la temporada, con su puesto en
+          la pestaña General y la diferencia con el puesto por MMR (▲ sube en %,
+          ▼ baja; «—» si aún no llega al mínimo de partidas). Debajo de cada
+          nombre: victorias / partidos, % real, goles y, si la hay, la
+          penalización por regularidad.
           {penalties &&
             ` Regularidad: se piden ${PENALTY_CONFIG.minGamesPerWeek} partidas por semana en los últimos ${PENALTY_CONFIG.windowWeeks * 7} días; cada una que falta resta ${PENALTY_CONFIG.pointsPerMissingGame} puntos al MMR mostrado y desaparece al volver a jugar.`}
         </p>

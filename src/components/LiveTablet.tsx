@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeftRight,
   CheckCircle2,
@@ -42,6 +42,12 @@ import { StartEditor } from "./LiveMatch";
 import { PlayerPicker } from "./PlayerPicker";
 import { LiveMmrBadge, useLiveMmr } from "./LiveMmr";
 
+import { ratingMatches } from "../domain/competitions";
+import { goalCelebration } from "../domain/goal-celebration";
+import { characterFor } from "../domain/characters";
+import { preloadCharacter } from "./PlayerCharacter";
+import { CharacterOutfit } from "./CharacterOutfit";
+import { GoalCelebration } from "./GoalCelebration";
 const postNames = { defender: "Defensa", forward: "Delantero" } as const;
 const shortPost = { defender: "DEF", forward: "DEL" } as const;
 /** Madrid on the left and Barça on the right, as everywhere else. */
@@ -86,7 +92,10 @@ export function LiveTablet({
   const lock = useRef(false),
     attempt = useRef<{ key: string; id: string } | null>(null);
   const named = (id: string) => data.players.find((p) => p.id === id);
-  const activeSeason = data.seasons.find((s) => s.status === "active");
+  const activeSeason =
+    data.seasons.find((s) => s.id === session?.season_id) ??
+    data.seasons.find((s) => s.status === "active");
+  const cup = activeSeason?.competition_kind === "cup";
   const sameSeason = !session || session.season_id === activeSeason?.id;
   // Goals to win: the session's choice, else the season's rule.
   const target = state ? goalsToWin(state, activeSeason?.target ?? 3) : 3;
@@ -124,37 +133,37 @@ export function LiveTablet({
       : null;
   const log = state ? goalLog(state) : [];
 
+  const castKey = state?.court
+    ? Object.values(state.court)
+        .flatMap((side) => [side.defender.id, side.forward.id])
+        .join(":")
+    : "";
+  useEffect(() => {
+    for (const id of castKey.split(":")) {
+      const asset = characterFor({ id });
+      if (asset) void preloadCharacter(asset).catch(() => {});
+    }
+  }, [castKey]);
   // Every new goal, wherever it was scored (tablet, phone or the table's
   // buttons), gets a short celebration with the scorer's face.
-  const [cheer, setCheer] = useState<{
-    key: number;
-    team: Team;
-    player: string | null;
-    /** Goals in a row by the same scorer (x2, x3…). */
-    streak: number;
-    /** That team's goals in this match, this one included. */
-    teamGoals: number;
-  } | null>(null);
+  const [cheer, setCheer] = useState<
+    (NonNullable<ReturnType<typeof goalCelebration>> & { key: number }) | null
+  >(null);
+  const cheerSerial = useRef(0);
   const seen = useRef<{ match: string; count: number } | null>(null);
   const matchKey = session && state ? `${session.id}:${state.round}` : "";
   useEffect(() => {
     const count = log.length;
     const before = seen.current;
     seen.current = { match: matchKey, count };
-    // First reading, another match or a goal taken back: nothing to celebrate.
-    if (!before || before.match !== matchKey || count <= before.count) return;
-    const goal = log[count - 1];
-    const streak = goalStreak(log);
-    const teamGoals = log.filter((g) => g.team === goal.team).length;
-    setCheer({
-      key: Date.now(),
-      team: goal.team,
-      player: goal.player,
-      streak,
-      teamGoals,
-    });
-    // The winning goal gets the end-of-match sound instead.
-    if (!finished) playGoal(cheerLevel(streak, teamGoals));
+    if (!before || before.match !== matchKey || count <= before.count) {
+      setCheer(null);
+      return;
+    }
+    const celebration = goalCelebration(log);
+    if (!celebration) return;
+    setCheer({ ...celebration, key: ++cheerSerial.current });
+    if (!finished) playGoal(celebration.level);
   }, [matchKey, log.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // End of match: a whistle and a victory chord, once each time a team reaches
@@ -191,10 +200,7 @@ export function LiveTablet({
   useEffect(() => {
     if (!cheer) return;
     // Bigger celebrations last a little longer.
-    const timer = setTimeout(
-      () => setCheer(null),
-      2600 + 500 * (cheerLevel(cheer.streak, cheer.teamGoals) - 1),
-    );
+    const timer = setTimeout(() => setCheer(null), cheer.duration);
     return () => clearTimeout(timer);
   }, [cheer]);
 
@@ -270,7 +276,7 @@ export function LiveTablet({
   };
 
   const court = state?.court ?? null;
-  const mmrAtStake = useLiveMmr(data, court);
+  const mmrAtStake = useLiveMmr(data, court, activeSeason);
   const editStale =
     !!editing &&
     (editing.session !== session?.id || editing.revision !== session?.revision);
@@ -322,7 +328,8 @@ export function LiveTablet({
     <div className="tablet" aria-label="Marcador de pared">
       <header className="tablet-bar">
         <span className="tablet-title">
-          <Radio size={22} /> FutABLE · En directo
+          <Radio size={22} /> FutABLE ·{" "}
+          {cup ? activeSeason?.name : "Liga Mediodía"}
         </span>
         {state && (
           <button
@@ -396,6 +403,15 @@ export function LiveTablet({
         </p>
       )}
 
+      {activeSeason?.rating_epoch && (
+        <p className="competition-context">
+          {cup ? activeSeason.name : "Liga Mediodía"} ·{" "}
+          {cup
+            ? "Los resultados no cambian el MMR de Liga"
+            : "MMR de Liga · inicio en 1000"}
+          {state?.cup_final ? " · FINAL DE COPA" : ""}
+        </p>
+      )}
       {live.loading ? (
         <p className="tablet-empty">Buscando la sesión…</p>
       ) : !session || !state ? (
@@ -757,12 +773,12 @@ export function LiveTablet({
         </Modal>
       )}
       {cheer && !finished && state?.court && (
-        <GoalCheer
+        <GoalCelebration
           key={cheer.key}
-          team={cheer.team}
+          celebration={cheer}
           player={cheer.player ? named(cheer.player) : undefined}
-          streak={cheer.streak}
-          teamGoals={cheer.teamGoals}
+          score={state.goals}
+          items={data.loadouts?.[cheer.player ?? ""] ?? []}
         />
       )}
       {finished && state?.court && !confirm && (
@@ -799,10 +815,20 @@ export function LiveTablet({
                 const player = named(state.court![finished][post].id);
                 return (
                   <figure key={post}>
-                    <Avatar
-                      player={player || { name: "?", avatar_url: null }}
-                      size="large"
-                    />
+                    <span className="winner-character">
+                      {player ? (
+                        <CharacterOutfit
+                          player={player}
+                          mood="victory"
+                          items={data.loadouts?.[player.id] ?? []}
+                        />
+                      ) : (
+                        <Avatar
+                          player={{ name: "?", avatar_url: null }}
+                          size="large"
+                        />
+                      )}
+                    </span>
                     <figcaption>{player?.name || "?"}</figcaption>
                   </figure>
                 );
@@ -886,15 +912,21 @@ export function LiveTablet({
         <StartEditor
           queue={state.queue}
           players={data.players}
+          competition={activeSeason}
+          canFinal={data.role === "admin"}
           busy={busy}
           onClose={() => setStarting(false)}
           target={target}
-          onStart={async (lineup, { bestOf, goals }) => {
+          onStart={async (lineup, { bestOf, goals, isFinal }) => {
             setStarting(false);
             if (goals !== target) await run("target", { goals });
             await run(
               "start",
-              { lineup, ...(bestOf ? { series: { best_of: bestOf } } : {}) },
+              {
+                lineup,
+                ...(bestOf ? { series: { best_of: bestOf } } : {}),
+                ...(isFinal ? { is_final: true } : {}),
+              },
               bestOf
                 ? `Serie al mejor de ${bestOf} en marcha.`
                 : "Partida en marcha.",
@@ -946,113 +978,6 @@ export function LiveTablet({
           />
         </Modal>
       )}
-    </div>
-  );
-}
-
-/**
- * Goals in a row by the latest scorer: the same player, or the same team when
- * the goal has no scorer. 2 = doblete, 3 = hat-trick…
- */
-function goalStreak(log: { team: Team; player: string | null }[]) {
-  const last = log[log.length - 1];
-  if (!last) return 0;
-  let streak = 1;
-  for (let i = log.length - 2; i >= 0; i--) {
-    const g = log[i];
-    const same = last.player
-      ? g.player === last.player
-      : !g.player && g.team === last.team;
-    if (!same) break;
-    streak++;
-  }
-  return streak;
-}
-
-/** 1 to 4: how wild the celebration gets (streak first, then the team's goals). */
-function cheerLevel(streak: number, teamGoals: number) {
-  const byGoals = teamGoals >= 5 ? 3 : teamGoals >= 3 ? 2 : 1;
-  return Math.min(4, Math.max(streak, byGoals));
-}
-
-const streakTitles = [
-  "¡GOOOL!",
-  "¡GOOOL!",
-  "¡DOBLETE!",
-  "¡HAT-TRICK!",
-  "¡IMPARABLE!",
-];
-const cheerEmojis = ["⚽", "🔥", "💥", "🚀", "🐐"];
-
-/** A goal celebration with the scorer's face; it never blocks a tap. */
-function GoalCheer({
-  team,
-  player,
-  streak = 1,
-  teamGoals = 1,
-}: {
-  team: Team;
-  player?: Player;
-  streak?: number;
-  teamGoals?: number;
-}) {
-  const level = cheerLevel(streak, teamGoals);
-  const title = streakTitles[Math.min(streak, streakTitles.length - 1)];
-  const pieces = 12 * level;
-  return (
-    <div
-      className={`tablet-cheer ${team} lvl-${level}`}
-      role="status"
-      aria-live="polite"
-    >
-      <div className="tablet-cheer-burst" aria-hidden="true">
-        {Array.from({ length: pieces }, (_, i) => (
-          <i
-            key={i}
-            style={
-              { "--i": i, "--a": `${(360 / pieces) * i}deg` } as CSSProperties
-            }
-          />
-        ))}
-      </div>
-      {level > 1 && (
-        <div className="tablet-cheer-rain" aria-hidden="true">
-          {Array.from({ length: 6 * level }, (_, i) => (
-            <span
-              key={i}
-              style={
-                {
-                  "--x": `${(i * 37) % 100}%`,
-                  "--d": `${((i * 13) % 90) / 100}s`,
-                } as CSSProperties
-              }
-            >
-              {cheerEmojis[(i + level) % cheerEmojis.length]}
-            </span>
-          ))}
-        </div>
-      )}
-      <div className="tablet-cheer-face">
-        <Avatar
-          player={player || { name: teamNames[team], avatar_url: null }}
-          size="large"
-        />
-        {streak > 1 && (
-          <b className="tablet-cheer-multi" aria-label={`${streak} seguidos`}>
-            x{streak}
-          </b>
-        )}
-      </div>
-      <strong className="tablet-cheer-title">{title}</strong>
-      <span className="tablet-cheer-name">
-        {player ? player.name : `Gol del ${teamNames[team]}`}
-        {teamGoals > 1 && (
-          <small className="tablet-cheer-count">
-            {" "}
-            · {teamGoals}º del {teamNames[team]}
-          </small>
-        )}
-      </span>
     </div>
   );
 }

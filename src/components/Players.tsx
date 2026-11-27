@@ -23,8 +23,11 @@ import type { Penalty } from "../domain/mmr-penalty";
 import { mmrStandings } from "../domain/mmr-standings";
 import { rankablePlayers } from "../domain/standings-players";
 import "../mmr.css";
+import { characterFor } from "../domain/characters";
+import { CharacterOutfit } from "./CharacterOutfit";
 export function Players({
   players,
+  loadouts = {},
   matches,
   rules,
   selected,
@@ -34,6 +37,7 @@ export function Players({
   mmrPenalties = null,
 }: {
   players: Player[];
+  loadouts?: Record<string, string[]>;
   matches: Match[];
   rules: Rules;
   selected: string | null;
@@ -79,7 +83,16 @@ export function Players({
           <ArrowLeft size={16} /> Todos los jugadores
         </button>
         <div className="profile-heading">
-          <Avatar player={player} size="large" />
+          {characterFor(player) ? (
+            <span className="profile-character">
+              <CharacterOutfit
+                player={player}
+                items={loadouts[player.id] ?? []}
+              />
+            </span>
+          ) : (
+            <Avatar player={player} size="large" />
+          )}
           <div>
             <span className="eyebrow">
               {s.qualified ? "JUGADOR CLASIFICADO" : "EN CLASIFICACIÓN"}
@@ -123,7 +136,7 @@ export function Players({
                 </p>
               </div>
               <div className="player-mmr-position">
-                <strong>#{r.position}</strong>
+                <strong>{r.position ? `#${r.position}` : "Provisional"}</strong>
                 <small>de {standings.length} en MMR</small>
               </div>
             </article>

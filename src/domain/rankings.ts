@@ -6,6 +6,7 @@ import {
   type Rules,
   type Stats,
 } from "./types";
+import { participationDays } from "./participation";
 export const rawWR = (wins: number, games: number) =>
   games ? (100 * wins) / games : 0;
 export const adjustedWR = (
@@ -75,7 +76,20 @@ export function ranking(
         goals,
         streak,
         bestStreak,
-        qualified: games >= RANK_GAMES,
+        qualified: rules.minimum_days
+          ? games > 0 &&
+            participationDays(
+              position
+                ? valid.filter((m) =>
+                    m.participants.some(
+                      (p) =>
+                        p.player_id === player.id && p.position === position,
+                    ),
+                  )
+                : valid,
+              player.id,
+            ) >= rules.minimum_days
+          : games >= RANK_GAMES,
       };
     })
     .sort(compareStats);
